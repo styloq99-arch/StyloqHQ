@@ -1,16 +1,21 @@
 import os
 import json
 import base64
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 # -------------------------------------------------
 # GEMINI CONFIG
 # -------------------------------------------------
 
-GEMINI_API_KEY = "AIzaSyAALz8RXo63a1j0lLbXcDEPzylSV3uNL08"
+GEMINI_API_KEY = "AIzaSyDPcCVMs-CmNPEDwBmqw7mH_7qw65IzfLg"
+print("API KEY LOADED:", GEMINI_API_KEY is not None)
 
+client = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+MODEL_NAME = "gemini-3-flash-preview"  # Gemini 3 model
 
 # -------------------------------------------------
 # HELPERS
@@ -24,46 +29,43 @@ def extract_json(text):
     return text[start:end + 1]
 
 # -------------------------------------------------
-# IMAGE GENERATION (ONE IMAGE PER STYLE)
+# IMAGE EDIT GENERATION
 # -------------------------------------------------
 
 def generate_preview_image(image_file, style_name):
-    """
-    Generates ONE hairstyle preview image using the uploaded image
-    as a reference. Returns base64 string.
-    """
-
     image_bytes = image_file.read()
 
-    image_part = {
-        "mime_type": image_file.mimetype,
-        "data": image_bytes
-    }
+    image_part = types.Part.from_bytes(
+        data=image_bytes,
+        mime_type=image_file.mimetype
+    )
 
-    model = genai.GenerativeModel("models/gemini-3-flash-preview")
+    edit_prompt = f"""
+Apply a {style_name} haircut to this person.
 
-    prompt = f"""
-    Generate a realistic studio portrait of the SAME PERSON
-    shown in the reference image.
+Preserve facial identity exactly.
+Do not modify facial structure.
+Do not change skin tone.
+Do not change expression.
+Do not change age.
 
-    Maintain facial consistency as much as possible.
-    Only change the hairstyle.
+Only modify the hairstyle.
 
-    Hairstyle: {style_name}
+Photorealistic.
+Professional studio lighting.
+Neutral background.
+"""
 
-    Neutral background.
-    Photorealistic.
-    """
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=[edit_prompt, image_part]
+    )
 
-    response = model.generate_content([
-        prompt,
-        image_part
-    ])
+    for part in response.candidates[0].content.parts:
+        if part.inline_data:
+            return base64.b64encode(part.inline_data.data).decode("utf-8")
 
-    # Gemini returns image bytes inside candidates
-    image_bytes = response.candidates[0].content.parts[0].inline_data.data
-
-    return base64.b64encode(image_bytes).decode("utf-8")
+    raise ValueError("No image returned from Gemini 3")
 
 # -------------------------------------------------
 # CORE AI PIPELINE
@@ -79,38 +81,34 @@ def analyze_and_recommend(image_file):
                 "description": "A versatile and balanced hairstyle",
                 "previewImage": None
             }
-        ]
+        ],
+        "note": "Recommendations are suggestions only"
     }
 
-    if not GEMINI_API_KEY:
-        print("GEMINI API KEY MISSING")
+    if not client:
+        print("CLIENT NOT INITIALIZED")
         return fallback
 
     try:
-        # Read image bytes ONCE for analysis
         image_bytes = image_file.read()
 
-        image_part = {
-            "mime_type": image_file.mimetype,
-            "data": image_bytes
-        }
+        image_part = types.Part.from_bytes(
+            data=image_bytes,
+            mime_type=image_file.mimetype
+        )
 
-        model = genai.GenerativeModel("models/gemini-3-flash-preview")
-
-        prompt = """
+        analysis_prompt = """
 You are a professional barber and stylist.
 
-Analyze the human face in the provided image.
+Analyze the face shape from the image.
 
-Step 1:
-Determine the face shape.
-Choose ONLY one from:
+Choose exactly one:
 oval, round, square, heart, diamond
 
-Step 2:
-Recommend 2 or 3 suitable men's hairstyles for that face shape.
+Recommend 2 or 3 professional men's hairstyles
+suitable for that face shape.
 
-Return STRICT JSON in this format:
+Return STRICT JSON only:
 
 {
   "faceShape": "oval",
@@ -118,27 +116,26 @@ Return STRICT JSON in this format:
     {
       "id": "low_fade",
       "name": "Low Fade",
-      "description": "Enhances balanced facial proportions"
+      "description": "Balances facial proportions"
     }
   ]
 }
 
-Rules:
-- No markdown
-- No explanations
-- Lowercase ids
+No markdown.
+No explanations.
+Lowercase ids.
 """
 
-        response = model.generate_content([
-            prompt,
-            image_part
-        ])
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=[analysis_prompt, image_part]
+        )
 
-        print("=== GEMINI RAW RESPONSE ===")
-        print(response.text)
+        text_response = response.text.strip()
+        print("RAW RESPONSE:")
+        print(text_response)
 
-        raw_text = response.text.strip()
-        data = json.loads(extract_json(raw_text))
+        data = json.loads(extract_json(text_response))
 
         face_shape = data.get("faceShape", "oval").lower()
         styles = data.get("recommendedStyles", [])
@@ -146,7 +143,6 @@ Rules:
         final_styles = []
 
         for style in styles[:3]:
-            # IMPORTANT: reset file pointer for reuse
             image_file.seek(0)
 
             try:
@@ -155,10 +151,8 @@ Rules:
                     style.get("name", "Haircut")
                 )
             except Exception as e:
-                print("=== PREVIEW IMAGE ERROR ===")
-                print(type(e))
-                print(e)
-                preview_image = ""
+                print("IMAGE ERROR:", e)
+                preview_image = None
 
             final_styles.append({
                 "id": style.get("id", "style"),
@@ -170,41 +164,9 @@ Rules:
         return {
             "faceShape": face_shape,
             "recommendedStyles": final_styles,
-            "note": "AI-generated hairstyle preview based on the uploaded photo. Results may vary."
+            "note": "AI-generated hairstyle transformation using Gemini 3."
         }
 
     except Exception as e:
-        print("=== AI ERROR ===")
-        print(type(e))
-        print(e)
+        print("AI ERROR:", e)
         return fallback
-
-# -------------------------------------------------
-# AI CHAT
-# -------------------------------------------------
-
-def ai_chat_reply(message):
-    if not message:
-        return "Ask me about hairstyles or face shapes."
-
-    if not GEMINI_API_KEY:
-        return "I can help suggest hairstyles based on face shape."
-
-    try:
-        model = genai.GenerativeModel("models/gemini-1.5-flash")
-
-        prompt = f"""
-You are a helpful barber assistant.
-Answer briefly and clearly.
-
-Question:
-{message}
-"""
-
-        response = model.generate_content(prompt)
-        return response.text.strip()
-
-    except Exception as e:
-        print("=== AI CHAT ERROR ===")
-        print(e)
-        return "I can help suggest hairstyles based on face shape."

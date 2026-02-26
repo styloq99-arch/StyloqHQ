@@ -13,13 +13,13 @@ from feed.services import (
 feed_bp = Blueprint("feed", __name__)
 
 
-@feed_bp.route("/feed", methods=["GET"])
+@feed_bp.route("/", methods=["GET"])
 def get_feed_posts():
     posts = fetch_feed_posts()
     return jsonify({"posts": posts})
 
 
-@feed_bp.route("/feed/paginated", methods=["GET"])
+@feed_bp.route("/paginated", methods=["GET"])
 def get_feed_posts_paginated():
     try:
         page = int(request.args.get("page", 1))

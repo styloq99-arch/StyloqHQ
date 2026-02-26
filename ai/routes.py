@@ -19,12 +19,3 @@ def get_hairstyle_recommendation():
         "note": "Recommendations are suggestions only"
     }), 200
 
-
-@ai_bp.route("/chat", methods=["POST"])
-def ai_chat_response():
-    data = request.get_json(silent=True) or {}
-    message = data.get("message", "")
-
-    reply = ai_chat_reply(message)
-
-    return jsonify({"reply": reply}), 200
