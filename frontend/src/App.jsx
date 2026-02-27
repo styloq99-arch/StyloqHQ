@@ -12,6 +12,7 @@ import SignUpBarberStep4 from "./pages/SignUpBarberStep4.jsx";
 import SignUpBarberStep5 from "./pages/SignUpBarberStep5.jsx";
 import SignUpBarberStep6 from "./pages/SignUpBarberStep6.jsx";
 import SignUpBarberStep7 from "./pages/SignUpBarberStep7.jsx";
+import SignUpBarberStep8 from "./pages/SignUpBarberStep8.jsx";
 import CreatePassword from "./pages/CreatePassword.jsx";
 
 
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/signup-barber-step5" element={<SignUpBarberStep5 />} />
           <Route path="/signup-barber-step6" element={<SignUpBarberStep6 />} />
           <Route path="/signup-barber-step7" element={<SignUpBarberStep7 />} />
+          <Route path="/signup-barber-step8" element={<SignUpBarberStep8 />} />
 
 
           <Route path="/signup-customer" element={<SignUpCustomer />} />
