@@ -9,6 +9,7 @@ import SignUpCustomer from "./pages/SignUpCustomer.jsx";
 import VerificationStep1 from "./pages/VerificationStep1.jsx";
 import VerificationStep2 from "./pages/VerificationStep2.jsx";
 import SignUpBarberStep4 from "./pages/SignUpBarberStep4.jsx";
+import SignUpBarberStep5 from "./pages/SignUpBarberStep5.jsx";
 import CreatePassword from "./pages/CreatePassword.jsx";
 
 
@@ -23,7 +24,7 @@ export default function App() {
 
           <Route path="/signup-barber" element={<SignUpBarber />} />
           <Route path="/signup-barber-step4" element={<SignUpBarberStep4 />} />
-          "
+          <Route path="/signup-barber-step5" element={<SignUpBarberStep5 />} />
 
 
           <Route path="/signup-customer" element={<SignUpCustomer />} />
