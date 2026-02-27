@@ -5,6 +5,7 @@ import Index from "./pages/Index.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUpBarber from "./pages/SignUpBarber.jsx";
+import SignUpCustomer from "./pages/SignUpCustomer.jsx";
 
 
 export default function App() {
@@ -16,6 +17,9 @@ export default function App() {
 
 
           <Route path="/signup-barber" element={<SignUpBarber />} />
+
+
+          <Route path="/signup-customer" element={<SignUpCustomer />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
