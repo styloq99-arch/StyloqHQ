@@ -233,7 +233,7 @@ html, body {
 .social-link:hover { opacity: 1; }
 
 
-/* ===  Signup.jsx ==== */
+/* ===  Signin.jsx ==== */
 
 /* Form */
 .form-container {
@@ -395,6 +395,121 @@ html, body {
   text-decoration: none;
 }
 
+/* === Barber Signup  ==== */
+
+.step-progress {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.step-title {
+  font-size: 25px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+}
+
+.step-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.avatar-upload {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.avatar-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px dashed #5a5452;
+  background-color: rgba(55, 54, 54, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #5a5452;
+  gap: 5px;
+  transition: background-color 0.2s;
+}
+
+.avatar-circle:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.nav-buttons {
+  position: relative;
+  width: 100%;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0 24px;
+}
+
+.content-side {
+  padding: 1rem;
+}
+
+.compact-form {
+  padding: 1.2rem;
+  gap: 0.8rem;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.compact-form::-webkit-scrollbar {
+  width: 6px;
+}
+.compact-form::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: 3px;
+}
+
+.compact-form .avatar-circle {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 0.5rem;
+}
+
+.compact-form .step-subtitle {
+  font-size: 20px;
+  margin-bottom: 0.5rem;
+}
+
+.compact-form .input-field {
+  height: 36px;
+  font-size: 14px;
+}
+
+.nav-buttons {
+  width: 100%;
+  max-width: 360px;
+  margin-top: 1rem;
+}
+
+.input-row-bottom {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.input-row-bottom .input-group {
+  flex: 1;
+}
+
+
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
   .app-layout {
@@ -527,3 +642,5 @@ html, body {
     gap: 0.5rem;
   }
 }
+
+
