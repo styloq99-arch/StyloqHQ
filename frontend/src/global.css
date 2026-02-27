@@ -232,6 +232,169 @@ html, body {
 }
 .social-link:hover { opacity: 1; }
 
+
+/* ===  Signup.jsx ==== */
+
+/* Form */
+.form-container {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.page-header h2 {
+  font-size: 30px;
+  color: var(--text-on-accent);
+  margin-bottom: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 14px;
+  color: var(--text-faint);
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.input-field {
+  width: 100%;
+  height: 40px;
+  background-color: var(--fill-glass-mid);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  padding: 0 1rem;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.input-field:focus {
+  background-color: var(--fill-glass-hi);
+  border-color: var(--color-accent);
+}
+
+.form-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  font-size: 13px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.forgot-password a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.forgot-password a:hover {
+  color: var(--text-on-accent);
+  text-decoration: underline;
+}
+
+.btn-submit {
+  width: 100%;
+  height: 40px;
+  border-radius: 25px;
+  background-color: var(--color-accent);
+  color: var(--text-on-btn);
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.divider::before { margin-right: 0.5rem; }
+.divider::after { margin-left: 0.5rem; }
+
+.social-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-social {
+  flex: 1;
+  height: 48px;
+  border: 1px solid var(--border-default);
+  background-color: var(--fill-glass-mid);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.signup-link {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.signup-link a {
+  color: var(--text-on-accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
   .app-layout {
