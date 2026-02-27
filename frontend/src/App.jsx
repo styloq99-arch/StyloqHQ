@@ -13,6 +13,7 @@ import SignUpBarberStep5 from "./pages/SignUpBarberStep5.jsx";
 import SignUpBarberStep6 from "./pages/SignUpBarberStep6.jsx";
 import SignUpBarberStep7 from "./pages/SignUpBarberStep7.jsx";
 import SignUpBarberStep8 from "./pages/SignUpBarberStep8.jsx";
+import SignUpSalon from "./pages/SignUpSalon.jsx";
 import CreatePassword from "./pages/CreatePassword.jsx";
 
 
@@ -37,6 +38,8 @@ export default function App() {
           <Route path="/verification-step1" element={<VerificationStep1 />} />
           <Route path="/verification-step2" element={<VerificationStep2 />} />
           <Route path="/create-password" element={<CreatePassword />} />
+
+          <Route path="/signup-salon" element={<SignUpSalon />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
