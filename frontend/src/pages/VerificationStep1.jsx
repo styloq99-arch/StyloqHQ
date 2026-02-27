@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -40,7 +39,7 @@ export default function VerificationStep1() {
       
       // Success: Navigate to Step 3 (The actual code entry page)
       // We pass the phone number along with other step 1 data
-      navigate("/signup-barber-step3", { 
+      navigate("/verification-step2", { 
         state: { 
           ...step1Data, 
           phone: phone // Ensure the potentially edited phone number is passed forward

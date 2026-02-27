@@ -532,6 +532,35 @@ html, body {
   max-width: 400px;
 }
 
+.otp-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.otp-input {
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--fill-glass-mid);
+  border: 1px solid var(--border-glass-mid);
+  border-radius: 12px;
+  -moz-appearance: textfield;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.otp-input:focus {
+  background-color: var(--fill-glass-hi);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-glow);
+}
+
 
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
