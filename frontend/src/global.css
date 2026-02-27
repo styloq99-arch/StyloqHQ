@@ -1,0 +1,529 @@
+/* --- CSS VARIABLES --- */
+:root {
+  /* Brand Colors */
+  --color-accent:           #FF5722;
+  --color-accent-light:     #ff7043;
+  --color-accent-hover:     rgba(255, 87, 34, 0.1);
+  --color-accent-subtle:    rgba(255, 87, 34, 0.05);
+  --color-accent-glow:      rgba(255, 87, 34, 0.2);
+  --color-accent-glow-mid:  rgba(255, 87, 34, 0.3);
+  --color-accent-glow-hi:   rgba(255, 87, 34, 0.35);
+  --color-accent-glow-max:  rgba(255, 87, 34, 0.4);
+  --color-accent-glow-full: rgba(255, 87, 34, 0.55);
+  --color-accent-border:    rgba(255, 87, 34, 0.25);
+  --color-accent-border-mid:rgba(255, 87, 34, 0.3);
+  --color-accent-border-hi: rgba(255, 87, 34, 0.4);
+
+  /* Background Scale */
+  --bg-base:       #121212;
+  --bg-deep:       #0a0a0a;
+  --bg-surface:    #1a1a1a;
+  --bg-raised:     #1b1919;
+  --bg-elevated:   #1e1e1e;
+  --bg-card:       #212020;
+  --bg-overlay:    rgba(18, 18, 18, 0.85);
+  --bg-scrim:      rgba(0, 0, 0, 0.85);
+  --bg-dim:        rgba(0, 0, 0, 0.45);
+  --bg-dim-mid:    rgba(0, 0, 0, 0.5);
+  --bg-dim-heavy:  rgba(0, 0, 0, 0.75);
+
+  /* Foreground / Text */
+  --text-primary:   #F5F5F5;
+  --text-secondary: #ccc;
+  --text-muted:     #aaa;
+  --text-faint:     #888;
+  --text-dim:       #666;
+  --text-ghost:     #555;
+  --text-on-accent: #fff;
+  --text-on-btn:    #000;
+
+  /* Borders */
+  --border-default: #444;
+  --border-subtle:  #333;
+  --border-faint:   #2a2a2a;
+  --border-deep:    #222;
+  --border-glass:   rgba(255, 255, 255, 0.1);
+  --border-glass-mid: rgba(255, 255, 255, 0.15);
+
+  /* Semantic / Status */
+  --color-success:        #4CAF50;
+  --color-success-bg:     rgba(76, 175, 80, 0.12);
+  --color-success-border: rgba(76, 175, 80, 0.3);
+  --color-success-glow:   rgba(76, 175, 80, 0.4);
+  --color-gold:           #FFD700;
+  --color-gold-bg:        rgba(255, 215, 0, 0.1);
+  --color-gold-border:    rgba(255, 215, 0, 0.25);
+
+  /* Glass / Translucent Fills */
+  --fill-glass-lo:  rgba(255, 255, 255, 0.02);
+  --fill-glass-mid: rgba(255, 255, 255, 0.05);
+  --fill-glass-hi:  rgba(255, 255, 255, 0.1);
+
+  /* Shadows */
+  --shadow-card:  #0a0a0a 0px 4px 10px;
+  --shadow-heavy: #0a0a0a 0px 4px 20px;
+  --shadow-page:  #0a0a0a 0px 4px 4px;
+  --shadow-modal: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-deep:  0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* --- 1. RESET & FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-base);
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+}
+
+/* --- 2. MOBILE LAYOUT (DEFAULT) --- */
+.app-layout {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.visual-side {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.visual-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(4px);
+}
+
+.visual-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.gradient-mask {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50vh;
+  background: linear-gradient(to top, var(--bg-base) 0%, rgba(18, 18, 18, 0) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.content-side {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1.5rem;
+}
+
+/* --- 3. COMPONENTS --- */
+
+.brand-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  margin-top: 2rem;
+}
+
+.brand-title {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+}
+
+.brand-tagline {
+  font-size: 14px;
+  color: var(--text-primary);
+  opacity: 0.9;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mobile-btn-wrapper {
+  margin-top: 7rem;
+  padding-top: 3rem;
+}
+
+.buttons-wrapper {
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 15rem;
+}
+
+.btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: var(--text-on-btn);
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 15px var(--color-accent-glow-mid);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-base);
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.social-footer {
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.social-link {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.social-link:hover { opacity: 1; }
+
+
+/* ===  Signup.jsx ==== */
+
+/* Form */
+.form-container {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.page-header h2 {
+  font-size: 30px;
+  color: var(--text-on-accent);
+  margin-bottom: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 14px;
+  color: var(--text-faint);
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.input-field {
+  width: 100%;
+  height: 40px;
+  background-color: var(--fill-glass-mid);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  padding: 0 1rem;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.input-field:focus {
+  background-color: var(--fill-glass-hi);
+  border-color: var(--color-accent);
+}
+
+.form-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  font-size: 13px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.forgot-password a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.forgot-password a:hover {
+  color: var(--text-on-accent);
+  text-decoration: underline;
+}
+
+.btn-submit {
+  width: 100%;
+  height: 40px;
+  border-radius: 25px;
+  background-color: var(--color-accent);
+  color: var(--text-on-btn);
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.divider::before { margin-right: 0.5rem; }
+.divider::after { margin-left: 0.5rem; }
+
+.social-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-social {
+  flex: 1;
+  height: 48px;
+  border: 1px solid var(--border-default);
+  background-color: var(--fill-glass-mid);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.signup-link {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.signup-link a {
+  color: var(--text-on-accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* --- 6. DESKTOP OVERRIDE --- */
+@media (min-width: 768px) {
+  .app-layout {
+    flex-direction: row;
+  }
+
+  .visual-side {
+    position: static;
+    width: 50%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .buttons-wrapper {
+    margin-top: 10rem;
+    gap: 1rem;
+  }
+
+  .gradient-mask {
+    display: none;
+  }
+
+  .visual-side .brand-content {
+    display: flex;
+    position: absolute;
+    top: 45%;
+    left: 25%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+
+  .content-side {
+    position: relative;
+    width: 50%;
+    height: 100vh;
+    background-color: var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+    overflow-y: auto;
+  }
+
+  .content-side::-webkit-scrollbar { width: 8px; }
+  .content-side::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 4px; }
+  .content-side:hover::-webkit-scrollbar-thumb { background-color: var(--border-default); }
+  .content-side { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  .content-side:hover { scrollbar-color: var(--border-default) transparent; }
+
+  .brand-title {
+    font-size: 65px;
+  }
+
+  .brand-tagline {
+    font-size: 18px;
+    max-width: 400px;
+  }
+
+  .content-side .brand-content {
+    display: none;
+  }
+
+  .form-container {
+    position: relative;
+    height: auto;
+    background-color: transparent;
+    backdrop-filter: none;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .compact-form {
+    padding: 0;
+    gap: 0.6rem;
+  }
+
+  .compact-form .avatar-circle {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 0.5rem;
+  }
+
+  .compact-form .step-subtitle {
+    font-size: 20px;
+  }
+
+  .compact-form .input-field {
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .nav-buttons {
+    position: relative;
+    width: 100%;
+    padding: 0 4rem;
+    transform: none;
+    min-width: 80%;
+    box-sizing: border-box;
+    margin-top: 5rem;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .input-row .input-group {
+    flex: 1;
+    width: 100%;
+  }
+
+  .app-container {
+    max-width: 480px;
+    height: auto;
+    margin: 5vh auto;
+    border-radius: 20px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-heavy);
+  }
+}
+
+@media (max-width: 767px) {
+  .input-row {
+    display: block;
+    gap: 0.5rem;
+  }
+}
