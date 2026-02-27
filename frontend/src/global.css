@@ -509,6 +509,29 @@ html, body {
   flex: 1;
 }
 
+/* --- VERIFICATION SECTION --- */
+.verification-section {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.verification-title {
+  color: var(--color-accent);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.verification-content {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #b0b0b0;
+  line-height: 1.6;
+  max-width: 400px;
+}
+
 
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
