@@ -17,7 +17,9 @@ class User(Base):
     barber_profile = relationship("Barber", back_populates="user", uselist=False)
     salon_profile = relationship("Salon", back_populates="user", uselist=False)
     notifications = relationship("Notification", back_populates="user")
-    comments = relationship("Comment", back_populates="user") # Added for new Comment table
+    comments = relationship("Comment", back_populates="user")
+    liked_posts = relationship("PostLike", back_populates="user", cascade="all, delete-orphan")
+    saved_posts = relationship("SavedPost", back_populates="user", cascade="all, delete-orphan")
     
     sent_messages = relationship("Message", foreign_keys="[Message.sender_id]", back_populates="sender")
     received_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver")

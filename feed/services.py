@@ -1,103 +1,254 @@
-# Temporary in-memory storage
-import random
-from datetime import datetime
+from sqlalchemy import func
+from extensions import db
+from models.social import Post, Comment, PostLike, SavedPost
+from models.user import User
 
-_POSTS = []
 
+# -------------------------------------------------
+# FETCH FEED POSTS (PAGINATED)
+# -------------------------------------------------
 
-def _seed_posts():
-    barber_names = [
-        "Fade Master",
-        "Clipper King",
-        "Urban Cuts",
-        "Sharp Edge",
-        "Blade Studio"
-    ]
+def fetch_feed_posts_paginated(page=1, limit=5, current_user_id=None):
 
-    captions = [
-        "Clean fade 🔥",
-        "Fresh taper 💯",
-        "Skin fade done right",
-        "Low fade + texture",
-        "Client wanted sharp 👌",
-        "Before / After 😮",
-        "Classic cut never fails",
-        "Modern look 💇‍♂️"
-    ]
+    query = Post.query.order_by(Post.created_at.desc())
+    posts = query.offset((page - 1) * limit).limit(limit).all()
 
-    for i in range(1, 101):  # 👈 100 posts
-        barber_id = random.randint(1, 5)
+    result = []
 
-        _POSTS.append({
-            "id": i,
-            "barber_id": barber_id,
-            "barberName": barber_names[barber_id - 1],
-            "caption": random.choice(captions),
-            "imageUrl": "https://via.placeholder.com/300",
-            "likes": random.randint(0, 250),
-            "comments": [],
-            "createdAt": datetime.utcnow().isoformat()
+    for post in posts:
+
+        like_count = len(post.likes)
+        comment_count = len(post.comments)
+
+        liked = False
+        saved = False
+
+        if current_user_id:
+            liked = any(l.user_id == current_user_id for l in post.likes)
+            saved = any(s.user_id == current_user_id for s in post.saved_by)
+
+        result.append({
+            "id": post.id,
+            "barber_id": post.barber_id,
+            "barberName": post.barber.user.full_name,
+            "imageUrl": post.image_url,
+            "caption": post.caption,
+            "likes": like_count,
+            "commentsCount": comment_count,
+            "liked": liked,
+            "saved": saved,
+            "createdAt": post.created_at.isoformat()
         })
 
-
-# Seed once when module loads
-_seed_posts()
+    return result
 
 
-def fetch_feed_posts():
-    return _POSTS
+# -------------------------------------------------
+# FETCH SINGLE POST
+# -------------------------------------------------
+
+def fetch_single_post(post_id, current_user_id=None):
+
+    post = Post.query.get(post_id)
+    if not post:
+        return None
+
+    liked = False
+    saved = False
+
+    if current_user_id:
+        liked = any(l.user_id == current_user_id for l in post.likes)
+        saved = any(s.user_id == current_user_id for s in post.saved_by)
+
+    return {
+        "id": post.id,
+        "barber_id": post.barber_id,
+        "barberName": post.barber.user.full_name,
+        "imageUrl": post.image_url,
+        "caption": post.caption,
+        "likes": len(post.likes),
+        "commentsCount": len(post.comments),
+        "liked": liked,
+        "saved": saved,
+        "createdAt": post.created_at.isoformat()
+    }
 
 
-def fetch_feed_posts_paginated(page, limit):
-    sorted_posts = sorted(
-        _POSTS,
-        key=lambda post: post["createdAt"],
-        reverse=True
-    )
-
-    start = (page - 1) * limit
-    end = start + limit
-
-    return sorted_posts[start:end]
-
-
-
-def fetch_posts_by_barber(barber_id):
-    return [p for p in _POSTS if p["barber_id"] == barber_id]
-
+# -------------------------------------------------
+# CREATE POST
+# -------------------------------------------------
 
 def create_post(barber_id, caption, image_url):
-    post = {
-        "id": len(_POSTS) + 1,
-        "barber_id": barber_id,
-        "barberName": f"Barber {barber_id}",
-        "caption": caption,
-        "imageUrl": image_url,
-        "likes": 0,
-        "comments": []
-    }
-    _POSTS.append(post)
-    return post
+
+    post = Post(
+        barber_id=barber_id,
+        caption=caption,
+        image_url=image_url
+    )
+
+    db.session.add(post)
+    db.session.commit()
+
+    return {"message": "Post created", "post_id": post.id}
 
 
-def add_like(post_id):
-    for post in _POSTS:
-        if post["id"] == post_id:
-            post["likes"] += 1
-            return post
-    return None
+# -------------------------------------------------
+# DELETE POST (BARBER OR ADMIN)
+# -------------------------------------------------
+
+def delete_post(post_id, current_user):
+
+    post = Post.query.get(post_id)
+    if not post:
+        return None
+
+    if current_user.role == "admin" or (
+        current_user.barber_profile and
+        post.barber_id == current_user.barber_profile.id
+    ):
+        db.session.delete(post)
+        db.session.commit()
+        return {"message": "Post deleted"}
+
+    return {"error": "Unauthorized"}
 
 
-def add_comment(post_id, text):
-    for post in _POSTS:
-        if post["id"] == post_id:
-            post["comments"].append(text)
-            return post
-    return None
+# -------------------------------------------------
+# TOGGLE LIKE
+# -------------------------------------------------
+
+def toggle_like(post_id, user_id):
+
+    existing = PostLike.query.filter_by(
+        post_id=post_id,
+        user_id=user_id
+    ).first()
+
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+        return {"message": "Like removed"}
+
+    new_like = PostLike(post_id=post_id, user_id=user_id)
+    db.session.add(new_like)
+    db.session.commit()
+
+    return {"message": "Post liked"}
 
 
-def save_post_for_user(post_id, user_id):
-    # Stubbed (DB later)
+# -------------------------------------------------
+# VIEW LIKES
+# -------------------------------------------------
+
+def fetch_post_likes(post_id):
+
+    likes = PostLike.query.filter_by(post_id=post_id).all()
+
+    return [{
+        "user_id": like.user.id,
+        "username": like.user.full_name
+    } for like in likes]
+
+
+# -------------------------------------------------
+# ADD COMMENT
+# -------------------------------------------------
+
+def add_comment(post_id, user_id, text):
+
+    if not text:
+        return None
+
+    comment = Comment(
+        post_id=post_id,
+        user_id=user_id,
+        content=text
+    )
+
+    db.session.add(comment)
+    db.session.commit()
+
     return {
-        "message": f"Post {post_id} saved for user {user_id}"
+        "id": comment.id,
+        "content": comment.content,
+        "username": comment.user.full_name,
+        "createdAt": comment.created_at.isoformat()
     }
+
+
+# -------------------------------------------------
+# DELETE COMMENT (ONLY AUTHOR)
+# -------------------------------------------------
+
+def delete_comment(comment_id, current_user_id):
+
+    comment = Comment.query.get(comment_id)
+    if not comment:
+        return None
+
+    if comment.user_id != current_user_id:
+        return {"error": "Unauthorized"}
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return {"message": "Comment deleted"}
+
+
+# -------------------------------------------------
+# VIEW COMMENTS
+# -------------------------------------------------
+
+def fetch_post_comments(post_id):
+
+    comments = Comment.query.filter_by(post_id=post_id) \
+        .order_by(Comment.created_at.desc()).all()
+
+    return [{
+        "id": c.id,
+        "content": c.content,
+        "username": c.user.full_name,
+        "createdAt": c.created_at.isoformat()
+    } for c in comments]
+
+
+# -------------------------------------------------
+# TOGGLE SAVE POST
+# -------------------------------------------------
+
+def toggle_save(post_id, user_id):
+
+    existing = SavedPost.query.filter_by(
+        post_id=post_id,
+        user_id=user_id
+    ).first()
+
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+        return {"message": "Post unsaved"}
+
+    saved = SavedPost(post_id=post_id, user_id=user_id)
+    db.session.add(saved)
+    db.session.commit()
+
+    return {"message": "Post saved"}
+
+
+# -------------------------------------------------
+# VIEW SAVED POSTS
+# -------------------------------------------------
+
+def fetch_saved_posts(user_id):
+
+    saved = SavedPost.query.filter_by(user_id=user_id).all()
+    posts = [s.post for s in saved]
+
+    return [{
+        "id": post.id,
+        "imageUrl": post.image_url,
+        "caption": post.caption,
+        "likes": len(post.likes),
+        "commentsCount": len(post.comments),
+        "createdAt": post.created_at.isoformat()
+    } for post in posts]
