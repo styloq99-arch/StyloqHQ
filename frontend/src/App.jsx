@@ -15,6 +15,7 @@ import SignUpBarberStep7 from "./pages/SignUpBarberStep7.jsx";
 import SignUpBarberStep8 from "./pages/SignUpBarberStep8.jsx";
 import SignUpSalon from "./pages/SignUpSalon.jsx";
 import CreatePassword from "./pages/CreatePassword.jsx";
+import CustomerHome from "./pages/CustomerHome.jsx";
 
 
 
@@ -40,6 +41,8 @@ export default function App() {
           <Route path="/create-password" element={<CreatePassword />} />
 
           <Route path="/signup-salon" element={<SignUpSalon />} />
+
+          <Route path="/customer-home" element={<CustomerHome />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
