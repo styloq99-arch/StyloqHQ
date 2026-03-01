@@ -28,6 +28,29 @@ const INITIAL_POSTS = [
 
 export default function CustomerHome() {
 
+  const [postStates, setPostStates] = useState(
+    Object.fromEntries(
+      INITIAL_POSTS.map(post => [
+        post.id,
+        {
+          liked: false,
+          likes: post.likes,
+        }
+      ])
+    )
+  );
+
+  const handleLike = (postId) => {
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: {
+        ...prev[postId],
+        liked: !prev[postId].liked,
+        likes: prev[postId].liked ? prev[postId].likes - 1 : prev[postId].likes + 1,
+      }
+    }));
+  };
+
   return (
     <div className="app-layout">
 
@@ -65,6 +88,7 @@ export default function CustomerHome() {
           <section>
             <div className="feed-container">
               {INITIAL_POSTS.map((post) => {
+                const state = postStates[post.id];
                 
                 return (
                   <div key={post.id} className="feed-card">
@@ -93,9 +117,31 @@ export default function CustomerHome() {
                       <img src={post.image} alt="Haircut" className="feed-image" />
                     </div>
 
+                    {/* Like count */}
+                    {state.likes > 0 && (
+                      <div style={{ padding: '8px 16px 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                        {state.likes} {state.likes === 1 ? 'like' : 'likes'}
+                      </div>
+                    )}
+
                     {/* Caption */}
                     <div className="card-content">
                       <p className="caption-text">{post.caption}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="card-actions">
+                      <div className="action-left">
+
+                        {/* Like */}
+                        <button onClick={() => handleLike(post.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label={state.liked ? 'Unlike' : 'Like'}>
+                          <i className={`${state.liked ? 'fas' : 'far'} fa-heart action-icon`}
+                            style={{ color: state.liked ? 'var(--color-accent)' : undefined }}></i>
+                        </button>
+                      </div>
+
                     </div>
 
                   </div>

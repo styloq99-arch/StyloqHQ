@@ -1119,6 +1119,27 @@ html, body {
   font-family: 'Poppins', sans-serif;
 }
 
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  align-items: center;
+}
+
+.action-left {
+  display: flex;
+  gap: 20px;
+}
+
+.action-icon {
+  color: var(--text-on-accent);
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.action-icon:hover { color: var(--color-accent); }
+
 
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
