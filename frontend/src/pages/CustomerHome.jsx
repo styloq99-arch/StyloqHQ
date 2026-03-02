@@ -47,8 +47,16 @@ export default function CustomerHome() {
     )
   );
 
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(3);
   const [shareToast, setShareToast] = useState(null);
   const [bookmarkToast, setBookmarkToast] = useState(null);
+
+  const NOTIFICATIONS = [
+    { id: 1, text: "S.S.K. Perera posted a new style", time: "2m ago" },
+    { id: 2, text: "Your appointment is confirmed for tomorrow", time: "1h ago" },
+    { id: 3, text: "D.H.Pathirana liked your comment", time: "3h ago" },
+  ];
 
   const handleLike = (postId) => {
     setPostStates(prev => ({
@@ -103,6 +111,10 @@ export default function CustomerHome() {
     setTimeout(() => setShareToast(null), 2500);
   };
 
+  const handleNotifOpen = () => {
+    setNotifOpen(prev => !prev);
+    if (!notifOpen) setNotifCount(0);
+  };
 
   return (
     <div className="app-layout">
@@ -125,6 +137,33 @@ export default function CustomerHome() {
               View
             </Link>
           )}
+        </div>
+      )}
+
+      {/* Notification Dropdown */}
+      {notifOpen && (
+        <div onClick={() => setNotifOpen(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 150
+        }} />
+      )}
+      {notifOpen && (
+        <div style={{
+          position: 'fixed', top: '70px', right: '16px', zIndex: 200,
+          background: 'var(--bg-elevated)', border: '1px solid var(--border-faint)',
+          borderRadius: '16px', width: '300px', boxShadow: 'var(--shadow-modal)', overflow: 'hidden',
+        }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-deep)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '15px' }}>Notifications</span>
+            <button onClick={() => setNotifOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', cursor: 'pointer', fontSize: '16px' }}>
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          {NOTIFICATIONS.map(n => (
+            <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-deep)' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>{n.text}</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '11px', margin: '4px 0 0' }}>{n.time}</p>
+            </div>
+          ))}
         </div>
       )}
 
@@ -155,6 +194,15 @@ export default function CustomerHome() {
             <div className="mobile-brandContent">
               <h1 className="mobile-brand">StyloQ</h1>
             </div>
+            <button
+              className="notification-bell"
+              onClick={handleNotifOpen}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              aria-label="Notifications"
+            >
+              <i className="far fa-bell"></i>
+              {notifCount > 0 && <span className="badge">{notifCount}</span>}
+            </button>
           </div>
         </header>
 
