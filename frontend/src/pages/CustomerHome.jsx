@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useFavourites } from './FavouritesContext';
 
 // Mock Data
 const INITIAL_POSTS = [
@@ -28,6 +29,8 @@ const INITIAL_POSTS = [
 
 export default function CustomerHome() {
 
+  const { toggleFavourite, isFavourite } = useFavourites();
+
   const [postStates, setPostStates] = useState(
     Object.fromEntries(
       INITIAL_POSTS.map(post => [
@@ -45,6 +48,7 @@ export default function CustomerHome() {
   );
 
   const [shareToast, setShareToast] = useState(null);
+  const [bookmarkToast, setBookmarkToast] = useState(null);
 
   const handleLike = (postId) => {
     setPostStates(prev => ({
@@ -55,6 +59,13 @@ export default function CustomerHome() {
         likes: prev[postId].liked ? prev[postId].likes - 1 : prev[postId].likes + 1,
       }
     }));
+  };
+
+  const handleBookmark = (post) => {
+    const wasBookmarked = isFavourite(post.id);
+    toggleFavourite(post);
+    setBookmarkToast(wasBookmarked ? 'Removed from Favourites' : 'Saved to Favourites!');
+    setTimeout(() => setBookmarkToast(null), 2200);
   };
 
   const handleToggleComments = (postId) => {
@@ -102,6 +113,20 @@ export default function CustomerHome() {
           <i className="fas fa-check-circle"></i> {shareToast}
         </div>
       )}
+      {bookmarkToast && (
+        <div className="cp-toast" style={{
+          bottom: '80px', zIndex: 9999,
+          background: bookmarkToast.startsWith('Removed') ? '#555' : 'var(--color-accent)'
+        }}>
+          <i className={`fas ${bookmarkToast.startsWith('Removed') ? 'fa-bookmark' : 'fa-bookmark'}`}></i>
+          {bookmarkToast}
+          {!bookmarkToast.startsWith('Removed') && (
+            <Link to="/favourites" style={{ color: '#fff', marginLeft: '8px', fontWeight: 700, textDecoration: 'underline' }}>
+              View
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Desktop Sidebar */}
       <aside className="desktop-sidebar">
@@ -138,6 +163,7 @@ export default function CustomerHome() {
             <div className="feed-container">
               {INITIAL_POSTS.map((post) => {
                 const state = postStates[post.id];
+                const bookmarked = isFavourite(post.id);
                 
                 return (
                   <div key={post.id} className="feed-card">
@@ -206,7 +232,17 @@ export default function CustomerHome() {
                         </button>
                       </div>
 
-                      {/* Comments Section */}
+                      {/* Bookmark → Favourites */}
+                      <button onClick={() => handleBookmark(post)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        aria-label={bookmarked ? 'Remove from favourites' : 'Save to favourites'}>
+                        <i className={`${bookmarked ? 'fas' : 'far'} fa-bookmark action-icon`}
+                          style={{ color: bookmarked ? 'var(--color-accent)' : undefined }}></i>
+                      </button>
+
+                    </div>
+
+                    {/* Comments Section */}
                       {state.showComments && (
                         <div style={{ padding: '12px 16px 4px', borderTop: '1px solid var(--border-deep)' }}>
                           {state.commentList.length > 0 && (
@@ -252,8 +288,6 @@ export default function CustomerHome() {
                           </div>
                         </div>
                       )}
-
-                    </div>
 
                   </div>
                 );

@@ -1,6 +1,7 @@
 import "./global.css";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { FavouritesProvider } from "./pages/FavouritesContext.jsx";
 import Index from "./pages/Index.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import SignIn from "./pages/SignIn.jsx";
@@ -22,6 +23,9 @@ import CustomerHome from "./pages/CustomerHome.jsx";
 export default function App() {
   return (
     <BrowserRouter>
+      {/* FavouritesProvider wraps all routes so CustomerHome and
+          Favourites share the same bookmarked state */}
+      <FavouritesProvider>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/signin" element={<SignIn />} />
@@ -46,6 +50,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+      </FavouritesProvider>
     </BrowserRouter>
   );
 }
