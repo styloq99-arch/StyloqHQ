@@ -35,6 +35,10 @@ export default function CustomerHome() {
         {
           liked: false,
           likes: post.likes,
+          comments: post.comments,
+          showComments: false,
+          commentText: '',
+          commentList: [],
         }
       ])
     )
@@ -47,6 +51,34 @@ export default function CustomerHome() {
         ...prev[postId],
         liked: !prev[postId].liked,
         likes: prev[postId].liked ? prev[postId].likes - 1 : prev[postId].likes + 1,
+      }
+    }));
+  };
+
+  const handleToggleComments = (postId) => {
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: { ...prev[postId], showComments: !prev[postId].showComments }
+    }));
+  };
+
+  const handleCommentChange = (postId, value) => {
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: { ...prev[postId], commentText: value }
+    }));
+  };
+
+  const handleCommentSubmit = (postId) => {
+    const text = postStates[postId].commentText.trim();
+    if (!text) return;
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: {
+        ...prev[postId],
+        commentText: '',
+        comments: prev[postId].comments + 1,
+        commentList: [...prev[postId].commentList, { id: Date.now(), author: 'You', text }],
       }
     }));
   };
@@ -140,7 +172,62 @@ export default function CustomerHome() {
                           <i className={`${state.liked ? 'fas' : 'far'} fa-heart action-icon`}
                             style={{ color: state.liked ? 'var(--color-accent)' : undefined }}></i>
                         </button>
+
+                        {/* Comment */}
+                        <button onClick={() => handleToggleComments(post.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label="Toggle comments">
+                          <i className={`${state.showComments ? 'fas' : 'far'} fa-comment action-icon`}
+                            style={{ color: state.showComments ? 'var(--color-accent)' : undefined }}></i>
+                        </button>
                       </div>
+
+                      {/* Comments Section */}
+                      {state.showComments && (
+                        <div style={{ padding: '12px 16px 4px', borderTop: '1px solid var(--border-deep)' }}>
+                          {state.commentList.length > 0 && (
+                            <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {state.commentList.map(c => (
+                                <div key={c.id} style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                  <span style={{ fontWeight: 700, color: 'var(--text-primary)', marginRight: '6px' }}>{c.author}</span>
+                                  {c.text}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {state.commentList.length === 0 && (
+                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                              {state.comments} comment{state.comments !== 1 ? 's' : ''} — be the first to reply
+                            </p>
+                          )}
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder="Add a comment…"
+                              value={state.commentText}
+                              onChange={e => handleCommentChange(post.id, e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && handleCommentSubmit(post.id)}
+                              style={{
+                                flex: 1, background: 'var(--fill-glass-mid)', border: '1px solid var(--border-default)',
+                                borderRadius: '20px', padding: '8px 14px', color: 'var(--text-primary)',
+                                fontSize: '13px', outline: 'none', fontFamily: 'Poppins, sans-serif',
+                              }}
+                            />
+                            <button
+                              onClick={() => handleCommentSubmit(post.id)}
+                              disabled={!state.commentText.trim()}
+                              style={{
+                                background: state.commentText.trim() ? 'var(--color-accent)' : 'var(--border-subtle)',
+                                border: 'none', borderRadius: '50%', width: '34px', height: '34px',
+                                color: '#fff', cursor: state.commentText.trim() ? 'pointer' : 'default',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'background 0.2s', flexShrink: 0,
+                              }}>
+                              <i className="fas fa-paper-plane" style={{ fontSize: '13px' }}></i>
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                     </div>
 
