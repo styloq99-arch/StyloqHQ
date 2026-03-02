@@ -44,6 +44,8 @@ export default function CustomerHome() {
     )
   );
 
+  const [shareToast, setShareToast] = useState(null);
+
   const handleLike = (postId) => {
     setPostStates(prev => ({
       ...prev,
@@ -83,8 +85,23 @@ export default function CustomerHome() {
     }));
   };
 
+  const handleShare = (postId, postName) => {
+    const url = `${window.location.origin}/post/${postId}`;
+    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+    setShareToast(`Link to ${postName}'s post copied!`);
+    setTimeout(() => setShareToast(null), 2500);
+  };
+
+
   return (
     <div className="app-layout">
+
+      {/* Toasts */}
+      {shareToast && (
+        <div className="cp-toast" style={{ bottom: '80px', zIndex: 9999 }}>
+          <i className="fas fa-check-circle"></i> {shareToast}
+        </div>
+      )}
 
       {/* Desktop Sidebar */}
       <aside className="desktop-sidebar">
@@ -179,6 +196,13 @@ export default function CustomerHome() {
                           aria-label="Toggle comments">
                           <i className={`${state.showComments ? 'fas' : 'far'} fa-comment action-icon`}
                             style={{ color: state.showComments ? 'var(--color-accent)' : undefined }}></i>
+                        </button>
+
+                        {/* Share */}
+                        <button onClick={() => handleShare(post.id, post.name)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label="Share">
+                          <i className="far fa-paper-plane action-icon"></i>
                         </button>
                       </div>
 
