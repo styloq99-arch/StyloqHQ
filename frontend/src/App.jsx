@@ -17,6 +17,7 @@ import SignUpBarberStep8 from "./pages/SignUpBarberStep8.jsx";
 import SignUpSalon from "./pages/SignUpSalon.jsx";
 import CreatePassword from "./pages/CreatePassword.jsx";
 import CustomerHome from "./pages/CustomerHome.jsx";
+import CustomerSearch from "./pages/CustomerSearch.jsx";
 
 
 
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/signup-salon" element={<SignUpSalon />} />
 
           <Route path="/customer-home" element={<CustomerHome />} />
+          <Route path="/customer-search" element={<CustomerSearch />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

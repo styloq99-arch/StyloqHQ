@@ -1150,6 +1150,56 @@ html, body {
 .action-icon:hover { color: var(--color-accent); }
 
 
+/* =========================================
+   CUSTOMER SEARCH PAGE
+   ========================================= */
+
+
+.search-section {
+  padding: 20px 24px;
+  background-color: var(--bg-base);
+}
+
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-field {
+  width: 100%;
+  padding: 14px 14px 14px 46px;
+  background-color: var(--fill-glass-mid);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input-field::placeholder {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.search-input-field:focus {
+  background-color: var(--fill-glass-hi);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb, 201,168,76), 0.10);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
   .app-layout {
