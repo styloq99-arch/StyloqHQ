@@ -1239,6 +1239,154 @@ html, body {
 
 .category-pill:hover:not(.active) { background-color: var(--border-subtle); }
 
+.results-section { padding: 24px; }
+
+.section-heading {
+  font-size: 18px;
+  color: var(--text-on-accent);
+  margin-bottom: 20px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+}
+
+.barber-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.barber-result-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-deep);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  box-shadow: #0a0a0a 0px 2px 8px;
+  transition: transform 0.2s;
+}
+
+.barber-result-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-subtle);
+}
+
+.card-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.barber-preview-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.barber-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.barber-salon-name {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+.meta-tags {
+  display: flex;
+  gap: 12px;
+}
+
+.meta-tag {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.spec-tag {
+  background-color: var(--fill-glass-mid);
+  color: var(--text-faint);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid var(--border-subtle);
+}
+
+.card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-width: 110px;
+}
+
+.price-tag {
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+.price-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.price-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-family: 'Poppins', sans-serif;
+}
+
+.action-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-dim);
+}
+
+.no-results i {
+  font-size: 40px;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.3;
+}
+
+@media (max-width: 600px) {
+  .barber-result-card { flex-direction: column; }
+  .card-left { width: 100%; gap: 12px; }
+  .barber-preview-img { width: 80px; height: 80px; }
+  .card-right { width: 100%; flex-direction: row; align-items: center; gap: 10px; }
+  .price-tag { position: absolute; top: 16px; right: 16px; margin-bottom: 0; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 8px; }
+  .action-buttons { flex-direction: row; width: 100%; }
+  .action-buttons .btn { flex: 1; margin: 0; }
+}
 
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {

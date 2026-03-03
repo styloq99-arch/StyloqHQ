@@ -151,6 +151,54 @@ export default function CustomerSearch() {
             </div>
           </section>
 
+          {/* Results List */}
+          <section className="results-section">
+            <h3 className="section-heading">Available Barbers</h3>
+            
+            {filteredBarbers.length > 0 ? (
+              <div className="barber-list">
+                {filteredBarbers.map((barber) => (
+                  <div key={barber.id} className="barber-result-card">
+                    
+                    {/* Left: Image & Basic Info */}
+                    <div className="card-left">
+                      <img src={barber.image} alt={barber.name} className="barber-preview-img" />
+                      <div className="barber-details">
+                        <h4 className="barber-name">{barber.name}</h4>
+                        <p className="barber-salon-name">{barber.salon}</p>
+                        <div className="meta-tags">
+                          <span className="meta-tag"><i className="fas fa-star"></i> {barber.rating}</span>
+                          <span className="meta-tag"><i className="fas fa-map-marker-alt"></i> {barber.distance}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Price & Actions */}
+                    <div className="card-right">
+                      <div className="price-tag">
+                        <span className="price-label">Starts at</span>
+                        <span className="price-value">{barber.price}</span>
+                      </div>
+                      <div className="action-buttons">
+                        
+                        <Link to="/barber-profile" className="btn btn-secondary" style={{width: '100%',height: '40px', marginTop: '2rem', borderRadius: '20px'}}>
+                            View Profile
+                        </Link>
+                       
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-results">
+                <i className="fas fa-search"></i>
+                <p>No barbers found matching your search.</p>
+              </div>
+            )}
+          </section>
+
         </div>
       </div>
 
