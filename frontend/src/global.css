@@ -1199,6 +1199,46 @@ html, body {
   pointer-events: none;
 }
 
+.categories-section {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-deep);
+  background-color: var(--bg-base);
+}
+
+.categories-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 0 24px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.categories-scroll::-webkit-scrollbar { display: none; }
+
+.category-pill {
+  padding: 8px 16px;
+  background-color: var(--border-deep);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-pill.active {
+  background-color: var(--color-accent);
+  color: var(--text-on-btn);
+  border-color: var(--color-accent);
+  font-weight: 700;
+}
+
+.category-pill:hover:not(.active) { background-color: var(--border-subtle); }
+
 
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {

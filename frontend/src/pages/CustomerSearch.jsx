@@ -49,9 +49,25 @@ const BARBERS = [
   }
 ];
 
+const CATEGORIES = ["All", "Top Rated", "Near Me", "Price Low to High", "Beard Specialist"];
+
 
 export default function CustomerSearch() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  // Filter Logic
+  const filteredBarbers = BARBERS.filter(barber => {
+    const matchesSearch = barber.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          barber.salon.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Basic category filtering logic
+    const matchesCategory = activeCategory === "All" ? true :
+                           activeCategory === "Top Rated" ? barber.rating >= 4.8 :
+                           true; // Simplified for demo
+    
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="app-layout">
@@ -117,6 +133,21 @@ export default function CustomerSearch() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+          </section>
+
+          {/* Categories Section */}
+          <section className="categories-section">
+            <div className="categories-scroll">
+              {CATEGORIES.map((cat) => (
+                <button 
+                  key={cat} 
+                  className={`category-pill ${activeCategory === cat ? 'active' : ''}`}
+                  onClick={() => setActiveCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
           </section>
 
