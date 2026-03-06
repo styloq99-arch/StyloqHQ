@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+const RATING_LABELS = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
 
 export default function AddReviewPage() {
   const navigate = useNavigate();
+
+  const [rating, setRating]             = useState(0);
+  const [hoverRating, setHoverRating]   = useState(0);
+  const [reviewText, setReviewText]     = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [submitted, setSubmitted]       = useState(false);
+  const [errors, setErrors]             = useState({});
+  const [charCount, setCharCount]       = useState(0);
 
   // Auto-read customer name from profile saved in localStorage
   const [authorName] = useState(() => {
@@ -14,6 +24,41 @@ export default function AddReviewPage() {
       return 'John Doe';
     }
   });
+
+  const activeRating = hoverRating || rating;
+
+  const validate = () => {
+    const e = {};
+    if (rating === 0) e.rating = 'Please select a rating.';
+    if (reviewText.trim().length < 20) e.review = 'Review must be at least 20 characters.';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    const newReview = {
+      id: Date.now(),
+      text: `\u201c${reviewText.trim()}\u201d`,
+      author: authorName,
+      rating,
+      tags: selectedTags,
+      date: new Date().toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      avatar: `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 70) + 10}.jpg`,
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('styloq_reviews') || '[]');
+      localStorage.setItem('styloq_reviews', JSON.stringify([newReview, ...existing]));
+    } catch (_) {}
+
+    setSubmitted(true);
+  };
 
   /* ─── MAIN FORM ─── */
   return (
@@ -91,6 +136,102 @@ export default function AddReviewPage() {
           <i className="fas fa-user-circle ar-reviewing-icon"></i>
           <span className="ar-reviewing-label">Reviewing as</span>
           <span className="ar-reviewing-name">{authorName}</span>
+        </div>
+
+        {/* Form */}
+        <div className="ar-form-wrap">
+
+          {/* Step 01 — Star Rating */}
+          <div className="ar-section">
+            <div className="ar-section-num">01</div>
+            <div className="ar-section-body">
+              <h3 className="ar-section-title">Rate Your Experience</h3>
+              <p className="ar-section-sub">Tap a star to rate</p>
+
+              <div className="ar-stars-row">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    className={`ar-star ${s <= activeRating ? 'ar-star-lit' : ''}`}
+                    onClick={() => {
+                      setRating(s);
+                      setErrors(e => ({ ...e, rating: '' }));
+                    }}
+                    onMouseEnter={() => setHoverRating(s)}
+                    onMouseLeave={() => setHoverRating(0)}
+                  >
+                    <i className="fas fa-star"></i>
+                  </button>
+                ))}
+              </div>
+
+              {activeRating > 0 && (
+                <div className="ar-rating-label-pill">
+                  <span className="ar-rating-label-dot" />
+                  {RATING_LABELS[activeRating]}
+                </div>
+              )}
+
+              <div className="ar-rating-bar-wrap">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <div
+                    key={s}
+                    className={`ar-rating-bar-seg ${s <= activeRating ? 'filled' : ''}`}
+                  />
+                ))}
+              </div>
+
+              {errors.rating && (
+                <p className="ar-field-error">
+                  <i className="fas fa-exclamation-circle"></i> {errors.rating}
+                </p>
+              )}
+            </div>
+          </div>
+
+          
+
+          {/* Step 03 — Write Review */}
+          <div className="ar-section">
+            <div className="ar-section-num">02</div>
+            <div className="ar-section-body">
+              <h3 className="ar-section-title">Write Your Review</h3>
+              <p className="ar-section-sub">Minimum 20 characters</p>
+              <div className={`ar-textarea-wrap ${errors.review ? 'ar-input-error' : ''}`}>
+                <textarea
+                  className="ar-textarea"
+                  placeholder="Share your experience — the cut, the atmosphere, the service..."
+                  rows={5}
+                  value={reviewText}
+                  maxLength={500}
+                  onChange={e => {
+                    setReviewText(e.target.value);
+                    setCharCount(e.target.value.length);
+                    setErrors(er => ({ ...er, review: '' }));
+                  }}
+                />
+                <div className="ar-char-count">{charCount}/500</div>
+              </div>
+              {errors.review && (
+                <p className="ar-field-error">
+                  <i className="fas fa-exclamation-circle"></i> {errors.review}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button className="ar-submit-btn" onClick={handleSubmit}>
+            <i className="fas fa-paper-plane"></i>
+            Submit Review
+          </button>
+
+          <p className="ar-submit-note">
+            <i className="fas fa-lock"></i>
+            Reviews are moderated and publicly visible on the barber's profile.
+          </p>
+
         </div>
         
       </div>

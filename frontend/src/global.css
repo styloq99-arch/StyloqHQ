@@ -1474,6 +1474,166 @@ html, body {
   margin-left: auto; font-family: 'Poppins', sans-serif; 
 }
 
+.ar-form-wrap { 
+  margin: 24px 20px 0; 
+}
+
+.ar-section { 
+  display: flex; gap: 16px; 
+  padding: 4px 0 20px; 
+}
+
+.ar-section-num { 
+  font-size: 11px; font-weight: 800; color: var(--border-subtle); 
+  width: 24px; flex-shrink: 0; padding-top: 3px; 
+  letter-spacing: 0.5px; font-family: 'Poppins', sans-serif; 
+}
+
+.ar-section-body { flex: 1; }
+
+.ar-section-title { 
+  font-size: 16px; font-weight: 700; color: var(--text-on-accent); 
+  margin: 0 0 4px; font-family: 'Poppins', sans-serif; 
+}
+
+.ar-section-sub { 
+  font-size: 12px; color: var(--text-dim); 
+  margin: 0 0 16px; 
+}
+
+.ar-optional { 
+  font-size: 11px; color: var(--text-ghost); font-weight: 400; 
+}
+
+.ar-divider { 
+  height: 1px; background: var(--bg-elevated); margin: 0 0 20px; 
+}
+
+/* ── Star Rating ── */
+.ar-stars-row { 
+  display: flex; gap: 10px; margin-bottom: 12px; 
+}
+
+.ar-star { 
+  background: none; border: none; cursor: pointer; padding: 0; 
+  font-size: 36px; color: #2a2a2a; 
+  transition: color 0.15s, transform 0.15s; line-height: 1; 
+}
+
+.ar-star:hover, 
+.ar-star-lit { color: var(--color-gold); }
+
+.ar-star:hover { transform: scale(1.15); }
+.ar-star-lit { transform: scale(1.05); }
+
+.ar-rating-label-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--color-gold-bg); border: 1px solid var(--color-gold-border);
+  border-radius: 20px; padding: 5px 13px; font-size: 13px; font-weight: 700;
+  color: var(--color-gold); margin-bottom: 12px; font-family: 'Poppins', sans-serif;
+}
+
+.ar-rating-label-dot { 
+  width: 7px; height: 7px; border-radius: 50%; background: var(--color-gold); 
+}
+
+.ar-rating-bar-wrap { 
+  display: flex; gap: 5px; 
+}
+
+.ar-rating-bar-seg { 
+  flex: 1; height: 4px; border-radius: 4px; 
+  background: var(--border-deep); transition: background 0.25s; 
+}
+
+.ar-rating-bar-seg.filled { 
+  background: var(--color-gold); 
+}
+
+/* ── Tags ── */
+.ar-tags-wrap { 
+  display: flex; flex-wrap: wrap; gap: 9px; 
+}
+
+.ar-tag {
+  background: var(--bg-surface); border: 1px solid #2a2a2a; color: var(--text-faint);
+  border-radius: 20px; padding: 8px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
+  gap: 6px; font-family: 'Poppins', sans-serif;
+}
+
+.ar-tag:hover { 
+  border-color: var(--color-accent); color: var(--color-accent); 
+}
+
+.ar-tag-active { 
+  background: rgba(255,87,34,0.1); 
+  border-color: var(--color-accent); color: var(--color-accent); 
+}
+
+.ar-tag-check { font-size: 10px; }
+
+/* ── Textarea ── */
+.ar-textarea-wrap {
+  position: relative; background: var(--bg-surface); border: 1px solid #2a2a2a;
+  border-radius: 12px; transition: border-color 0.2s;
+}
+
+.ar-textarea-wrap:focus-within { 
+  border-color: var(--color-accent); 
+}
+
+.ar-textarea-wrap.ar-input-error { 
+  border-color: var(--color-accent); 
+  background: var(--color-accent-subtle); 
+}
+
+.ar-textarea {
+  width: 100%; background: none; border: none; outline: none;
+  color: var(--text-secondary); font-size: 14px; line-height: 1.65; padding: 14px;
+  resize: none; box-sizing: border-box; font-family: 'Poppins', sans-serif;
+}
+
+.ar-textarea::placeholder { 
+  color: var(--border-default); 
+}
+
+.ar-char-count { 
+  text-align: right; font-size: 11px; color: var(--text-ghost); 
+  padding: 0 14px 10px; 
+}
+
+/* ── Validation ── */
+.ar-field-error { 
+  font-size: 12px; color: var(--color-accent); margin-top: 8px; 
+  display: flex; align-items: center; gap: 6px; 
+}
+
+/* ── Submit ── */
+.ar-submit-btn {
+  width: 100%; margin-top: 12px; padding: 17px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light)); 
+  border: none; color: var(--text-on-accent); border-radius: 16px; 
+  font-size: 16px; font-weight: 800; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; box-shadow: 0 6px 24px var(--color-accent-glow-max);
+  letter-spacing: 0.3px; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+}
+
+.ar-submit-btn:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 30px var(--color-accent-glow-full); 
+}
+
+.ar-submit-btn:active { transform: translateY(0); }
+
+.ar-submit-note {
+  text-align: center; font-size: 12px; color: var(--text-ghost); margin-top: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.ar-page-spacer { height: 80px; }
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
