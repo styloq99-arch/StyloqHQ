@@ -1961,6 +1961,107 @@ html, body {
   height: 80px; 
 }
 
+.cp-stats-bar {
+  display: flex; background: var(--bg-surface);
+  border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; margin: 0 0 24px;
+}
+
+.cp-stat { 
+  flex: 1; display: flex; flex-direction: column; align-items: center; 
+  padding: 16px 8px; border-right: 1px solid #2a2a2a; 
+}
+
+.cp-stat:last-child { border-right: none; }
+
+.cp-stat-value { 
+  font-size: 20px; font-weight: 700; color: var(--color-accent); 
+  margin-bottom: 4px; font-family: 'Poppins', sans-serif; 
+}
+
+.cp-stat-label { 
+  font-size: 11px; color: var(--text-dim); 
+  text-transform: uppercase; letter-spacing: 0.5px; 
+}
+
+.cp-tabs {
+  display: flex; margin: 0 20px 24px; background: var(--bg-surface);
+  border-radius: 12px; padding: 4px; border: 1px solid #2a2a2a;
+}
+
+.cp-tab {
+  flex: 1; padding: 10px; border: none; border-radius: 9px;
+  background: transparent; color: var(--text-faint); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
+  justify-content: center; gap: 7px; font-family: 'Poppins', sans-serif;
+}
+
+.cp-tab.active { 
+  background: var(--color-accent); color: var(--text-on-accent); 
+  box-shadow: 0 3px 12px var(--color-accent-glow-mid); 
+}
+
+.cp-tab i { font-size: 13px; }
+
+.cp-profile-section { padding: 0 20px; }
+
+.cp-section-header { 
+  display: flex; justify-content: space-between; 
+  align-items: center; margin-bottom: 16px; 
+}
+
+.cp-section-title { 
+  font-size: 16px; font-weight: 600; color: var(--color-accent); 
+  font-family: 'Poppins', sans-serif; 
+}
+
+.cp-info-grid { 
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; 
+}
+
+.cp-info-row { 
+  display: flex; background: var(--bg-surface); 
+  border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; 
+}
+
+.cp-info-icon {
+  width: 48px; display: flex; align-items: center; justify-content: center;
+  background: var(--color-accent-subtle); border-right: 1px solid #2a2a2a;
+  color: var(--color-accent); font-size: 15px; flex-shrink: 0;
+}
+
+.cp-info-content { flex: 1; padding: 12px 14px; }
+
+.cp-info-label { 
+  font-size: 11px; color: var(--text-dim); text-transform: uppercase; 
+  letter-spacing: 0.5px; margin-bottom: 3px; 
+}
+
+.cp-info-value { 
+  font-size: 14px; color: #ddd; font-weight: 500; 
+}
+
+.cp-danger-zone {
+  background: var(--color-accent-subtle); border: 1px solid rgba(255,87,34,0.2);
+  border-radius: 16px; padding: 20px; margin-bottom: 28px;
+}
+
+.cp-danger-title { 
+  font-size: 14px; font-weight: 700; color: var(--color-accent); 
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px; 
+  font-family: 'Poppins', sans-serif; 
+}
+
+.cp-logout-btn {
+  width: 100%; padding: 13px; background: transparent;
+  border: 1px solid var(--color-accent-border-hi); color: var(--color-accent); 
+  border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s; font-family: 'Poppins', sans-serif;
+}
+
+.cp-logout-btn:hover { background: var(--color-accent-hover); }
+
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }

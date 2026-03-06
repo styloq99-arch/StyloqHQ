@@ -33,6 +33,8 @@ export default function CustomerProfile() {
     } catch { return INITIAL_PROFILE; }
   });
 
+  const [activeTab, setActiveTab]  = useState('profile');
+
   // Sync to localStorage whenever profile changes
   React.useEffect(() => {
     try { localStorage.setItem('styloq_profile', JSON.stringify(profile)); } catch (_) {}
@@ -86,6 +88,61 @@ export default function CustomerProfile() {
             {profile.city}
           </div>
         </div>
+
+        {/* Tab Bar */}
+        <div className="cp-tabs">
+          <button
+            className={`cp-tab ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            <i className="fas fa-user"></i> Profile
+          </button>
+          <button
+            className={`cp-tab ${activeTab === 'appointments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('appointments')}
+          >
+            <i className="fas fa-calendar-alt"></i> Appointments
+           
+          </button>
+        </div>
+
+        {/* ══ PROFILE TAB ══ */}
+        {activeTab === 'profile' && (
+          <div className="cp-profile-section">
+
+            <div className="cp-section-header">
+              <span className="cp-section-title">Personal Details</span>
+            
+            </div>
+
+            {/* View Mode */}
+            <div className="cp-info-grid">
+              {PROFILE_FIELDS.map(({ icon, label, key, prefix }) => (
+                <div className="cp-info-row" key={label}>
+                  <div className="cp-info-icon">
+                    <i className={`fas ${icon}`}></i>
+                  </div>
+                  <div className="cp-info-content">
+                    <div className="cp-info-label">{label}</div>
+                    <div className="cp-info-value">{prefix}{profile[key]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          
+
+            {/* Danger Zone */}
+            <div className="cp-danger-zone">
+              <div className="cp-danger-title">
+                <i className="fas fa-exclamation-triangle"></i> Account
+              </div>
+              <button className="cp-logout-btn" onClick={() => navigate('/')}>
+                <i className="fas fa-sign-out-alt"></i> Log Out
+              </button>
+            </div>
+
+          </div>
+        )}
 
         <div className="cp-page-spacer" />
       </div>
