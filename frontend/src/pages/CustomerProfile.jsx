@@ -13,6 +13,13 @@ const INITIAL_PROFILE = {
   avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
 };
 
+const INITIAL_APPOINTMENTS = [
+  { id: 'APT001', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'SIDE PART',  serviceType: 'Hair Services',  date: '2025-07-28', time: '10.00 AM', location: 'Liyo Salon (pvt) Ltd',          price: 'Rs.1,500.00', payment: 'Pay On Visit', status: 'upcoming'  },
+  { id: 'APT002', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'FULL BEARD', serviceType: 'Beard Services', date: '2025-07-15', time: '2.00 PM',  location: 'Salon Next (pvt) Ltd',           price: 'Rs.800.00',   payment: 'Pay Online',   status: 'completed' },
+  { id: 'APT003', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'UNDER CUT',  serviceType: 'Hair Services',  date: '2025-07-02', time: '11.00 AM', location: 'Colombo City Center Branch',      price: 'Rs.2,000.00', payment: 'Pay On Visit', status: 'cancelled' },
+  { id: 'APT004', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'HOT SHAVE',  serviceType: 'Beard Services', date: '2025-06-20', time: '9.00 AM',  location: 'Liyo Salon (pvt) Ltd',          price: 'Rs.1,000.00', payment: 'Pay On Visit', status: 'completed' },
+];
+
 const PROFILE_FIELDS = [
   { icon: 'fa-user',           label: 'Full Name',     key: 'name'     },
   { icon: 'fa-envelope',       label: 'Email Address', key: 'email'    },
@@ -22,6 +29,22 @@ const PROFILE_FIELDS = [
   { icon: 'fa-map-marker-alt', label: 'City',          key: 'city'     },
 ];
 
+const APPT_DETAIL_ROWS = [
+  { icon: 'fa-cut',            label: 'Service',  key: 'service'  },
+  { icon: 'fa-calendar',       label: 'Date',     key: 'date'     },
+  { icon: 'fa-clock',          label: 'Time',     key: 'time'     },
+  { icon: 'fa-map-marker-alt', label: 'Location', key: 'location' },
+  { icon: 'fa-credit-card',    label: 'Payment',  key: 'payment'  },
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const formatDate = (dateStr) =>
+  new Date(dateStr).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function CustomerProfile() {
   const navigate     = useNavigate();
@@ -34,12 +57,16 @@ export default function CustomerProfile() {
     } catch { return INITIAL_PROFILE; }
   });
 
-  const [activeTab, setActiveTab]  = useState('profile');
+  const [appointments, setAppointments]         = useState(INITIAL_APPOINTMENTS);
+  const [activeTab, setActiveTab]               = useState('profile');
+  const [appointmentFilter, setAppointmentFilter] = useState('all');
   const [isEditing, setIsEditing]               = useState(false);
   const [editData, setEditData]                 = useState({ ...INITIAL_PROFILE });
   const [editErrors, setEditErrors]             = useState({});
   const [avatarPreview, setAvatarPreview]       = useState(null);
   const [saveSuccess, setSaveSuccess]           = useState(false);
+  const [cancelModal, setCancelModal]           = useState(null);
+  const [detailModal, setDetailModal]           = useState(null);
 
   // Sync to localStorage whenever profile changes
   React.useEffect(() => {
@@ -98,6 +125,21 @@ export default function CustomerProfile() {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
+  // ── Appointment helpers ──
+  const filteredAppointments = appointments.filter(a =>
+    appointmentFilter === 'all' ? true : a.status === appointmentFilter
+  );
+
+  const handleCancelConfirm = () => {
+    setAppointments(prev =>
+      prev.map(a => a.id === cancelModal ? { ...a, status: 'cancelled' } : a)
+    );
+    setCancelModal(null);
+  };
+
+  const upcomingCount = appointments.filter(a => a.status === 'upcoming').length;
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="app-layout">
 
@@ -165,7 +207,9 @@ export default function CustomerProfile() {
             onClick={() => setActiveTab('appointments')}
           >
             <i className="fas fa-calendar-alt"></i> Appointments
-           
+            {upcomingCount > 0 && (
+              <span className="cp-tab-badge">{upcomingCount}</span>
+            )}
           </button>
         </div>
 
@@ -259,7 +303,6 @@ export default function CustomerProfile() {
                 </div>
               </div>
             )}
-          
 
             {/* Danger Zone */}
             <div className="cp-danger-zone">
@@ -274,6 +317,102 @@ export default function CustomerProfile() {
           </div>
         )}
 
+        {/* ══ APPOINTMENTS TAB ══ */}
+        {activeTab === 'appointments' && (
+          <div className="cp-appt-section">
+
+            <div className="cp-filter-row">
+              {['all', 'upcoming', 'completed', 'cancelled'].map(f => (
+                <button
+                  key={f}
+                  className={`cp-filter-chip ${appointmentFilter === f ? 'active' : ''}`}
+                  onClick={() => setAppointmentFilter(f)}
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f !== 'all' && (
+                    <span className="cp-filter-count">
+                      ({appointments.filter(a => a.status === f).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {filteredAppointments.length === 0 ? (
+              <div className="cp-empty">
+                <i className="fas fa-calendar-times"></i>
+                <h3>No appointments found</h3>
+                <p>You have no {appointmentFilter !== 'all' ? appointmentFilter : ''} appointments yet.</p>
+              </div>
+            ) : (
+              <div className="cp-appt-cards">
+                {filteredAppointments.map(appt => (
+                  <div className="cp-appt-card" key={appt.id}>
+
+                    <div className="cp-appt-card-header">
+                      <img src={appt.barberImg} alt={appt.barber} className="cp-appt-barber-img" />
+                      <div className="cp-appt-barber-info">
+                        <div className="cp-appt-barber-name">{appt.barber}</div>
+                        <div className="cp-appt-service-type">{appt.serviceType}</div>
+                      </div>
+                      <div className={`cp-appt-status-badge ${appt.status}`}>
+                        {appt.status}
+                      </div>
+                    </div>
+
+                    <div className="cp-appt-card-body">
+                      <div className="cp-appt-id">#{appt.id}</div>
+                      {APPT_DETAIL_ROWS.map(({ icon, label, key }) => (
+                        <div className="cp-appt-detail-row" key={label}>
+                          <span className="cp-appt-detail-key">
+                            <i className={`fas ${icon}`}></i> {label}
+                          </span>
+                          <span className="cp-appt-detail-val">
+                            {key === 'date' ? formatDate(appt[key]) : appt[key]}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="cp-appt-detail-row">
+                        <span className="cp-appt-detail-key"><i className="fas fa-tag"></i> Total</span>
+                        <span className="cp-appt-detail-val cp-appt-price">{appt.price}</span>
+                      </div>
+                    </div>
+
+                    <div className="cp-appt-card-footer">
+                      {appt.status === 'upcoming' && (
+                        <>
+                          <button className="cp-appt-cancel-btn" onClick={() => setCancelModal(appt.id)}>
+                            <i className="fas fa-times"></i> Cancel
+                          </button>
+                          <button className="cp-appt-view-btn" onClick={() => setDetailModal(appt)}>
+                            <i className="fas fa-eye"></i> Details
+                          </button>
+                        </>
+                      )}
+                      {appt.status === 'completed' && (
+                        <>
+                          <button className="cp-appt-rebook-btn" onClick={() => navigate('/booking')}>
+                            <i className="fas fa-redo"></i> Rebook
+                          </button>
+                          <button className="cp-appt-view-btn" onClick={() => setDetailModal(appt)}>
+                            <i className="fas fa-eye"></i> Details
+                          </button>
+                        </>
+                      )}
+                      {appt.status === 'cancelled' && (
+                        <button className="cp-appt-rebook-btn full-width" onClick={() => navigate('/booking')}>
+                          <i className="fas fa-plus"></i> Book Again
+                        </button>
+                      )}
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="cp-page-spacer" />
       </div>
 
@@ -284,6 +423,66 @@ export default function CustomerProfile() {
         <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
         <Link to="/profile"         className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
+
+      {/* ── Cancel Modal ── */}
+      {cancelModal && (
+        <div className="cp-modal-overlay" onClick={() => setCancelModal(null)}>
+          <div className="cp-modal" onClick={e => e.stopPropagation()}>
+            <div className="cp-modal-icon"><i className="fas fa-calendar-times"></i></div>
+            <h3>Cancel Appointment?</h3>
+            <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+            <div className="cp-modal-actions">
+              <button className="cp-modal-keep"   onClick={() => setCancelModal(null)}>Keep It</button>
+              <button className="cp-modal-cancel" onClick={handleCancelConfirm}>Yes, Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Detail Modal ── */}
+      {detailModal && (
+        <div className="cp-modal-overlay" onClick={() => setDetailModal(null)}>
+          <div className="cp-detail-modal" onClick={e => e.stopPropagation()}>
+
+            <div className="cp-detail-modal-header">
+              <img src={detailModal.barberImg} alt={detailModal.barber} className="cp-detail-modal-barber-img" />
+              <div>
+                <div className="cp-detail-modal-title">{detailModal.barber}</div>
+                <div className="cp-detail-modal-subtitle">{detailModal.serviceType}</div>
+              </div>
+              <button className="cp-detail-modal-close" onClick={() => setDetailModal(null)}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div className="cp-detail-modal-body">
+              <div className="cp-booking-id">Booking ID: #{detailModal.id}</div>
+              {[
+                ['Service',  detailModal.service],
+                ['Date',     formatDate(detailModal.date)],
+                ['Time',     detailModal.time],
+                ['Location', detailModal.location],
+                ['Payment',  detailModal.payment],
+                ['Status',   detailModal.status.charAt(0).toUpperCase() + detailModal.status.slice(1)],
+              ].map(([k, v]) => (
+                <div className="cp-detail-row" key={k}>
+                  <span className="cp-detail-key">{k}</span>
+                  <span className={`cp-detail-val ${k === 'Status' ? `status-${detailModal.status}` : ''}`}>{v}</span>
+                </div>
+              ))}
+              <div className="cp-detail-row cp-detail-total">
+                <span className="cp-detail-key">Total</span>
+                <span className="cp-detail-val">{detailModal.price}</span>
+              </div>
+            </div>
+
+            <div className="cp-detail-modal-footer">
+              <button className="cp-detail-close-btn" onClick={() => setDetailModal(null)}>Close</button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* ── Success Toast ── */}
       {saveSuccess && (
