@@ -60,6 +60,71 @@ export default function AddReviewPage() {
     setSubmitted(true);
   };
 
+  /* ─── SUCCESS SCREEN ─── */
+  if (submitted) {
+    return (
+      <div className="app-layout">
+        <aside className="desktop-sidebar">
+          <div className="sidebar-logo">
+            <h1 className="brand-title">StyloQ</h1>
+          </div>
+          <nav className="sidebar-nav">
+            <Link to="/customer-home"   className="sidebar-link"><i className="fas fa-home"></i>         <span>Home</span></Link>
+            <Link to="/customer-search" className="sidebar-link active"><i className="fas fa-search"></i> <span>Search</span></Link>
+            <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>        <span>Favourites</span></Link>
+            <Link to="/profile"         className="sidebar-link"><i className="fas fa-user"></i>         <span>Profile</span></Link>
+          </nav>
+        </aside>
+
+        <div className="main-content ar-page ar-success-wrap">
+          <div className="ar-success-card">
+
+            <div className="ar-success-ring">
+              <div className="ar-success-icon">
+                <i className="fas fa-check"></i>
+              </div>
+            </div>
+
+            <h2 className="ar-success-title">Review Submitted!</h2>
+            <p className="ar-success-sub">
+              Thank you, {authorName}. Your review has been added to S.S.K. Perera's profile.
+            </p>
+
+            <div className="ar-success-preview">
+              <div className="ar-success-stars">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <i
+                    key={s}
+                    className={`fas fa-star ${s <= rating ? 'ar-success-star-lit' : 'ar-success-star-dim'}`}
+                  />
+                ))}
+              </div>
+              <p className="ar-success-quote">"{reviewText}"</p>
+              <span className="ar-success-author">— {authorName}</span>
+            </div>
+
+            <div className="ar-success-actions">
+              <button className="ar-back-btn" onClick={() => navigate('/barber-profile')}>
+                <i className="fas fa-arrow-left"></i> Back to Profile
+              </button>
+              <Link to="/customer-home" className="ar-home-btn">
+                <i className="fas fa-home"></i> Go Home
+              </Link>
+            </div>
+
+          </div>
+        </div>
+
+        <nav className="bottom-nav">
+          <Link to="/customer-home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+          <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
+          <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
+          <Link to="/profile"         className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+        </nav>
+      </div>
+    );
+  }
+
   /* ─── MAIN FORM ─── */
   return (
     <div className="app-layout">

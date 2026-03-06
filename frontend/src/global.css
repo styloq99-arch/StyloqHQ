@@ -1634,6 +1634,87 @@ html, body {
 
 .ar-page-spacer { height: 80px; }
 
+.ar-success-wrap {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 30px 20px; background: var(--bg-base);
+}
+
+.ar-success-card {
+  width: 100%; max-width: 400px; background: var(--bg-surface); 
+  border: 1px solid #2a2a2a; border-radius: 24px; padding: 40px 28px; 
+  text-align: center; box-shadow: var(--shadow-deep);
+}
+
+.ar-success-ring {
+  width: 90px; height: 90px; border-radius: 50%;
+  background: var(--color-success-bg); border: 2px solid rgba(76,175,80,0.35);
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+}
+
+.ar-success-icon {
+  width: 64px; height: 64px; border-radius: 50%; background: var(--color-success);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: var(--text-on-accent); 
+  box-shadow: 0 4px 20px var(--color-success-glow);
+}
+
+.ar-success-title { 
+  font-size: 24px; font-weight: 800; color: var(--text-on-accent); 
+  margin: 0 0 10px; font-family: 'Poppins', sans-serif; 
+}
+
+.ar-success-sub { 
+  font-size: 14px; color: var(--text-faint); 
+  line-height: 1.6; margin: 0 0 28px; 
+}
+
+.ar-success-preview {
+  background: var(--bg-card); border: 1px solid #2a2a2a; border-radius: 16px;
+  padding: 20px; margin-bottom: 28px; text-align: left;
+}
+
+.ar-success-stars { 
+  display: flex; gap: 5px; margin-bottom: 12px; font-size: 16px; 
+}
+
+.ar-success-star-lit { color: var(--color-gold); }
+.ar-success-star-dim { color: var(--border-subtle); }
+
+.ar-success-quote { 
+  font-size: 14px; color: var(--text-secondary); font-style: italic; 
+  line-height: 1.6; margin: 0 0 12px; 
+}
+
+.ar-success-author { 
+  font-size: 13px; font-weight: 700; color: var(--color-accent); 
+  font-family: 'Poppins', sans-serif; 
+}
+
+.ar-success-actions { 
+  display: flex; gap: 12px; 
+}
+
+.ar-back-btn {
+  flex: 1; padding: 13px; background: var(--bg-card); 
+  border: 1px solid var(--border-subtle); color: var(--text-muted); 
+  border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+}
+
+.ar-back-btn:hover { 
+  border-color: #555; color: var(--text-on-accent); 
+}
+
+.ar-home-btn {
+  flex: 1; padding: 13px; background: var(--color-accent); border: none; 
+  color: var(--text-on-accent); border-radius: 12px; font-size: 14px; font-weight: 700; 
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; text-decoration: none; box-shadow: 0 4px 16px var(--color-accent-glow-mid);
+  font-family: 'Poppins', sans-serif;
+}
+
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
