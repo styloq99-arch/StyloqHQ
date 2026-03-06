@@ -1885,6 +1885,82 @@ html, body {
   font-family: 'Poppins', sans-serif;
 }
 
+/* ============================================
+   Customer Profile Page
+   ============================================ */
+
+.cp-page {
+  background: var(--bg-base); min-height: 100vh; color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif; padding-bottom: 100px;
+}
+
+.cp-hero { 
+  position: relative; 
+  height: 180px; 
+  overflow: hidden; 
+}
+
+.cp-hero-img { 
+  width: 100%; height: 100%; 
+  object-fit: cover; filter: brightness(0.4); 
+}
+
+.cp-hero-overlay { 
+  position: absolute; inset: 0; 
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(18,18,18,1) 100%); 
+}
+
+.cp-hero-title {
+  position: absolute; bottom: 18px; left: 0; right: 0; text-align: center;
+  font-size: 24px; font-weight: 700; color: var(--text-on-accent); letter-spacing: 0.5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.cp-hero-settings {
+  position: absolute; top: 18px; right: 18px;
+  background: var(--bg-dim-mid); border: none; color: var(--color-accent);
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; backdrop-filter: blur(4px);
+}
+
+.cp-identity {
+  display: flex; flex-direction: column; align-items: center;
+  margin-top: -48px; padding: 0 20px 20px; position: relative; z-index: 2;
+}
+
+.cp-avatar-wrap { 
+  position: relative; width: 96px; height: 96px; margin-bottom: 12px; 
+}
+
+.cp-avatar { 
+  width: 96px; height: 96px; border-radius: 50%; object-fit: cover; 
+  border: 3px solid var(--color-accent); display: block; 
+}
+
+.cp-identity-name { 
+  font-size: 22px; font-weight: 700; color: var(--text-on-accent); 
+  margin: 0 0 4px; font-family: 'Poppins', sans-serif; 
+}
+
+.cp-identity-username { 
+  font-size: 13px; color: var(--text-faint); margin: 0 0 12px; 
+}
+
+.cp-identity-city-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-elevated); border: 1px solid #2a2a2a; border-radius: 20px;
+  padding: 6px 14px; font-size: 13px; color: var(--text-muted);
+}
+
+.cp-identity-city-badge i { 
+  color: var(--color-accent); font-size: 12px; 
+}
+
+.cp-page-spacer { 
+  height: 80px; 
+}
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
