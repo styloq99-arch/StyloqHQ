@@ -27,14 +27,50 @@ const SERVICES = [
   { id: 9, category: "Beard Trim", name: "BEARD LINE-UP",  price: "Rs. 1500.00", image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=300&q=80" },
 ];
 
+const WORKING_HOURS = [
+  { day: "Monday",    time: "9.00 AM - 6.00 PM" },
+  { day: "Tuesday",   time: "9.00 AM - 6.00 PM" },
+  { day: "Wednesday", time: "9.00 AM - 6.00 PM" },
+  { day: "Thursday",  time: "9.00 AM - 6.00 PM" },
+  { day: "Friday",    time: "9.00 AM - 6.00 PM" },
+  { day: "Saturday",  time: "9.00 AM - 6.00 PM" },
+  { day: "Sunday",    time: "9.00 AM - 6.00 PM" },
+];
+
+const LOCATIONS = [
+  { id: 1, name: "Liyo Salons (pvt) Ltd", address: "No. 06, Pagoda Road, Nugegoda\nColombo 11800" },
+  { id: 2, name: "Salon Next (pvt) Ltd",  address: "No. 7D, Vihara Mawatha, Peliyagoda\nColombo 11600" },
+];
+
+const CERTIFICATIONS = [
+  {
+    title: "Hair / Barber Diploma / Certification",
+    institute: "Institute of Hairdressers & Beauticians (IHB)",
+    desc: "Basic hair-cutting, styling, salon hygiene, hair & scalp treatment, general barbering skills. Serves as a recognized vocational qualification."
+  },
+  {
+    title: "Advanced Color Specialist",
+    institute: "L'Oréal Professional Academy",
+    desc: "Mastery in hair coloring techniques, balayage, ombre, and color correction. Specialized training in chemical safety."
+  },
+  {
+    title: "Men's Grooming Masterclass",
+    institute: "British Barbers Association",
+    desc: "Advanced straight razor shaving techniques, beard sculpting, and classic modern fade transitions."
+  },
+];
+
 
 export default function BarberProfile() {
   const navigate = useNavigate();
 
   const [activeCategory, setActiveCategory]   = useState("Hair Services");
   const [selectedService, setSelectedService] = useState(null);
+  const [showAllCerts, setShowAllCerts]       = useState(false);
   const [isListView, setIsListView]           = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+
+  const displayedCerts   = showAllCerts   ? CERTIFICATIONS         : CERTIFICATIONS.slice(0, 1);
 
   return (
     <div className="app-layout">
@@ -203,6 +239,49 @@ export default function BarberProfile() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* ── 3. WORKING HOURS ── */}
+          <div className="bp-section-working">
+            <h3 className="section-heading bp-section-title">Working Hours</h3>
+            <div className="bp-working-card">
+              {WORKING_HOURS.map((slot, idx) => (
+                <div key={idx} className={`bp-working-row ${idx === WORKING_HOURS.length - 1 ? 'last' : ''}`}>
+                  <span className="bp-working-day">{slot.day}</span>
+                  <span className="bp-working-time">{slot.time}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 4. LOCATIONS ── */}
+          <div className="bp-section-locations">
+            <h3 className="section-heading bp-section-title">Locations</h3>
+            {LOCATIONS.map((loc) => (
+              <div key={loc.id} className="bp-location-card">
+                <h4 className="bp-location-name">{loc.name}</h4>
+                <p className="bp-location-address">{loc.address}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── 5. CERTIFICATIONS ── */}
+          <div className="bp-section-certs">
+            <h3 className="section-heading bp-section-title">Certifications</h3>
+            <div className="bp-cert-card">
+              {displayedCerts.map((cert, idx) => (
+                <div key={idx} className="bp-cert-item">
+                  <h4 className="bp-cert-title">{cert.title}</h4>
+                  <p className="bp-cert-institute">{cert.institute}</p>
+                  <p className="bp-cert-desc">{cert.desc}</p>
+                </div>
+              ))}
+              {CERTIFICATIONS.length > 1 && (
+                <button className="bp-cert-toggle" onClick={() => setShowAllCerts(!showAllCerts)}>
+                  {showAllCerts ? 'Show Less' : 'Show More'}
+                </button>
+              )}
+            </div>
           </div>
 
         </div>
