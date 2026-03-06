@@ -1588,6 +1588,127 @@ html, body {
   border: 1px solid var(--border-subtle); flex-shrink: 0; 
 }
 
+.bp-section-rates { 
+  margin-top: 10px; 
+}
+
+.bp-section-rates-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 24px; margin-bottom: 20px;
+}
+
+.bp-section-heading { 
+  margin: 0; font-size: 20px; 
+  font-family: 'Poppins', sans-serif; font-weight: 700; 
+}
+
+.bp-view-toggle {
+  color: var(--color-accent); font-size: 13px; cursor: pointer; font-weight: 700;
+  background: none; border: none; padding: 0; font-family: 'Poppins', sans-serif;
+}
+
+.bp-categories-scroll { 
+  padding-left: 24px; 
+  margin-bottom: 20px; 
+}
+
+.bp-category-pill { 
+  margin-right: 12px; 
+  font-size: 14px; 
+  padding: 10px 20px; 
+}
+
+.bp-card-scroll { 
+  display: flex; gap: 16px; 
+  padding: 0 24px 30px 24px; 
+}
+
+.bp-service-card {
+  min-width: 190px; width: 190px; background-color: var(--bg-raised);
+  border-radius: 16px; overflow: hidden; border: 1px solid var(--border-subtle);
+  cursor: pointer; display: flex; flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; flex-shrink: 0;
+}
+
+.bp-service-card.selected { 
+  border: 2px solid var(--color-accent); 
+}
+
+.bp-service-card-img { 
+  width: 100%; 
+  height: 190px; 
+  object-fit: cover; 
+}
+
+.bp-service-card-info { 
+  padding: 16px; 
+  text-align: center; 
+}
+
+.bp-service-card-name { 
+  color: var(--text-on-accent); font-size: 14px; font-weight: 700; 
+  margin: 0 0 8px; line-height: 1.3; font-family: 'Poppins', sans-serif; 
+}
+
+.bp-service-card-price { 
+  color: var(--color-accent); 
+  font-size: 16px; 
+  margin: 0; 
+  font-weight: 700; 
+}
+
+.bp-list-view { 
+  padding: 0 24px 30px; 
+}
+
+.bp-list-category { 
+  margin-bottom: 30px; 
+}
+
+.bp-list-category-title {
+  color: var(--color-accent); font-size: 16px; margin-bottom: 15px;
+  text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+  border-left: 4px solid var(--color-accent); padding-left: 10px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.bp-list-items { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 15px; 
+}
+
+.bp-list-item {
+  display: flex; align-items: center; background-color: var(--bg-raised);
+  padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); cursor: pointer;
+}
+
+.bp-list-item.selected { 
+  border: 2px solid var(--color-accent); 
+}
+
+.bp-list-item-img { 
+  width: 60px; height: 60px; border-radius: 8px; 
+  object-fit: cover; margin-right: 15px; 
+}
+
+.bp-list-item-info { flex: 1; }
+
+.bp-list-item-name { 
+  color: var(--text-on-accent); font-weight: 700; font-size: 15px; 
+  margin-bottom: 4px; font-family: 'Poppins', sans-serif; 
+}
+
+.bp-list-item-price { 
+  color: var(--color-accent); 
+  font-weight: 700; 
+  font-size: 14px; 
+}
+
+.bp-list-item-chevron { 
+  color: var(--text-dim); 
+}
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
