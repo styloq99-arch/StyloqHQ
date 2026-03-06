@@ -97,6 +97,23 @@ export default function BarberProfile() {
           </div>
           {/* ── END HEADER ── */}
 
+          {/* ── 1. POSTS & REELS ── */}
+          <div className="bp-section-posts">
+            <div className="bp-posts-header">
+              <h3 className="section-heading bp-section-title" style={{ margin: 0 }}>Posts &amp; Reels</h3>
+            </div>
+            <div className="categories-scroll bp-posts-scroll">
+              {[1, 2, 3, 4].map(i => (
+                <img
+                  key={i}
+                  src={`https://picsum.photos/seed/post${i}/200/200`}
+                  alt="Post"
+                  className="bp-post-img"
+                />
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
 
