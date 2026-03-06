@@ -60,17 +60,46 @@ const CERTIFICATIONS = [
   },
 ];
 
+const BASE_REVIEWS = [
+  { id: 1, text: "\u201cBest fade I've had in years! Clean shop, great vibe, and super detailed. My beard lineup has never looked sharper.\u201d", author: "Ruwan D.",  rating: 5, avatar: "https://randomuser.me/api/portraits/men/10.jpg" },
+  { id: 2, text: "\u201cProfessional and friendly. Booked online, no waiting. Barber listened to exactly what I wanted and delivered perfectly.\u201d", author: "Kevin S.",  rating: 5, avatar: "https://randomuser.me/api/portraits/men/20.jpg" },
+  { id: 3, text: "\u201cHighly recommended. Great service, clean tools, and the skin fade is always on point. Definitely my go-to barber.\u201d", author: "Hashan T.", rating: 5, avatar: "https://randomuser.me/api/portraits/men/30.jpg" },
+  { id: 4, text: "\u201cS.S.K is a true artist. I came in with a photo of a complicated style and he executed it flawlessly. Worth every rupee!\u201d", author: "Aruna B.",  rating: 5, avatar: "https://randomuser.me/api/portraits/men/40.jpg" },
+];
 
 export default function BarberProfile() {
   const navigate = useNavigate();
 
+  const [allReviews, setAllReviews] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('styloq_reviews') || '[]');
+      return [...stored, ...BASE_REVIEWS];
+    } catch {
+      return BASE_REVIEWS;
+    }
+  });
+
+  // Refresh reviews when coming back from add-review page
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem('styloq_reviews') || '[]');
+        setAllReviews([...stored, ...BASE_REVIEWS]);
+      } catch {}
+    };
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, []);
+
   const [activeCategory, setActiveCategory]   = useState("Hair Services");
   const [selectedService, setSelectedService] = useState(null);
   const [showAllCerts, setShowAllCerts]       = useState(false);
+  const [showAllReviews, setShowAllReviews]   = useState(false);
   const [isListView, setIsListView]           = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
   const displayedCerts   = showAllCerts   ? CERTIFICATIONS         : CERTIFICATIONS.slice(0, 1);
+  const displayedReviews = showAllReviews ? allReviews             : allReviews.slice(0, 3);
 
   return (
     <div className="app-layout">
@@ -282,6 +311,68 @@ export default function BarberProfile() {
                 </button>
               )}
             </div>
+          </div>
+
+          {/* ── 6. REVIEWS ── */}
+          <div className="bp-section-reviews">
+            <div className="bp-reviews-header">
+              <h3 className="section-heading bp-section-title" style={{ margin: 0 }}>Reviews</h3>
+              <button className="bp-add-review-btn" onClick={() => navigate('/add-review')}>
+                <i className="fas fa-plus"></i> Add Your Review
+              </button>
+            </div>
+
+            <div className="categories-scroll bp-reviews-scroll">
+              {displayedReviews.map(review => (
+                <div key={review.id} className="bp-review-card">
+
+                  {/* Stars */}
+                  <div className="bp-review-stars">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <i
+                        key={s}
+                        className="fas fa-star bp-review-star"
+                        style={{ color: s <= review.rating ? '#FFD700' : '#333' }}
+                      ></i>
+                    ))}
+                  </div>
+
+                  {/* Tags */}
+                  {review.tags && review.tags.length > 0 && (
+                    <div className="bp-review-tags">
+                      {review.tags.slice(0, 3).map(tag => (
+                        <span key={tag} className="bp-review-tag">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Text */}
+                  <p className="bp-review-text">{review.text}</p>
+
+                  {/* Footer */}
+                  <div className="bp-review-footer">
+                    <img
+                      src={review.avatar || `https://randomuser.me/api/portraits/men/${(review.id % 70) + 10}.jpg`}
+                      alt={review.author}
+                      className="bp-review-avatar"
+                    />
+                    <div className="bp-review-meta">
+                      <div className="bp-review-author">{review.author}</div>
+                      {review.date && <div className="bp-review-date">{review.date}</div>}
+                    </div>
+                    {review.tags !== undefined && (
+                      <span className="bp-review-new-badge">NEW</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {allReviews.length > 3 && (
+              <button className="bp-show-more" onClick={() => setShowAllReviews(!showAllReviews)}>
+                {showAllReviews ? 'Show Less' : 'Show More'}
+              </button>
+            )}
           </div>
 
         </div>

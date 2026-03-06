@@ -1796,6 +1796,95 @@ html, body {
   font-family: 'Poppins', sans-serif;
 }
 
+.bp-section-reviews { 
+  padding: 24px; 
+}
+
+.bp-reviews-header { 
+  display: flex; justify-content: space-between; 
+  align-items: center; margin-bottom: 20px; 
+}
+
+.bp-add-review-btn {
+  background: var(--color-accent); border: none; color: var(--text-on-accent); padding: 8px 18px;
+  border-radius: 20px; font-size: 13px; display: flex; align-items: center;
+  gap: 6px; cursor: pointer; font-weight: 600;
+  box-shadow: 0 3px 12px var(--color-accent-glow-mid); font-family: 'Poppins', sans-serif;
+}
+
+.bp-reviews-scroll { 
+  display: flex; gap: 20px; 
+  padding-bottom: 15px; overflow-x: auto; 
+}
+
+.bp-review-card {
+  min-width: 300px; width: 300px; background-color: var(--bg-elevated);
+  padding: 20px; border-radius: 16px; border: 1px solid #2a2a2a;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3); display: flex; 
+  flex-direction: column; gap: 12px; flex-shrink: 0;
+}
+
+.bp-review-stars { 
+  display: flex; 
+  gap: 4px; 
+}
+
+.bp-review-star { 
+  font-size: 13px; 
+}
+
+.bp-review-tags { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 5px; 
+}
+
+.bp-review-tag {
+  background: rgba(255,87,34,0.1); border: 1px solid rgba(255,87,34,0.2);
+  color: var(--color-accent); border-radius: 20px; 
+  padding: 2px 9px; font-size: 11px; font-weight: 600;
+}
+
+.bp-review-text { 
+  color: var(--text-secondary); font-size: 14px; line-height: 1.65; 
+  font-style: italic; margin: 0; flex: 1; 
+}
+
+.bp-review-footer { 
+  display: flex; align-items: center; gap: 10px; 
+  border-top: 1px solid #2a2a2a; padding-top: 12px; 
+}
+
+.bp-review-avatar { 
+  width: 32px; height: 32px; border-radius: 50%; 
+  object-fit: cover; border: 1px solid var(--border-subtle); 
+}
+
+.bp-review-meta { flex: 1; }
+
+.bp-review-author { 
+  color: var(--text-on-accent); font-size: 13px; 
+  font-weight: 700; font-family: 'Poppins', sans-serif; 
+}
+
+.bp-review-date { 
+  color: #555; 
+  font-size: 11px; 
+  margin-top: 1px; 
+}
+
+.bp-review-new-badge {
+  background: var(--color-success-bg); border: 1px solid var(--color-success-border);
+  color: var(--color-success); border-radius: 20px; 
+  padding: 2px 9px; font-size: 10px; font-weight: 700;
+}
+
+.bp-show-more {
+  color: var(--color-accent); font-size: 13px; cursor: pointer; display: block;
+  margin-top: 15px; font-weight: 700; background: none; border: none; padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
