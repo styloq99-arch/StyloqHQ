@@ -1,20 +1,23 @@
 from flask import Flask
-from extensions import db
 
-from ai.routes import ai_bp
-from feed.routes import feed_bp
+# Load all models first
+import backend.models
+
+from backend.feed.routes import feed_bp
+from backend.ai.routes import ai_bp
+
+from backend.models.base import Base, engine
+
 
 def create_app():
     app = Flask(__name__)
 
     app.config["SECRET_KEY"] = "dev"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///styloq.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # Create all tables after models are loaded
+    Base.metadata.create_all(bind=engine)
 
     app.register_blueprint(ai_bp)
-
-    db.init_app(app)
-
     app.register_blueprint(feed_bp)
 
     @app.route("/health")
