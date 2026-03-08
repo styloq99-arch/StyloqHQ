@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from barber import services
+from backend.barber import services
 
 barber_bp = Blueprint("barber", __name__, url_prefix="/barber")
 
