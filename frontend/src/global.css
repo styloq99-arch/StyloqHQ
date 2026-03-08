@@ -933,7 +933,460 @@ html, body {
   color: var(--color-accent);
 }
 
+/* =========================================
+   CUSTOMER HOME PAGE
+   ========================================= */
 
+.mobile-brandContent {
+  display: flex;
+  flex: 2;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.mobile-brand {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--bg-base);
+  border-top: 1px solid var(--border-deep);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-dim);
+  font-size: 10px;
+  gap: 4px;
+  transition: color 0.2s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.nav-item i { font-size: 20px; }
+.nav-item.active { color: var(--color-accent); }
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 80px;
+}
+
+.customer-barber-header {
+  padding: 24px;
+  background-color: var(--bg-base);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-bottom: 10px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.desktop-sidebar {
+  display: none;
+}
+
+.notification-bell { position: relative; color: var(--text-on-accent); font-size: 30px; cursor: pointer; }
+
+.badge {
+  position: absolute; top: -5px; right: -5px; background-color: var(--color-accent); color: var(--text-on-accent);
+  font-size: 10px; width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  border: 2px solid var(--bg-base);
+}
+
+/* =========================================
+   SOCIAL FEED CARD STYLES
+   ========================================= */
+
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 30px 300px 30px;
+}
+
+.feed-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-deep);
+  border-radius: 16px;
+  overflow: hidden;
+  padding-bottom: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-subtle);
+  background-color: var(--border-deep);
+}
+
+.barber-name {
+  color: var(--text-on-accent);
+  margin: 0;
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+}
+
+.stars-container {
+  display: flex;
+  gap: 2px;
+}
+
+.stars-container i { font-size: 12px; }
+.stars-container i.filled { color: var(--color-gold); }
+.stars-container i.empty { color: var(--border-default); }
+
+.view-profile-btn {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-on-accent);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-profile-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.image-container {
+  width: 100%;
+  background-color: var(--text-on-btn);
+}
+
+.feed-image {
+  width: 100%;
+  height: 100vh;
+  display: block;
+  max-height: 500px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 12px 16px 8px 16px;
+}
+
+.caption-text {
+  color: var(--text-on-accent);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  align-items: center;
+}
+
+.action-left {
+  display: flex;
+  gap: 20px;
+}
+
+.action-icon {
+  color: var(--text-on-accent);
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.action-icon:hover { color: var(--color-accent); }
+
+
+/* =========================================
+   CUSTOMER SEARCH PAGE
+   ========================================= */
+
+
+.search-section {
+  padding: 20px 24px;
+  background-color: var(--bg-base);
+}
+
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-field {
+  width: 100%;
+  padding: 14px 14px 14px 46px;
+  background-color: var(--fill-glass-mid);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input-field::placeholder {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.search-input-field:focus {
+  background-color: var(--fill-glass-hi);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb, 201,168,76), 0.10);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.categories-section {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-deep);
+  background-color: var(--bg-base);
+}
+
+.categories-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 0 24px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.categories-scroll::-webkit-scrollbar { display: none; }
+
+.category-pill {
+  padding: 8px 16px;
+  background-color: var(--border-deep);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-pill.active {
+  background-color: var(--color-accent);
+  color: var(--text-on-btn);
+  border-color: var(--color-accent);
+  font-weight: 700;
+}
+
+.category-pill:hover:not(.active) { background-color: var(--border-subtle); }
+
+.results-section { padding: 24px; }
+
+.section-heading {
+  font-size: 18px;
+  color: var(--text-on-accent);
+  margin-bottom: 20px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+}
+
+.barber-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.barber-result-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-deep);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  box-shadow: #0a0a0a 0px 2px 8px;
+  transition: transform 0.2s;
+}
+
+.barber-result-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-subtle);
+}
+
+.card-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.barber-preview-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.barber-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.barber-salon-name {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+.meta-tags {
+  display: flex;
+  gap: 12px;
+}
+
+.meta-tag {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.spec-tag {
+  background-color: var(--fill-glass-mid);
+  color: var(--text-faint);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid var(--border-subtle);
+}
+
+.card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-width: 110px;
+}
+
+.price-tag {
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+.price-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.price-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-family: 'Poppins', sans-serif;
+}
+
+.action-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-dim);
+}
+
+.no-results i {
+  font-size: 40px;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.3;
+}
+
+@media (max-width: 600px) {
+  .barber-result-card { flex-direction: column; }
+  .card-left { width: 100%; gap: 12px; }
+  .barber-preview-img { width: 80px; height: 80px; }
+  .card-right { width: 100%; flex-direction: row; align-items: center; gap: 10px; }
+  .price-tag { position: absolute; top: 16px; right: 16px; margin-bottom: 0; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 8px; }
+  .action-buttons { flex-direction: row; width: 100%; }
+  .action-buttons .btn { flex: 1; margin: 0; }
+}
 
 /* --- 6. DESKTOP OVERRIDE --- */
 @media (min-width: 768px) {
@@ -1059,6 +1512,118 @@ html, body {
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-heavy);
   }
+
+  /* --- Customer Home --- */
+  
+  .mobile-brandContent { display: none; }
+
+  .desktop-sidebar {
+    display: flex;
+    flex-direction: column;
+    background-color: #0f0f0f;
+    border-right: 1px solid var(--border-deep);
+    padding: 32px 24px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar-logo {
+    margin-bottom: 40px;
+    padding-left: 10px;
+  }
+
+  .sidebar-title {
+    font-size: 32px;
+    color: var(--color-accent);
+    font-weight: 800;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .sidebar-link:hover {
+    background-color: var(--bg-surface);
+    color: var(--text-on-accent);
+  }
+
+  .sidebar-link.active {
+    background-color: rgba(255, 87, 34, 0.15);
+    color: var(--color-accent);
+  }
+
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-deep);
+  }
+
+  .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-subtle); }
+  .user-info p { margin: 0; font-size: 14px; font-family: 'Poppins', sans-serif; }
+  .user-name { color: var(--text-on-accent); font-weight: 700; }
+  .user-status { color: var(--text-dim); font-size: 12px; }
+
+  .main-content {
+    display: block;
+    height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 0;
+    background-color: var(--bg-base);
+  }
+
+  .bottom-nav { display: none; }
+
+  .customer-barber-header {
+    position: sticky;
+    top: 0;
+    padding: 32px 40px;
+    background: linear-gradient(to bottom, var(--bg-base) 90%, transparent);
+    z-index: 10;
+  }
+
+  .header-top { margin-bottom: 24px; }
+  .welcome-text { font-size: 14px; }
+
+  .feed-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    padding: 0 60px 300px 60px;
+  }
+
+  .feed-card{
+    max-width: 500px;
+  }
+
+  .section-header {
+    padding: 0 40px;
+    margin-bottom: 24px;
+  }
+
+  .section-header h3 { font-size: 24px; }
+
 }
 
 @media (max-width: 767px) {
