@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from feed.services import (
+from backend.feed.services import (
     fetch_feed_posts_paginated,
     fetch_single_post,
     create_post,
@@ -13,14 +13,21 @@ from feed.services import (
     fetch_saved_posts
 )
 
-from models.user import User
+from backend.models.user import User
+from backend.models.base import SessionLocal
 
 feed_bp = Blueprint("feed", __name__)
 
 
 # TEMP USER
 def get_current_user():
-    return User.query.get(1)
+    session = SessionLocal()
+
+    user = session.query(User).filter(User.id == 1).first()
+
+    session.close()
+
+    return user
 
 
 @feed_bp.route("/", methods=["GET"])
@@ -105,3 +112,11 @@ def view_saved_posts():
     current_user = get_current_user()
     posts = fetch_saved_posts(current_user.id)
     return jsonify({"posts": posts})
+
+
+
+
+
+
+
+
