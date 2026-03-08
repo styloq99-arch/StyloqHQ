@@ -11,7 +11,6 @@ from google.genai import types
 GEMINI_API_KEY = "AIzaSyDPcCVMs-CmNPEDwBmqw7mH_7qw65IzfLg"
 print("API KEY LOADED:", GEMINI_API_KEY is not None)
 
-client = None
 if GEMINI_API_KEY:
     client = genai.Client(api_key=GEMINI_API_KEY)
 
