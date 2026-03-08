@@ -1,63 +1,107 @@
-# feed/routes.py
-
 from flask import Blueprint, request, jsonify
 from feed.services import (
-    fetch_feed_posts,
     fetch_feed_posts_paginated,
-    fetch_posts_by_barber,
-    add_like,
+    fetch_single_post,
+    create_post,
+    delete_post,
+    toggle_like,
+    fetch_post_likes,
     add_comment,
-    save_post_for_user
+    delete_comment,
+    fetch_post_comments,
+    toggle_save,
+    fetch_saved_posts
 )
+
+from models.user import User
 
 feed_bp = Blueprint("feed", __name__)
 
 
-@feed_bp.route("/feed", methods=["GET"])
-def get_feed_posts():
-    posts = fetch_feed_posts()
+# TEMP USER
+def get_current_user():
+    return User.query.get(1)
+
+
+@feed_bp.route("/", methods=["GET"])
+def get_feed():
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 5))
+    current_user = get_current_user()
+
+    posts = fetch_feed_posts_paginated(page, limit, current_user.id)
     return jsonify({"posts": posts})
 
 
-@feed_bp.route("/feed/paginated", methods=["GET"])
-def get_feed_posts_paginated():
-    try:
-        page = int(request.args.get("page", 1))
-        limit = int(request.args.get("limit", 5))
-    except ValueError:
-        return {"error": "Invalid pagination parameters"}, 400
-
-    posts = fetch_feed_posts_paginated(page, limit)
-    return {"posts": posts, "page": page, "limit": limit}
-
-
-
-@feed_bp.route("/feed/barber/<int:barber_id>", methods=["GET"])
-def get_posts_by_barber(barber_id):
-    posts = fetch_posts_by_barber(barber_id)
-    return jsonify({"posts": posts})
-
-
-@feed_bp.route("/feed/<int:post_id>/like", methods=["POST"])
-def like_post(post_id):
-    post = add_like(post_id)
-    if not post:
-        return {"error": "Post not found"}, 404
+@feed_bp.route("/<int:post_id>", methods=["GET"])
+def get_post(post_id):
+    current_user = get_current_user()
+    post = fetch_single_post(post_id, current_user.id)
     return jsonify(post)
 
 
-@feed_bp.route("/feed/<int:post_id>/comment", methods=["POST"])
-def comment_on_post(post_id):
+@feed_bp.route("/create", methods=["POST"])
+def create_new_post():
     data = request.get_json()
-    comment = data.get("comment")
-    post = add_comment(post_id, comment)
-    if not post:
-        return {"error": "Post not found"}, 404
-    return jsonify(post)
+    caption = data.get("caption")
+    image_url = data.get("image_url")
+    barber_id = data.get("barber_id")
 
-
-@feed_bp.route("/feed/<int:post_id>/save", methods=["POST"])
-def save_post(post_id):
-    # user_id will come from JWT later
-    result = save_post_for_user(post_id, user_id=1)
+    result = create_post(barber_id, caption, image_url)
     return jsonify(result)
+
+
+@feed_bp.route("/<int:post_id>", methods=["DELETE"])
+def remove_post(post_id):
+    current_user = get_current_user()
+    result = delete_post(post_id, current_user)
+    return jsonify(result)
+
+
+@feed_bp.route("/<int:post_id>/like", methods=["POST"])
+def like_post(post_id):
+    current_user = get_current_user()
+    result = toggle_like(post_id, current_user.id)
+    return jsonify(result)
+
+
+@feed_bp.route("/<int:post_id>/likes", methods=["GET"])
+def view_likes(post_id):
+    likes = fetch_post_likes(post_id)
+    return jsonify({"likes": likes})
+
+
+@feed_bp.route("/<int:post_id>/comment", methods=["POST"])
+def comment_post(post_id):
+    data = request.get_json()
+    current_user = get_current_user()
+    comment = data.get("comment")
+    result = add_comment(post_id, current_user.id, comment)
+    return jsonify(result)
+
+
+@feed_bp.route("/comment/<int:comment_id>", methods=["DELETE"])
+def remove_comment(comment_id):
+    current_user = get_current_user()
+    result = delete_comment(comment_id, current_user.id)
+    return jsonify(result)
+
+
+@feed_bp.route("/<int:post_id>/comments", methods=["GET"])
+def view_comments(post_id):
+    comments = fetch_post_comments(post_id)
+    return jsonify({"comments": comments})
+
+
+@feed_bp.route("/<int:post_id>/save", methods=["POST"])
+def save_post(post_id):
+    current_user = get_current_user()
+    result = toggle_save(post_id, current_user.id)
+    return jsonify(result)
+
+
+@feed_bp.route("/saved", methods=["GET"])
+def view_saved_posts():
+    current_user = get_current_user()
+    posts = fetch_saved_posts(current_user.id)
+    return jsonify({"posts": posts})
