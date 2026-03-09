@@ -2,9 +2,10 @@ from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .base import Base, barber_skills
+from sqlalchemy import Table, ForeignKey
 
 class Barber(Base):
-    __tablename__ = 'barbers'
+    __tablename__ = "barbers"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
     bio = Column(Text)
@@ -12,7 +13,7 @@ class Barber(Base):
     is_verified = Column(Boolean, default=False)
     instagram_handle = Column(String(100))
     current_location_name = Column(String(200))
-    
+
     user = relationship("User", back_populates="barber_profile")
     skills = relationship("Skill", secondary=barber_skills, back_populates="barbers")
     location_history = relationship("LocationHistory", back_populates="barber")
