@@ -340,6 +340,37 @@ def get_salon_by_owner(owner_id):
     return None
 
 
+def get_salon_by_id(salon_id):
+    """Get salon by salon ID"""
+    for salon in _SALONS:
+        if salon["id"] == salon_id:
+            return salon
+    return None
+
+
+def update_salon_profile_by_id(salon_id, update_data):
+    """Update salon metadata by salon_id"""
+    for salon in _SALONS:
+        if salon["id"] == salon_id:
+            # Update allowed fields
+            if "name" in update_data:
+                salon["name"] = update_data["name"]
+            if "address" in update_data:
+                salon["address"] = update_data["address"]
+            if "description" in update_data:
+                salon["description"] = update_data["description"]
+            if "contact_phone" in update_data:
+                salon["contact_phone"] = update_data["contact_phone"]
+            if "contact_email" in update_data:
+                salon["contact_email"] = update_data["contact_email"]
+            if "city" in update_data:
+                salon["city"] = update_data["city"]
+
+            salon["updated_at"] = datetime.utcnow().isoformat()
+            return salon
+    return None
+
+
 def is_in_salon_context(barber_id, appointment_datetime):
     """
     Determine if an appointment should use salon context
