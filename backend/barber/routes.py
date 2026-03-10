@@ -157,12 +157,10 @@ def update_availability(barber_id: int):
     slots = body.get("availability")
 
     if slots is None:
-        return _err("bad_request", "Request body must include an 'availability' array.")
+        return jsonify({"error": "availability array is required."}), 400
 
-    data, reason, error = services.update_availability(barber_id, slots)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Availability updated successfully.")
+    result = update_availability(barber_id, slots)
+    return _respond(result)
 
 
 @barber_bp.post("/<int:barber_id>/portfolio")
@@ -180,12 +178,10 @@ def add_portfolio_item(barber_id: int):
     description = body.get("description")
 
     if not image_url:
-        return _err("bad_request", "image_url is required.")
+        return jsonify({"error": "image_url is required."}), 400
 
-    data, reason, error = services.add_portfolio_item(barber_id, image_url, description)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Portfolio item added."), 201
+    result = add_portfolio_item(barber_id, image_url, description)
+    return _respond(result, created=True)
 
 
 @barber_bp.delete("/<int:barber_id>/portfolio/<int:portfolio_id>")
@@ -218,12 +214,10 @@ def create_post(barber_id: int):
     content = body.get("content")
 
     if not content:
-        return _err("bad_request", "content is required.")
+        return jsonify({"error": "content is required."}), 400
 
-    data, reason, error = services.create_post(barber_id, content)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Post created."), 201
+    result = create_post(barber_id, content)
+    return _respond(result, created=True)
 
 
 @barber_bp.get("/<int:barber_id>/appointments")
@@ -275,10 +269,8 @@ def reschedule_appointment(appointment_id: int):
     if not new_datetime:
         return _err("bad_request", "new_datetime is required (format: YYYY-MM-DDTHH:MM:SS).")
 
-    data, reason, error = services.reschedule_appointment(appointment_id, new_datetime)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Appointment {appointment_id} rescheduled to {new_datetime}.")
+    result = reschedule_appointment(booking_id, new_datetime)
+    return _respond(result)
 
 
 @barber_bp.post("/<int:barber_id>/book")
@@ -296,8 +288,8 @@ def book_appointment(barber_id: int):
     appt_dt     = body.get("appointment_datetime")
     notes       = body.get("notes")
 
-    if not customer_id:
-        return _err("bad_request", "customer_id is required.")
+    if not client_id:
+        return jsonify({"error": "client_id is required."}), 400
     if not appt_dt:
         return _err("bad_request", "appointment_datetime is required.")
 
