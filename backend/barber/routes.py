@@ -1,251 +1,203 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
 
-from backend.barber import services
+from barber.services import (
+    get_barber_profile,
+    update_barber_profile,
+    update_location,
+    manage_availability,
+    update_availability,
+    get_availability,
+    add_portfolio_item,
+    delete_portfolio_item,
+    get_portfolio,
+    create_post,
+    get_my_posts,
+    view_barber_appointments,
+    handle_booking_request,
+    accept_appointment,
+    reject_appointment,
+    reschedule_appointment,
+    change_booking_status,
+)
 
-barber_bp = Blueprint("barber", __name__, url_prefix="/barber")
+barber_bp = Blueprint("barber", __name__)
 
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-# Typed reason → HTTP status. Services never decide HTTP codes.
-_STATUS_MAP = {
-    "bad_request":  400,
-    "not_found":    404,
-    "unavailable":  400,
-    "conflict":     409,
-    "db_error":     500,
-}
-
-
-def _ok(data, message: str = "", status: int = 200):
-    """Uniform success envelope."""
-    body = {"success": True, "data": data}
-    if message:
-        body["message"] = message
-    return jsonify(body), status
-
-
-def _err(reason: str, message: str):
-    """Uniform error envelope."""
-    return jsonify({
-        "success": False,
-        "reason":  reason,
-        "message": message,
-    }), _STATUS_MAP.get(reason, 400)
-
-
-def _svc(result):
+def _respond(result, created=False):
     """
-    Unpack a service 3-tuple (data, reason, error) and return a Flask response.
-    Pass the result of _ok / _err directly to the caller.
-    Usage:
-        return _svc(services.some_fn(...))
+    Unified response helper matching project convention.
+    - None         → 404
+    - {"error":..} → 400 or 409 depending on "reason" key
+    - anything else → 200 / 201
     """
-    data, reason, error = result
-    if error:
-        return _err(reason, error)
-    return data, reason   # caller wraps in _ok
+    if result is None:
+        return jsonify({"error": "Not found"}), 404
+
+    if isinstance(result, dict) and "error" in result:
+        reason = result.get("reason")
+        status = 409 if reason == "conflict" else \
+                 400 if reason == "unavailable" else 400
+        return jsonify(result), status
+
+    return jsonify(result), 201 if created else 200
 
 
 # =============================================================================
 # PROFILE ROUTES
 # =============================================================================
 
-@barber_bp.get("/<int:barber_id>/profile")
-def get_profile(barber_id: int):
-    data, reason, error = services.get_barber_profile(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/profile", methods=["GET"])
+def get_profile(barber_id):
+    result = get_barber_profile(barber_id)
+    return _respond(result)
 
 
-@barber_bp.put("/<int:barber_id>/profile")
-def update_profile(barber_id: int):
-    body = request.get_json(silent=True) or {}
-    data, reason, error = services.update_barber_profile(barber_id, body)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Profile updated successfully.")
+@barber_bp.route("/<int:barber_id>/profile", methods=["PUT"])
+def update_profile(barber_id):
+    data   = request.get_json() or {}
+    result = update_barber_profile(barber_id, data)
+    return _respond(result)
 
 
-@barber_bp.put("/<int:barber_id>/location")
-def update_location(barber_id: int):
-    body = request.get_json(silent=True) or {}
-    data, reason, error = services.update_location(barber_id, body)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Location updated successfully.")
+@barber_bp.route("/<int:barber_id>/location", methods=["PUT"])
+def update_barber_location(barber_id):
+    data   = request.get_json() or {}
+    result = update_location(barber_id, data)
+    return _respond(result)
 
 
 # =============================================================================
 # AVAILABILITY ROUTES
 # =============================================================================
 
-@barber_bp.put("/<int:barber_id>/availability")
-def update_availability(barber_id: int):
+@barber_bp.route("/<int:barber_id>/availability", methods=["PUT"])
+def set_availability(barber_id):
     """
-    Replace the barber's full availability schedule.
     Body: { "availability": [ { "day_of_week": 0, "start_time": "09:00", "end_time": "17:00" } ] }
-    Send an empty array to clear all slots.
+    Replaces all existing slots. Send [] to clear.
     """
-    body  = request.get_json(silent=True) or {}
-    slots = body.get("availability")
+    data   = request.get_json() or {}
+    slots  = data.get("availability")
 
     if slots is None:
-        return _err("bad_request", "Request body must include an 'availability' array.")
+        return jsonify({"error": "availability array is required."}), 400
 
-    data, reason, error = services.update_availability(barber_id, slots)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Availability updated successfully.")
+    result = update_availability(barber_id, slots)
+    return _respond(result)
 
 
-@barber_bp.get("/<int:barber_id>/availability")
-def get_availability(barber_id: int):
-    data, reason, error = services.get_availability(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/availability", methods=["GET"])
+def get_barber_availability(barber_id):
+    result = get_availability(barber_id)
+    return _respond(result)
 
 
 # =============================================================================
 # PORTFOLIO ROUTES
 # =============================================================================
 
-@barber_bp.post("/<int:barber_id>/portfolio")
-def add_portfolio_item(barber_id: int):
-    """
-    Body: { "image_url": "https://...", "description": "..." }
-    """
-    body        = request.get_json(silent=True) or {}
-    image_url   = body.get("image_url")
-    description = body.get("description")
+@barber_bp.route("/<int:barber_id>/portfolio", methods=["POST"])
+def create_portfolio_item(barber_id):
+    """Body: { "image_url": "https://...", "description": "..." }"""
+    data        = request.get_json() or {}
+    image_url   = data.get("image_url")
+    description = data.get("description")
 
     if not image_url:
-        return _err("bad_request", "image_url is required.")
+        return jsonify({"error": "image_url is required."}), 400
 
-    data, reason, error = services.add_portfolio_item(barber_id, image_url, description)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Portfolio item added."), 201
+    result = add_portfolio_item(barber_id, image_url, description)
+    return _respond(result, created=True)
 
 
-@barber_bp.delete("/<int:barber_id>/portfolio/<int:portfolio_id>")
-def delete_portfolio_item(barber_id: int, portfolio_id: int):
-    data, reason, error = services.delete_portfolio_item(barber_id, portfolio_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Portfolio item {portfolio_id} deleted.")
+@barber_bp.route("/<int:barber_id>/portfolio/<int:portfolio_id>", methods=["DELETE"])
+def remove_portfolio_item(barber_id, portfolio_id):
+    result = delete_portfolio_item(barber_id, portfolio_id)
+    return _respond(result)
 
 
-@barber_bp.get("/<int:barber_id>/portfolio")
-def get_portfolio(barber_id: int):
-    data, reason, error = services.get_portfolio(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/portfolio", methods=["GET"])
+def list_portfolio(barber_id):
+    result = get_portfolio(barber_id)
+    return _respond(result)
 
 
 # =============================================================================
 # SOCIAL ROUTES
 # =============================================================================
 
-@barber_bp.post("/<int:barber_id>/posts")
-def create_post(barber_id: int):
-    """
-    Body: { "content": "..." }
-    """
-    body    = request.get_json(silent=True) or {}
-    content = body.get("content")
+@barber_bp.route("/<int:barber_id>/posts", methods=["POST"])
+def new_post(barber_id):
+    """Body: { "content": "..." }"""
+    data    = request.get_json() or {}
+    content = data.get("content")
 
     if not content:
-        return _err("bad_request", "content is required.")
+        return jsonify({"error": "content is required."}), 400
 
-    data, reason, error = services.create_post(barber_id, content)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Post created."), 201
+    result = create_post(barber_id, content)
+    return _respond(result, created=True)
 
 
-@barber_bp.get("/<int:barber_id>/posts")
-def get_posts(barber_id: int):
-    data, reason, error = services.get_my_posts(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/posts", methods=["GET"])
+def list_posts(barber_id):
+    result = get_my_posts(barber_id)
+    return _respond(result)
 
 
 # =============================================================================
 # APPOINTMENT ROUTES
 # =============================================================================
 
-@barber_bp.get("/<int:barber_id>/appointments")
-def get_appointments(barber_id: int):
-    """Returns appointments grouped by status."""
-    data, reason, error = services.view_barber_appointments(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/appointments", methods=["GET"])
+def list_appointments(barber_id):
+    result = view_barber_appointments(barber_id)
+    return _respond(result)
 
 
-@barber_bp.patch("/appointments/<int:appointment_id>/accept")
-def accept_appointment(appointment_id: int):
-    data, reason, error = services.accept_appointment(appointment_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Appointment {appointment_id} accepted.")
+@barber_bp.route("/appointments/<int:booking_id>/accept", methods=["PATCH"])
+def accept_booking(booking_id):
+    result = accept_appointment(booking_id)
+    return _respond(result)
 
 
-@barber_bp.patch("/appointments/<int:appointment_id>/reject")
-def reject_appointment(appointment_id: int):
-    data, reason, error = services.reject_appointment(appointment_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Appointment {appointment_id} rejected.")
+@barber_bp.route("/appointments/<int:booking_id>/reject", methods=["PATCH"])
+def reject_booking(booking_id):
+    result = reject_appointment(booking_id)
+    return _respond(result)
 
 
-@barber_bp.patch("/appointments/<int:appointment_id>/reschedule")
-def reschedule_appointment(appointment_id: int):
-    """
-    Body: { "new_datetime": "2026-03-01T10:00:00" }
-    """
-    body         = request.get_json(silent=True) or {}
-    new_datetime = body.get("new_datetime")
+@barber_bp.route("/appointments/<int:booking_id>/reschedule", methods=["PATCH"])
+def reschedule_booking(booking_id):
+    """Body: { "new_datetime": "2026-03-01T10:00:00" }"""
+    data         = request.get_json() or {}
+    new_datetime = data.get("new_datetime")
 
     if not new_datetime:
-        return _err("bad_request",
-                    "new_datetime is required (format: YYYY-MM-DDTHH:MM:SS).")
+        return jsonify({"error": "new_datetime is required."}), 400
 
-    data, reason, error = services.reschedule_appointment(appointment_id, new_datetime)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Appointment {appointment_id} rescheduled to {new_datetime}.")
+    result = reschedule_appointment(booking_id, new_datetime)
+    return _respond(result)
 
 
-@barber_bp.post("/<int:barber_id>/book")
-def book_appointment(barber_id: int):
+@barber_bp.route("/<int:barber_id>/book", methods=["POST"])
+def book_appointment(barber_id):
     """
-    Body: { "customer_id": 1, "appointment_datetime": "2026-02-25T15:00:00", "notes": "..." }
+    Body: { "client_id": 1, "appointment_datetime": "2026-02-25T15:00:00" }
     UC-003: availability check is salon-aware.
     """
-    body        = request.get_json(silent=True) or {}
-    customer_id = body.get("customer_id")
-    appt_dt     = body.get("appointment_datetime")
-    notes       = body.get("notes")
+    data    = request.get_json() or {}
+    client_id = data.get("client_id")
+    appt_dt   = data.get("appointment_datetime")
 
-    if not customer_id:
-        return _err("bad_request", "customer_id is required.")
+    if not client_id:
+        return jsonify({"error": "client_id is required."}), 400
     if not appt_dt:
-        return _err("bad_request", "appointment_datetime is required.")
+        return jsonify({"error": "appointment_datetime is required."}), 400
 
-    data, reason, error = services.handle_booking_request(
-        barber_id=barber_id,
-        customer_id=customer_id,
-        appointment_datetime=appt_dt,
-        notes=notes,
-    )
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Appointment request submitted."), 201
+    result = handle_booking_request(barber_id, client_id, appt_dt)
+    return _respond(result, created=True)
