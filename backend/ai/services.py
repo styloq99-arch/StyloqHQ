@@ -1,20 +1,34 @@
 import os
 import json
 import base64
-from google import genai
+import google.genai as genai
 from google.genai import types
+
+from sqlalchemy import func
+from backend.models.base import SessionLocal
+from backend.models.booking import Booking
+from backend.models.booking import Hairstyle
 
 # -------------------------------------------------
 # GEMINI CONFIG
 # -------------------------------------------------
 
-GEMINI_API_KEY = "AIzaSyDPcCVMs-CmNPEDwBmqw7mH_7qw65IzfLg"
+# Use Gemini 3 Flash Preview model
+MODEL_NAME = "gemini-3-flash-preview"
+
+# Get API key from environment variable for security
+# You can also set it directly here for testing, but use env var in production
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyCyFYkJqV-oqKnQcoaz2Oxt3z_qAxvisAc")
 print("API KEY LOADED:", GEMINI_API_KEY is not None)
 
+client = None
 if GEMINI_API_KEY:
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        print(f"Gemini client initialized with model: {MODEL_NAME}")
+    except Exception as e:
+        print(f"Failed to initialize Gemini client: {e}")
 
-MODEL_NAME = "gemini-3-flash-preview"  # Gemini 3 model
 
 # -------------------------------------------------
 # HELPERS
@@ -27,11 +41,13 @@ def extract_json(text):
         raise ValueError("No JSON found in Gemini response")
     return text[start:end + 1]
 
+
 # -------------------------------------------------
 # IMAGE EDIT GENERATION
 # -------------------------------------------------
 
 def generate_preview_image(image_file, style_name):
+    """Generate a preview image with the selected hairstyle using Gemini 3.0 Flash Preview."""
     image_bytes = image_file.read()
 
     image_part = types.Part.from_bytes(
@@ -39,32 +55,57 @@ def generate_preview_image(image_file, style_name):
         mime_type=image_file.mimetype
     )
 
-    edit_prompt = f"""
-Apply a {style_name} haircut to this person.
+    # Enhanced prompt for better identity preservation with Gemini 3.0
+    edit_prompt = f"""You are an expert portrait photographer and hairstylist.
 
-Preserve facial identity exactly.
-Do not modify facial structure.
-Do not change skin tone.
-Do not change expression.
-Do not change age.
+Edit this portrait by applying a {style_name} hairstyle.
 
-Only modify the hairstyle.
+CRITICAL REQUIREMENTS:
+- EXACTLY preserve the person's facial identity (face shape, features)
+- Do NOT change facial structure, skin tone, eye color, or expression
+- Do NOT add or remove wrinkles, moles, or facial marks
+- Only modify the hair/hairline area
+- Maintain natural-looking hair growth edges
 
-Photorealistic.
-Professional studio lighting.
-Neutral background.
-"""
+Style: {style_name}
+Output: Photorealistic image with professional studio lighting"""
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=[edit_prompt, image_part]
-    )
+    try:
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=[edit_prompt, image_part],
+            config={
+                'response_modalities': ['image', 'text']
+            }
+        )
+        
+        # Handle Gemini 3.0 response format
+        if hasattr(response, 'candidates') and response.candidates:
+            for candidate in response.candidates:
+                if hasattr(candidate, 'content') and candidate.content:
+                    for part in candidate.content.parts:
+                        # Check for inline image data
+                        if hasattr(part, 'inline_data') and part.inline_data:
+                            return base64.b64encode(part.inline_data.data).decode("utf-8")
+                        # Check for image URL in text response
+                        if hasattr(part, 'text') and part.text:
+                            # Could be a URL or base64 in text form
+                            text = part.text
+                            if 'base64' in text.lower():
+                                # Extract base64 from text if present
+                                import re
+                                base64_match = re.search(r'data:image/\w+;base64,([A-Za-z0-9+/=]+)', text)
+                                if base64_match:
+                                    return base64_match.group(1)
+        
+        # If no image in response, raise error
+        print("RESPONSE TEXT:", response.text if hasattr(response, 'text') else "No text")
+        raise ValueError("No image returned from Gemini 3.0 Flash Preview")
+        
+    except Exception as e:
+        print(f"Image generation error: {str(e)}")
+        raise ValueError(f"Failed to generate preview image: {str(e)}")
 
-    for part in response.candidates[0].content.parts:
-        if part.inline_data:
-            return base64.b64encode(part.inline_data.data).decode("utf-8")
-
-    raise ValueError("No image returned from Gemini 3")
 
 # -------------------------------------------------
 # CORE AI PIPELINE
@@ -85,19 +126,19 @@ def analyze_and_recommend(image_file):
     }
 
     if not client:
-        print("CLIENT NOT INITIALIZED")
+        print("CLIENT NOT INITIALIZED - API key may be missing or invalid")
         return fallback
 
     try:
         image_bytes = image_file.read()
+        print(f"Image size: {len(image_bytes)} bytes")
 
         image_part = types.Part.from_bytes(
             data=image_bytes,
             mime_type=image_file.mimetype
         )
 
-        analysis_prompt = """
-You are a professional barber and stylist.
+        analysis_prompt = """You are a professional barber and stylist.
 
 Analyze the face shape from the image.
 
@@ -125,6 +166,8 @@ No explanations.
 Lowercase ids.
 """
 
+        print(f"Sending request to Gemini model: {MODEL_NAME}")
+        
         response = client.models.generate_content(
             model=MODEL_NAME,
             contents=[analysis_prompt, image_part]
@@ -163,9 +206,85 @@ Lowercase ids.
         return {
             "faceShape": face_shape,
             "recommendedStyles": final_styles,
-            "note": "AI-generated hairstyle transformation using Gemini 3."
+            "note": "AI-generated hairstyle transformation using Gemini."
         }
 
     except Exception as e:
-        print("AI ERROR:", e)
+        print("AI ERROR:", str(e))
+        import traceback
+        traceback.print_exc()
         return fallback
+
+
+def fetch_customer_retention(barber_id):
+    db = SessionLocal()
+    try:
+        results = (
+            db.query(
+                Booking.client_id,
+                func.count(Booking.id).label("visit_count")
+            )
+            .filter(Booking.barber_id == barber_id)
+            .group_by(Booking.client_id)
+            .all()
+        )
+
+        returning_customers = 0
+        new_customers = 0
+
+        for r in results:
+            if r.visit_count == 1:
+                new_customers += 1
+            else:
+                returning_customers += 1
+
+        total = returning_customers + new_customers
+
+        returning_percentage = 0
+        new_percentage = 0
+
+        if total > 0:
+            returning_percentage = round((returning_customers / total) * 100)
+            new_percentage = round((new_customers / total) * 100)
+
+        return {
+            "returningCustomers": returning_percentage,
+            "newCustomers": new_percentage
+        }
+
+    finally:
+        db.close()
+
+
+
+def fetch_trending_hairstyles(limit=5):
+    db = SessionLocal()
+    try:
+        results = (
+            db.query(
+                Hairstyle.id,
+                Hairstyle.name,
+                Hairstyle.image_url,
+                func.count(Booking.id).label("bookings")
+            )
+            .join(Booking, Booking.hairstyle_id == Hairstyle.id)
+            .group_by(Hairstyle.id)
+            .order_by(func.count(Booking.id).desc())
+            .limit(limit)
+            .all()
+        )
+
+        trends = []
+
+        for r in results:
+            trends.append({
+                "id": r.id,
+                "name": r.name,
+                "imageUrl": r.image_url,
+                "popularity": r.bookings
+            })
+
+        return trends
+
+    finally:
+        db.close()
