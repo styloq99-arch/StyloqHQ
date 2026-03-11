@@ -1378,6 +1378,52 @@ html, body {
   opacity: 0.3;
 }
 
+/* ==================================================================================================
+   BookingPage.css
+   ===================== */
+
+.booking-page {
+  background: var(--bg-base);
+  min-height: 100vh;
+  color: var(--text-on-accent);
+  font-family: 'Poppins', sans-serif;
+}
+
+.bp-hero { position: relative; height: 200px; overflow: hidden; }
+.bp-hero-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
+
+.bp-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(18,18,18,0.95) 100%);
+}
+
+.bp-hero-menu {
+  position: absolute; top: 18px; right: 18px;
+  background: var(--color-accent); border: none; color: var(--text-on-accent);
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer;
+}
+
+.bp-hero-title {
+  position: absolute; bottom: 20px; left: 0; right: 0;
+  text-align: center; font-size: 26px; font-weight: 700; color: var(--text-on-accent);
+  letter-spacing: 0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  font-family: 'Poppins', sans-serif;
+}
+
+.bp-profile { display: flex; align-items: flex-start; gap: 16px; padding: 20px 20px 0; }
+.bp-avatar-wrap { position: relative; flex-shrink: 0; }
+.bp-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2.5px solid var(--color-accent); }
+.bp-avatar-ring { position: absolute; inset: -4px; border-radius: 50%; border: 1.5px solid var(--color-accent-glow-mid); }
+
+.bp-profile-info h3 { font-size: 22px; font-weight: 700; margin: 0 0 4px; color: var(--text-on-accent); font-family: 'Poppins', sans-serif; }
+.bp-profile-info .bp-exp { font-size: 13px; color: var(--text-faint); margin: 0 0 6px; }
+.bp-profile-info .bp-bio { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+.bp-divider-line { height: 1px; background: #2a2a2a; margin: 18px 20px; }
+
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }

@@ -18,6 +18,7 @@ import SignUpSalon from "./pages/SignUpSalon.jsx";
 import CreatePassword from "./pages/CreatePassword.jsx";
 import CustomerHome from "./pages/CustomerHome.jsx";
 import CustomerSearch from "./pages/CustomerSearch.jsx";
+import BookingPage from "./pages/BookingPage.jsx";
 
 
 
@@ -49,6 +50,7 @@ export default function App() {
 
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />
+          <Route path="/booking" element={<BookingPage />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
