@@ -4,6 +4,12 @@ import { useNavigate, Link } from 'react-router-dom';
 export default function BookingPage() {
   const navigate = useNavigate();
 
+  const LOCATIONS = [
+    "Liyo Salon (pvt) Ltd",
+    "Salon Next (pvt) Ltd",
+    "Colombo City Center Branch"
+  ];
+
   const SERVICE_CATALOG = {
     Male: {
       "Beard Services": [
@@ -36,12 +42,24 @@ export default function BookingPage() {
     Female: ["Hair Services", "Hair Coloring", "Keratin Treatment"],
   };
 
+  const TIME_SLOTS = [
+    "9.00 AM", "10.00 AM", "11.00 AM", "12.00 PM",
+    "1.00 PM", "2.00 PM", "3.00 PM", "4.00 PM", "5.00 PM"
+  ];
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const [selectedDate,          setSelectedDate]          = useState(today);
   const [selectedGender, setSelectedGender]  = useState("Male");
   const [selectedServiceType, setSelectedServiceType] = useState("Beard Services");
   const [selectedService, setSelectedService]       = useState(null);
   const [preferences,           setPreferences]           = useState("");
   const [uploadedPhoto,         setUploadedPhoto]         = useState(null);
   const [photoPreview,          setPhotoPreview]          = useState(null);
+  const [selectedTime,          setSelectedTime]          = useState(null);
+  const [selectedLocation,      setSelectedLocation]      = useState(LOCATIONS[0]);
+  const [paymentMethod,        setPaymentMethod]        = useState("Pay On Visit");
+  const [isBooking,            setIsBooking]            = useState(false);
 
   const handleFileUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -51,6 +69,14 @@ export default function BookingPage() {
       reader.onloadend = () => setPhotoPreview(reader.result);
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleConfirmBooking = () => {
+    if (!selectedService) { alert("Please select a service type."); return; }
+    if (!selectedTime)    { alert("Please select a time slot.");    return; }
+    if (!selectedDate)    { alert("Please select a valid date.");   return; }
+    setIsBooking(true);
+    setTimeout(() => { setIsBooking(false); setStep(2); }, 1500);
   };
   
   const SERVICES = (SERVICE_CATALOG[selectedGender] || {})[selectedServiceType] || [];
@@ -237,6 +263,72 @@ export default function BookingPage() {
             />
           </div>
         </div>
+
+        {/* Scheduling */}
+        <div className="bp-schedule-section">
+          <label className="bp-sched-label">Select Your Date</label>
+          <input
+            type="date"
+            min={today}
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            className="bp-sched-input"
+          />
+
+          <label className="bp-sched-label">Select Salon Location</label>
+          <select
+            className="bp-sched-input"
+            value={selectedLocation}
+            onChange={e => setSelectedLocation(e.target.value)}
+          >
+            {LOCATIONS.map((loc, idx) => (
+              <option key={idx} value={loc}>{loc}</option>
+            ))}
+          </select>
+
+          <label className="bp-sched-label">Available Slots</label>
+          <div className="bp-time-grid">
+            {TIME_SLOTS.map((time, idx) => (
+              <div
+                key={idx}
+                className={`bp-time-chip ${selectedTime === time ? 'active' : ''}`}
+                onClick={() => setSelectedTime(time)}
+              >
+                {time}
+              </div>
+            ))}
+          </div>
+
+          <label className="bp-sched-label">Payment Options</label>
+          <div className="bp-pay-row">
+            {[
+              { key: 'Pay On Visit', icon: 'fa-wallet'      },
+              { key: 'Pay Online',   icon: 'fa-credit-card' },
+            ].map(({ key, icon }) => (
+              <div
+                key={key}
+                className={`bp-pay-card ${paymentMethod === key ? 'selected' : ''}`}
+                onClick={() => setPaymentMethod(key)}
+              >
+                <div className="bp-pay-dot"></div>
+                <i className={`fas ${icon}`}></i>
+                <span>{key}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Continue Button */}
+        <button
+          className="bp-continue-btn"
+          onClick={handleConfirmBooking}
+          disabled={isBooking}
+        >
+          {isBooking
+            ? <><i className="fas fa-circle-notch fa-spin"></i> Processing...</>
+            : 'Continue'
+          }
+        </button>
 
         <div style={{ height: '80px' }}></div>
       </div>

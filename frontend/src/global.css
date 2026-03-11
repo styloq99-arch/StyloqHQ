@@ -1504,6 +1504,61 @@ html, body {
 .bp-pref-textarea::placeholder { color: #555; }
 .bp-pref-textarea:focus { border-color: var(--color-accent); }
 
+.bp-schedule-section { background: var(--bg-surface); margin: 0 0 20px; padding: 20px; }
+
+.bp-sched-label {
+  display: block; color: var(--text-faint); font-size: 12px; margin-bottom: 10px;
+  font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.bp-sched-input {
+  width: 100%; background: var(--bg-card); color: var(--text-on-accent); border: 1px solid var(--border-subtle);
+  border-radius: 10px; padding: 12px 14px; font-size: 14px; outline: none;
+  box-sizing: border-box; margin-bottom: 18px; font-family: 'Poppins', sans-serif;
+}
+
+.bp-sched-input:focus { border-color: var(--color-accent); }
+
+.bp-time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+
+.bp-time-chip {
+  background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-secondary);
+  padding: 10px 0; border-radius: 8px; text-align: center;
+  font-size: 13px; cursor: pointer; transition: all 0.2s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.bp-time-chip:hover { border-color: #555; }
+.bp-time-chip.active { background: var(--color-accent); color: var(--text-on-accent); border-color: var(--color-accent); }
+
+.bp-pay-row { display: flex; gap: 12px; margin-bottom: 20px; }
+
+.bp-pay-card {
+  flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px;
+  padding: 15px 10px; display: flex; flex-direction: column; align-items: center;
+  gap: 8px; cursor: pointer; position: relative; transition: all 0.2s;
+  font-size: 13px; color: var(--text-faint); font-family: 'Poppins', sans-serif;
+}
+
+.bp-pay-card.selected { border-color: var(--color-accent); background: var(--color-accent-subtle); color: var(--text-on-accent); }
+.bp-pay-card i { font-size: 22px; }
+.bp-pay-card.selected i { color: var(--color-accent); }
+
+.bp-pay-dot { position: absolute; top: 10px; right: 10px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border-default); }
+.bp-pay-card.selected .bp-pay-dot { background: var(--color-accent); border-color: var(--color-accent); }
+
+.bp-continue-btn {
+  width: calc(100% - 40px); margin: 0 20px 30px; padding: 16px;
+  background: var(--color-accent); color: var(--text-on-accent); border: none; border-radius: 30px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 20px var(--color-accent-glow-mid);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: opacity 0.2s; font-family: 'Poppins', sans-serif;
+}
+
+.bp-continue-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
