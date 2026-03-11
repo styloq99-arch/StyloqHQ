@@ -60,6 +60,7 @@ export default function BookingPage() {
   const [selectedLocation,      setSelectedLocation]      = useState(LOCATIONS[0]);
   const [paymentMethod,        setPaymentMethod]        = useState("Pay On Visit");
   const [isBooking,            setIsBooking]            = useState(false);
+  const [step,                  setStep]                  = useState(1);
 
   const handleFileUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -85,6 +86,60 @@ export default function BookingPage() {
     Object.values(SERVICE_CATALOG)
       .flatMap(g => Object.values(g).flat())
       .find(s => s.id === selectedService);
+
+  /* ─── Step 2: Booking Confirmed ─── */
+  if (step === 2) {
+    const service = getServiceDetails();
+    return (
+      <div className="app-layout">
+        <aside className="desktop-sidebar">
+          <div className="sidebar-logo">
+            <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
+          </div>
+          <nav className="sidebar-nav">
+            <Link to="/customer-home"   className="sidebar-link"><i className="fas fa-home"></i>          <span>Home</span></Link>
+            <Link to="/customer-search" className="sidebar-link active"><i className="fas fa-search"></i> <span>Search</span></Link>
+            <Link to="/favourites"      className="sidebar-link"><i className="fas fa-heart"></i>         <span>Favourites</span></Link>
+            <Link to="/profile"         className="sidebar-link"><i className="fas fa-user"></i>          <span>Profile</span></Link>
+          </nav>
+        </aside>
+
+        <div className="main-content bp-confirmed-wrapper">
+          <div className="bp-confirmed-icon">
+            <i className="fas fa-check"></i>
+          </div>
+          <h2 className="bp-confirmed-title">Booking Confirmed!</h2>
+          <p className="bp-confirmed-subtitle">Your appointment has been scheduled successfully.</p>
+
+          <div className="bp-confirmed-card">
+            <div className="bp-confirmed-card-header">
+              <p>Barber</p>
+              <p>S.S.K.Perera</p>
+            </div>
+            {[
+              ['Service', service?.name],
+              ['Date',    selectedDate],
+              ['Time',    selectedTime],
+              ['Payment', paymentMethod],
+            ].map(([label, val]) => (
+              <div key={label} className="bp-confirmed-row">
+                <span>{label}</span>
+                <span>{val}</span>
+              </div>
+            ))}
+            <div className="bp-confirmed-total">
+              <span className="bp-confirmed-total-label">Total</span>
+              <span className="bp-confirmed-total-price">{service?.price}</span>
+            </div>
+          </div>
+
+          <button className="bp-confirmed-home-btn" onClick={() => navigate('/customer-home')}>
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   /* ─── Step 1: Booking Form ─── */
   return (
