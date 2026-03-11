@@ -1423,6 +1423,41 @@ html, body {
 
 .bp-divider-line { height: 1px; background: #2a2a2a; margin: 18px 20px; }
 
+.bp-gender-section { padding: 0 20px 18px; }
+.bp-gender-label { font-size: 15px; font-weight: 600; color: var(--color-accent); margin-bottom: 12px; }
+.bp-gender-row { display: flex; gap: 30px; }
+
+.bp-gender-opt { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: var(--text-secondary); }
+.bp-gender-opt.active { color: var(--text-on-accent); }
+
+.bp-radio-outer {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid #555;
+  display: flex; align-items: center; justify-content: center; transition: border-color 0.2s;
+}
+
+.bp-gender-opt.active .bp-radio-outer { border-color: var(--color-accent); }
+.bp-radio-inner { width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent); display: none; }
+.bp-gender-opt.active .bp-radio-inner { display: block; }
+
+.bp-haircut-section { padding: 0 20px 20px; }
+.bp-haircut-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.bp-haircut-title { font-size: 16px; font-weight: 600; color: var(--text-on-accent); font-family: 'Poppins', sans-serif; }
+.bp-view-all { font-size: 13px; color: var(--color-accent); cursor: pointer; background: none; border: none; padding: 0; font-family: 'Poppins', sans-serif; font-weight: 600; }
+
+.bp-haircut-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+.bp-haircut-card {
+  cursor: pointer; border-radius: 10px; overflow: hidden;
+  background: var(--bg-surface); border: 2px solid transparent; transition: border-color 0.2s;
+}
+
+.bp-haircut-card.selected { border-color: var(--color-accent); }
+.bp-haircut-card img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; display: block; }
+.bp-haircut-card-info { padding: 8px; }
+.bp-haircut-name { font-size: 11px; font-weight: 700; color: var(--text-on-accent); letter-spacing: 0.5px; margin-bottom: 2px; font-family: 'Poppins', sans-serif; }
+.bp-haircut-price { font-size: 11px; color: var(--text-faint); }
+.bp-haircut-card.selected .bp-haircut-price { color: var(--color-accent); }
+
 
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }

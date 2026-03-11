@@ -4,6 +4,31 @@ import { useNavigate, Link } from 'react-router-dom';
 export default function BookingPage() {
   const navigate = useNavigate();
 
+  const SERVICE_CATALOG = {
+    Male: {
+      "Beard Services": [
+        { id: 4, name: "FULL BEARD", price: "Rs.800.00",  img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300&h=300&fit=crop&crop=top" },
+        { id: 5, name: "BEARD TRIM", price: "Rs.600.00",  img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&h=300&fit=crop&crop=top" },
+        { id: 6, name: "HOT SHAVE",  price: "Rs.1000.00", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&h=300&fit=crop&crop=top" },
+      ],
+    },
+  };
+
+  const SERVICE_TYPES = {
+    Male:   ["Beard Services"],
+  };
+
+  const [selectedGender, setSelectedGender]  = useState("Male");
+  const [selectedServiceType, setSelectedServiceType] = useState("Beard Services");
+  const [selectedService, setSelectedService]       = useState(null);
+  
+  const SERVICES = (SERVICE_CATALOG[selectedGender] || {})[selectedServiceType] || [];
+
+  const getServiceDetails = () =>
+    Object.values(SERVICE_CATALOG)
+      .flatMap(g => Object.values(g).flat())
+      .find(s => s.id === selectedService);
+
   /* ─── Step 1: Booking Form ─── */
   return (
     <div className="app-layout">
@@ -64,6 +89,54 @@ export default function BookingPage() {
         </div>
 
         <div className="bp-divider-line"></div>
+
+        {/* Gender */}
+        <div className="bp-gender-section">
+          <div className="bp-gender-label">Gender</div>
+          <div className="bp-gender-row">
+            {['Male', 'Female'].map(g => (
+              <div
+                key={g}
+                className={`bp-gender-opt ${selectedGender === g ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedGender(g);
+                  setSelectedService(null);
+                  setSelectedServiceType(SERVICE_TYPES[g][0]);
+                }}
+              >
+                <div className="bp-radio-outer">
+                  <div className="bp-radio-inner"></div>
+                </div>
+                {g}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Service Type - Male */}
+        {selectedGender === 'Male' && (
+          <div className="bp-haircut-section">
+            <div className="bp-haircut-header">
+              <span className="bp-haircut-title">Select</span>
+              <button className="bp-view-all">View All</button>
+            </div>
+            <div className="bp-haircut-cards">
+              {SERVICES.map(service => (
+                <div
+                  key={service.id}
+                  className={`bp-haircut-card ${selectedService === service.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedService(service.id)}
+                >
+                  <img src={service.img} alt={service.name} />
+                  <div className="bp-haircut-card-info">
+                    <div className="bp-haircut-name">{service.name}</div>
+                    <div className="bp-haircut-price">{service.price}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div style={{ height: '80px' }}></div>
       </div>
