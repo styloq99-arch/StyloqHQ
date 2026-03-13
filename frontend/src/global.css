@@ -1446,6 +1446,288 @@ html, body {
   cursor: pointer;
 }
 
+/* ========================================
+   APPOINTMENTS HEADER & CONTROLS
+   ======================================== */
+
+.appointments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.appointments-header h3 {
+  font-size: 28px;
+  color: var(--text-on-accent);
+  font-weight: bold;
+  margin: 10px;
+}
+
+.overview-link {
+  background-color: transparent;
+  color: var(--color-accent);
+  text-decoration: none;
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid var(--color-accent);
+  transition: all 0.2s;
+  font-weight: 500;
+  text-align: center;
+}
+
+.overview-link:active {
+  background-color: var(--color-accent-hover);
+}
+
+.appointments-control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0 1.5rem 0;
+}
+
+.appointments-info {
+  margin: 0;
+}
+
+.appointments-subtitle {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: 0 0 4px 0;
+}
+
+.appointments-count {
+  font-size: 13px;
+  color: var(--text-on-accent);
+  margin: 0;
+  font-weight: 500;
+}
+
+
+/* ========================================
+   FILTER BUTTON
+   ======================================== */
+
+.filter-btn {
+  width: auto;
+  min-width: 110px;
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+  color: var(--text-on-btn);
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 0;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px var(--color-accent-glow-mid);
+}
+
+.filter-btn:active {
+  transform: translateY(1px);
+}
+
+.filter-btn i {
+  font-size: 12px;
+}
+
+
+/* ========================================
+   FILTER DROPDOWN
+   ======================================== */
+
+.filter-wrapper {
+  position: relative;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 300px;
+  max-width: calc(100vw - 32px);               /* FIX: prevents dropdown overflowing viewport on small screens */
+  background: var(--bg-elevated);
+  border: 1px solid #2e2e2e;
+  border-radius: 14px;
+  padding: 18px;
+  z-index: 200;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-sizing: border-box;                      /* FIX: padding doesn't push width beyond 300px */
+}
+
+.filter-dropdown.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.filter-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 10px 0;
+}
+
+.filter-divider {
+  border: none;
+  border-top: 1px solid #2e2e2e;
+  margin: 14px 0;
+}
+
+.filter-check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.filter-check-label:hover {
+  background: var(--fill-glass-lo);
+}
+
+.filter-check-label input[type="checkbox"] {
+  display: none;
+}
+
+.filter-custom-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-default);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.filter-check-label input:checked + .filter-custom-check {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.filter-custom-check svg {
+  display: none;
+}
+
+.filter-check-label input:checked + .filter-custom-check svg {
+  display: block;
+}
+
+.filter-check-text {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  flex: 1;
+}
+
+.filter-badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.filter-badge.paid {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.filter-badge.not-paid {
+  background: rgba(244, 67, 54, 0.15);
+  color: #F44336;
+}
+
+.filter-date-row {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-date-group {
+  flex: 1;
+  min-width: 0;                                /* FIX: prevents flex children from overflowing */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-date-group label {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.filter-date-group input[type="date"] {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-on-accent);
+  font-size: 0.8rem;
+  padding: 7px 8px;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.15s;
+  box-sizing: border-box;                      /* FIX: keeps input within its container */
+}
+
+.filter-date-group input[type="date"]:focus {
+  border-color: var(--color-accent);
+}
+
+.filter-date-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #2e2e2e;
+}
+
+.filter-clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.filter-clear-btn:hover {
+  color: #F44336;
+}
 
 
 @media (max-width: 600px) {
