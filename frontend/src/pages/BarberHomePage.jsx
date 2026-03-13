@@ -345,6 +345,11 @@ export default function BarberHomePage() {
                   <div className="payment-section">
                     <span className="payment-label">Payment option</span>
                     <span className="payment-value">: {appointment.paymentOption}</span>
+                  </div>
+
+                  <div className="barber-card-actions">
+                    <button className="barber-btn-cancel">Cancel</button>
+                    <button className="btn-done">Done</button>
                   </div>            
 
                 </div>
