@@ -33,6 +33,25 @@ export default function BarberHomePage() {
 
       {/* --- MAIN CONTENT --- */}
       <div className="main-content">
+        <header className="customer-barber-header">
+          <div className="header-top">
+            <div className="header-profile">
+              <img
+                src="https://i.pravatar.cc/150?img=11"
+                alt="Barber Profile"
+                className="header-avatar"
+              />
+              <div className="barber-welcome-text">
+                <h1>WELCOME</h1>
+                <h2>MR. PERERA</h2>
+              </div>
+            </div>
+            <div className="notification-bell">
+              <i className="far fa-bell"></i>
+              <span className="badge">3</span>
+            </div>
+          </div>
+        </header>
 
         <div className="page-body barber-home-body">
 
