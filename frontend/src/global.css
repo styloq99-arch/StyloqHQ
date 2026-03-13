@@ -1378,6 +1378,28 @@ html, body {
   opacity: 0.3;
 }
 
+
+/* ========================================================================================================================================
+   BARBER HOME - EXACT MOBILE DESIGN
+   ======================================================================================================================================== */
+
+
+/* ========================================
+   HORIZONTAL SCROLL PREVENTION
+   ======================================== */
+
+/* Prevents the entire barber home page from scrolling horizontally */
+.barber-home-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.barber-home-body {
+  margin: 20px;
+}
+
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
   .card-left { width: 100%; gap: 12px; }
