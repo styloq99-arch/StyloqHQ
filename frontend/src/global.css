@@ -1729,6 +1729,222 @@ html, body {
   color: #F44336;
 }
 
+.filter-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.filter-chip {
+  background: rgba(255, 87, 34, 0.12);
+  border: 1px solid var(--color-accent-border);
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  padding: 4px 10px 4px 12px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.filter-chip-remove {
+  cursor: pointer;
+  font-size: 0.7rem;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+
+.filter-chip-remove:hover {
+  opacity: 1;
+}
+
+.filter-no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  grid-column: 1 / -1;
+}
+
+/* ========================================
+   APPOINTMENT CARDS
+   ======================================== */
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;                                 /* FIX: list never exceeds page width */
+  box-sizing: border-box;
+}
+
+.appointment-card {
+  margin-left: 10px;
+  margin-right: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-faint);
+  border-radius: 16px;
+  padding: 1.25rem;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-card);
+  box-sizing: border-box;                      /* FIX: padding stays inside card width */
+  min-width: 0;                                /* FIX: card can shrink inside flex/grid */
+}
+
+.appointment-card:active {
+  transform: scale(0.98);
+}
+
+.barber-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.customer-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;                                /* FIX: prevents customer name from overflowing */
+}
+
+.customer-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  object-fit: cover;
+  flex-shrink: 0;                              /* FIX: avatar won't shrink and distort */
+}
+
+.customer-name {
+  font-size: 15px;
+  color: var(--text-on-accent);
+  font-weight: 500;
+  white-space: nowrap;                         /* FIX: name stays on one line */
+  overflow: hidden;
+  text-overflow: ellipsis;                     /* FIX: truncates with "..." if too long */
+}
+
+.price-status {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-shrink: 0;                              /* FIX: price block won't collapse */
+}
+
+.price {
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1;
+}
+
+.price.paid {
+  color: var(--color-success);
+}
+
+.price.not-paid {
+  color: #F44336;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1;
+}
+
+.status-badge.paid {
+  color: var(--color-success);
+}
+
+.status-badge.not-paid {
+  color: #F44336;
+}
+
+.appointment-details {
+  margin-bottom: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 13px;
+  min-width: 0;                                /* FIX: row won't overflow its card */
+}
+
+.detail-row .label {
+  color: var(--text-on-accent);
+  min-width: 85px;
+  font-weight: 400;
+  flex-shrink: 0;                              /* FIX: label width stays fixed */
+}
+
+.detail-row .value {
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;                                /* FIX: value shrinks instead of pushing out */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hairstyle-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.hairstyle-image {
+  width: 90px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-faint);
+  margin-bottom: 0.5rem;
+}
+
+.service-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  text-align: center;
+}
+
+.payment-section {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 13px;
+  padding: 0.85rem;
+  background-color: var(--fill-glass-lo);
+  border-radius: 8px;
+  width: 100%;                                 
+  box-sizing: border-box;                      
+}
+
+.payment-label {
+  color: var(--text-on-accent);
+  min-width: 115px;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.payment-value {
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;                               
+}
+
 
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
