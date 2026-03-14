@@ -229,7 +229,7 @@ export default function CustomerHome() {
                           </div>
                         </div>
                       </div>
-                      <Link to="/barber-profile" className="btn btn-secondary"
+                      <Link to="/barber-profile-view" className="btn btn-secondary"
                         style={{ width: '40%', height: '45px', marginTop: '2rem', borderRadius: '20px' }}>
                         View Profile
                       </Link>
