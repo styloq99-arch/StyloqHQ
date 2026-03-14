@@ -24,6 +24,7 @@ import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
 import Chatbot from "./pages/Chatbot";
+import BookingPage from "./pages/BookingPage";
 
 export default function App() {
   return (
