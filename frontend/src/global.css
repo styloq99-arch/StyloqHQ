@@ -2446,6 +2446,31 @@ html, body {
   display: flex;
 }
 
+/* ── Controls: Sort ── */
+.fav-controls {
+  padding: 12px 24px 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fav-sort-select {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  padding: 0 14px;
+  height: 48px;
+  font-size: 13px;
+  font-family: Poppins, sans-serif;
+  cursor: pointer;
+  outline: none;
+  min-width: 140px;
+}
+
+.fav-sort-select option {
+  background: var(--bg-elevated);
+}
+
 /* ========================================================================================================================================
    BARBER HOME - EXACT MOBILE DESIGN
    ======================================================================================================================================== */
