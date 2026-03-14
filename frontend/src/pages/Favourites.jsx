@@ -11,6 +11,8 @@ export default function Favourites() {
   const { favouriteList, toggleFavourite } = useFavourites();
 
   const [sortBy, setSortBy] = useState('newest');
+  const [removeConfirm, setRemoveConfirm] = useState(null);
+  const [removeToast, setRemoveToast] = useState(false);
 
   const filtered = favouriteList
     .sort((a, b) => {
@@ -22,8 +24,53 @@ export default function Favourites() {
     favouriteList.forEach(p => toggleFavourite(p));
   };
 
+  const handleRemove = (post) => setRemoveConfirm(post);
+
+  const confirmRemove = () => {
+    if (removeConfirm) {
+      toggleFavourite(removeConfirm);
+      setRemoveConfirm(null);
+      setRemoveToast(true);
+      setTimeout(() => setRemoveToast(false), 2200);
+    }
+  };
+
+  const renderStars = (rating) =>
+    [...Array(5)].map((_, i) => (
+      <i
+        key={i}
+        className={`fas fa-star ${i < rating ? 'star--filled' : 'star--empty'}`}
+      ></i>
+    ));
+
   return (
     <div className="app-layout">
+
+      {/* Remove Toast */}
+      {removeToast && (
+        <div className="cp-toast cp-toast--remove">
+          <i className="fas fa-trash"></i> Removed from Favourites
+        </div>
+      )}
+
+      {/* Confirm Remove Modal */}
+      {removeConfirm && (
+        <div className="cp-modal-overlay">
+          <div className="cp-modal">
+            <div className="cp-modal-icon">
+              <i className="fas fa-bookmark"></i>
+            </div>
+            <h3>Remove from Favourites?</h3>
+            <p>
+              <strong className="cp-modal-name">{removeConfirm.name}</strong>'s post will be removed from your saved collection.
+            </p>
+            <div className="cp-modal-actions">
+              <button className="cp-modal-keep" onClick={() => setRemoveConfirm(null)}>Keep It</button>
+              <button className="cp-modal-cancel" onClick={confirmRemove}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Desktop Sidebar */}
       <aside className="desktop-sidebar">
@@ -103,6 +150,43 @@ export default function Favourites() {
           </div>
         )}
 
+        {/* Grid View */}
+        {filtered.length > 0 && (
+          <div className="fav-grid">
+            {filtered.map(post => (
+              <div key={post.id} className="feed-card fav-card">
+
+                <div className="image-container">
+                  <img src={post.image} alt="Post" className="feed-image fav-card__image" />
+                </div>
+
+                <div className="card-header fav-card__header">
+                  <div className="header-left">
+                    <img src={post.avatar} alt="Avatar" className="profile-avatar" />
+                    <div className="header-text">
+                      <h4 className="barber-name fav-card__name">{post.name}</h4>
+                      <div className="stars-container">{renderStars(post.rating)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card-content fav-card__content">
+                  <p className="caption-text fav-card__caption">{post.caption}</p>
+                </div>
+
+                <div className="fav-card__actions">
+                  <Link to="/barber-profile-view" className="btn btn-secondary fav-card__btn">
+                    View Profile
+                  </Link>
+                  <button onClick={() => handleRemove(post)} className="fav-list-item__remove-btn">
+                    <i className="fas fa-trash"></i> Remove
+                  </button>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
 

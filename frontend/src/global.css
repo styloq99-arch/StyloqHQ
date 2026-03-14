@@ -2549,6 +2549,97 @@ html, body {
   text-decoration: none;
 }
 
+/* ── Stars ── */
+.star--filled {
+  font-size: 11px;
+  color: var(--color-gold);
+}
+
+.star--empty {
+  font-size: 11px;
+  color: var(--border-default);
+}
+
+/* ── Toast ── */
+.cp-toast--remove {
+  bottom: 80px;
+  z-index: 9999;
+  background: #555;
+}
+
+/* ── Modal ── */
+.cp-modal-name {
+  color: var(--text-primary);
+}
+
+/* ── Grid View ── */
+.fav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px 24px 100px;
+}
+
+.fav-card {
+  position: relative;
+}
+
+.fav-card__image {
+  max-height: 220px;
+}
+
+.fav-card__header {
+  padding-bottom: 10px;
+}
+
+.fav-card__name {
+  font-size: 14px;
+}
+
+.fav-card__content {
+  padding-top: 0;
+}
+
+.fav-card__caption {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.fav-card__actions {
+  padding: 8px 16px 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.fav-card__btn {
+  flex: 1;
+  height: 38px;
+  border-radius: 20px;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.fav-list-item__remove-btn {
+  background: rgba(255, 87, 34, 0.08);
+  border: 1px solid var(--color-accent-border);
+  border-radius: 17px;
+  color: var(--color-accent);
+  width: 100px;
+  height: 34px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: Poppins, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.fav-list-item__remove-btn i {
+  font-size: 10px;
+}
+
 /* ========================================================================================================================================
    BARBER HOME - EXACT MOBILE DESIGN
    ======================================================================================================================================== */
