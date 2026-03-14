@@ -18,6 +18,10 @@ export default function Favourites() {
       return b.id - a.id;
     });
 
+  const handleRemoveAll = () => {
+    favouriteList.forEach(p => toggleFavourite(p));
+  };
+
   return (
     <div className="app-layout">
 
@@ -58,7 +62,13 @@ export default function Favourites() {
                 </p>
               </div>
             </div>
-            <div className="fav-header__actions"></div>
+            <div className="fav-header__actions">
+              {favouriteList.length > 0 && (
+                <button onClick={handleRemoveAll} className="fav-clear-btn">
+                  <i className="fas fa-trash"></i> Clear All
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
