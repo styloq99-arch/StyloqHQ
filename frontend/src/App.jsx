@@ -23,7 +23,7 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
-import Chatbot from "./components/Chatbot";
+import Chatbot from "./pages/Chatbot";
 
 export default function App() {
   return (
