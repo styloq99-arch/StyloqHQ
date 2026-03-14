@@ -56,6 +56,7 @@ export default function App() {
 
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />
+          <Route path="/booking" element={<BookingPage />} />
           <Route path="/add-review" element={<AddReviewPage />} />
           <Route path="/barber-profile-view" element={<BarberProfileView />} />
           <Route path="/customer-profile" element={<CustomerProfile />} />
