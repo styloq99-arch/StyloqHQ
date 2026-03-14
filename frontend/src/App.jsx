@@ -23,7 +23,8 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
-import Chatbot from "./components/Chatbot";
+import Chatbot from "./pages/Chatbot";
+import BookingPage from "./pages/BookingPage";
 
 export default function App() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Chatbot />
       </FavouritesProvider>
     </BrowserRouter>
   );
