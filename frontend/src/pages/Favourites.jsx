@@ -87,6 +87,23 @@ export default function Favourites() {
           </div>
         )}
 
+        {/* Empty State */}
+        {favouriteList.length === 0 && (
+          <div className="fav-empty">
+            <div className="fav-empty__icon-wrap">
+              <i className="far fa-bookmark fav-empty__icon"></i>
+            </div>
+            <h2 className="fav-empty__title">Nothing saved yet</h2>
+            <p className="fav-empty__desc">
+              Tap the <i className="far fa-bookmark fav-empty__inline-icon"></i> icon on any post to save it here for later.
+            </p>
+            <Link to="/customer-home" className="btn btn-primary fav-empty__btn">
+              <i className="fas fa-home"></i> Browse Feed
+            </Link>
+          </div>
+        )}
+
+
       </div>
 
       {/* Mobile Bottom Nav */}

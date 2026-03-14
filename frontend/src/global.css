@@ -2492,6 +2492,63 @@ html, body {
   font-size: 11px;
 }
 
+/* ── Empty State ── */
+.fav-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.fav-empty__icon-wrap {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 87, 34, 0.07);
+  border: 2px solid rgba(255, 87, 34, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.fav-empty__icon {
+  font-size: 40px;
+  color: var(--color-accent);
+  opacity: 0.6;
+}
+
+.fav-empty__title {
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 10px;
+  font-family: Poppins, sans-serif;
+}
+
+.fav-empty__desc {
+  color: var(--text-dim);
+  font-size: 14px;
+  max-width: 260px;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.fav-empty__inline-icon {
+  color: var(--color-accent);
+}
+
+.fav-empty__btn {
+  width: auto;
+  padding: 0 32px;
+  height: 48px;
+  border-radius: 24px;
+  text-decoration: none;
+}
+
 /* ========================================================================================================================================
    BARBER HOME - EXACT MOBILE DESIGN
    ======================================================================================================================================== */
