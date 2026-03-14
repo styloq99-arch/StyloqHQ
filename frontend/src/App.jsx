@@ -23,8 +23,7 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
-
-
+import Chatbot from "./components/Chatbot";
 
 export default function App() {
   return (
@@ -36,14 +35,12 @@ export default function App() {
           <Route path="/" element={<Index />} />
           <Route path="/signin" element={<SignIn />} />
 
-
           <Route path="/signup-barber" element={<SignUpBarber />} />
           <Route path="/signup-barber-step4" element={<SignUpBarberStep4 />} />
           <Route path="/signup-barber-step5" element={<SignUpBarberStep5 />} />
           <Route path="/signup-barber-step6" element={<SignUpBarberStep6 />} />
           <Route path="/signup-barber-step7" element={<SignUpBarberStep7 />} />
           <Route path="/signup-barber-step8" element={<SignUpBarberStep8 />} />
-
 
           <Route path="/signup-customer" element={<SignUpCustomer />} />
           <Route path="/verification-step1" element={<VerificationStep1 />} />
