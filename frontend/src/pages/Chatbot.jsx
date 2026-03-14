@@ -35,4 +35,41 @@ export default function Chatbot() {
 
     setInput("");
   };
+  return (
+    <>
+      {!open && (
+        <button className="chatbot-button" onClick={() => setOpen(true)}>
+          💬
+        </button>
+      )}
+
+      {open && (
+        <div className="chatbot-window">
+          <div className="chatbot-header">
+            StyloQ Support
+            <button onClick={() => setOpen(false)}>✕</button>
+          </div>
+
+          <div className="chatbot-messages">
+            {messages.map((m, i) => (
+              <div key={i} className={`chat-message ${m.sender}`}>
+                {m.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="chatbot-input">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask something..."
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            />
+
+            <button onClick={sendMessage}>Send</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
