@@ -20,6 +20,7 @@ import CustomerHome from "./pages/CustomerHome.jsx";
 import CustomerSearch from "./pages/CustomerSearch.jsx";
 import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
+import BarberHomePage from "./pages/BarberHomePage.jsx";
 
 
 
@@ -48,6 +49,8 @@ export default function App() {
           <Route path="/create-password" element={<CreatePassword />} />
 
           <Route path="/signup-salon" element={<SignUpSalon />} />
+
+          <Route path="/barber-home" element={<BarberHomePage />} />
 
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />

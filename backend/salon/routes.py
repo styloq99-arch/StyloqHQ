@@ -1,19 +1,60 @@
 from flask import Blueprint, request, jsonify
-from salon import services
+from backend.auth.utils import login_required, get_current_user_from_token, role_required
+from backend.salon import services
 
-salon_bp = Blueprint("salon", __name__)
+salon_bp = Blueprint("salon", __name__, url_prefix="/salon")
 
 
-# Salon Profile
+def _ok(data, message: str = "", status: int = 200):
+    """Uniform success envelope."""
+    body = {"success": True, "data": data}
+    if message:
+        body["message"] = message
+    return jsonify(body), status
+
+
+def _err(reason: str, message: str, status: int = 400):
+    """Uniform error envelope."""
+    return jsonify({
+        "success": False,
+        "reason": reason,
+        "message": message
+    }), status
+
+
+def _get_salon_id_from_user():
+    """Get salon_id from current authenticated user."""
+    current_user = get_current_user_from_token()
+    if not current_user:
+        return None
+    if current_user.role != "salon":
+        return None
+    # Get salon profile from user
+    session = None
+    try:
+        from backend.models.base import SessionLocal
+        session = SessionLocal()
+        from backend.models.user import Salon
+        salon = session.query(Salon).filter(Salon.user_id == current_user.id).first()
+        return salon.id if salon else None
+    finally:
+        if session:
+            session.close()
+
+
+# =============================================================================
+# PUBLIC ENDPOINTS (no authentication required)
+# =============================================================================
+
 @salon_bp.route("/profile", methods=["GET"])
 def get_profile():
-    """Fetch salon identity and configuration"""
+    """GET /salon/profile - Fetch salon identity and configuration."""
     # For dummy data, we'll use query parameter or default
     owner_id = request.args.get('owner_id', 1, type=int)
 
     data = services.get_salon_profile(owner_id)
     if not data:
-        return jsonify({"error": "Salon profile not found"}), 404
+        return _err("not_found", "Salon profile not found", 404)
 
     salon = data['salon']
     payment_policy = data['payment_policy']
@@ -44,40 +85,20 @@ def get_profile():
             "is_active": hours["is_active"]
         })
 
-    return jsonify(response)
+    return _ok(response)
 
 
-@salon_bp.route("/profile", methods=["PATCH"])
-def update_profile():
-    """Update salon metadata only (does not affect bookings)"""
-    owner_id = request.args.get('owner_id', 1, type=int)
-    data = request.get_json()
-
-    updated = services.update_salon_profile(owner_id, data)
-    if not updated:
-        return jsonify({"error": "Salon not found"}), 404
-
-    return jsonify({
-        "message": "Salon profile updated successfully",
-        "salon": {
-            "id": updated["id"],
-            "name": updated["name"]
-        }
-    })
-
-
-# Working Hours
 @salon_bp.route("/working-hours", methods=["GET"])
 def get_working_hours():
-    """Return the salon's operating hours"""
+    """GET /salon/working-hours - Return the salon's operating hours."""
     salon_id = request.args.get('salon_id', 1, type=int)
 
     hours = services.get_salon_working_hours(salon_id)
 
     if not hours:
-        return jsonify({"error": "No working hours found"}), 404
+        return _err("not_found", "No working hours found", 404)
 
-    return jsonify({
+    return _ok({
         "salon_id": salon_id,
         "opening_time": hours[0]["opening_time"] if hours else "09:00",
         "closing_time": hours[0]["closing_time"] if hours else "19:00",
@@ -86,42 +107,16 @@ def get_working_hours():
     })
 
 
-@salon_bp.route("/working-hours", methods=["PUT"])
-def update_working_hours():
-    """Set or update salon working hours"""
-    salon_id = request.args.get('salon_id', 1, type=int)
-    data = request.get_json()
-
-    if not data or 'hours' not in data:
-        return jsonify({"error": "Hours data required"}), 400
-
-    # Validate hours data
-    for hour in data['hours']:
-        if 'day_of_week' not in hour or 'opening_time' not in hour or 'closing_time' not in hour:
-            return jsonify({"error": "Each hour entry needs day_of_week, opening_time, closing_time"}), 400
-
-    result = services.update_salon_working_hours(salon_id, data['hours'])
-    if not result:
-        return jsonify({"error": "Failed to update working hours"}), 400
-
-    return jsonify({
-        "message": "Working hours updated successfully",
-        "effect": "Barber availability overlapping these hours is now treated as salon context",
-        "updated_hours": len(data['hours'])
-    })
-
-
-# Salon Location
 @salon_bp.route("/location-context", methods=["GET"])
 def get_location_context():
-    """Return location information used for bookings"""
+    """GET /salon/location-context - Return location information used for bookings."""
     salon_id = request.args.get('salon_id', 1, type=int)
 
     location = services.get_salon_location_context(salon_id)
     if not location:
-        return jsonify({"error": "Salon not found"}), 404
+        return _err("not_found", "Salon not found", 404)
 
-    return jsonify({
+    return _ok({
         "salon_name": location['salon_name'],
         "address": location['address'],
         "city": location.get('city', ''),
@@ -129,17 +124,118 @@ def get_location_context():
     })
 
 
-@salon_bp.route("/location-context", methods=["PUT"])
-def update_location_context():
-    """Update how salon location is shown on barber bookings"""
+@salon_bp.route("/barbers", methods=["GET"])
+def list_barbers():
+    """GET /salon/barbers - List barbers associated with salon."""
     salon_id = request.args.get('salon_id', 1, type=int)
+    active_only = request.args.get('active_only', 'true').lower() == 'true'
+
+    barbers = services.get_salon_barbers(salon_id, active_only)
+
+    return _ok({
+        "salon_id": salon_id,
+        "barbers": barbers,
+        "count": len(barbers),
+        "active_only": active_only,
+        "note": "This is collaboration control, not employment management"
+    })
+
+
+@salon_bp.route("/check-context", methods=["POST"])
+def check_salon_context():
+    """POST /salon/check-context - Check if a specific booking should use salon context."""
+    data = request.get_json()
+
+    if 'barber_id' not in data or 'appointment_datetime' not in data:
+        return _err("bad_request", "barber_id and appointment_datetime required")
+
+    is_salon_context = services.is_in_salon_context(data['barber_id'], data['appointment_datetime'])
+
+    return _ok({
+        "is_salon_context": is_salon_context,
+        "barber_id": data['barber_id'],
+        "appointment_datetime": data['appointment_datetime'],
+        "implication": "Salon payment policy and location context apply" if is_salon_context else "Freelance rules apply"
+    })
+
+
+# =============================================================================
+# PROTECTED ENDPOINTS (authentication + salon role required)
+# =============================================================================
+
+@salon_bp.route("/profile", methods=["PATCH"])
+@login_required
+@role_required(["salon"])
+def update_profile():
+    """PATCH /salon/profile - Update salon metadata only."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
+    
+    data = request.get_json()
+
+    updated = services.update_salon_profile_by_id(salon_id, data)
+    if not updated:
+        return _err("not_found", "Salon not found", 404)
+
+    return _ok({
+        "message": "Salon profile updated successfully",
+        "salon": {
+            "id": updated["id"],
+            "name": updated["name"]
+        }
+    })
+
+
+@salon_bp.route("/working-hours", methods=["PUT"])
+@login_required
+@role_required(["salon"])
+def update_working_hours():
+    """PUT /salon/working-hours - Set or update salon working hours."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
+    
+    data = request.get_json()
+
+    if not data or 'hours' not in data:
+        return _err("bad_request", "Hours data required")
+
+    # Validate hours data
+    for hour in data['hours']:
+        if 'day_of_week' not in hour or 'opening_time' not in hour or 'closing_time' not in hour:
+            return _err("bad_request", "Each hour entry needs day_of_week, opening_time, closing_time")
+
+    result = services.update_salon_working_hours(salon_id, data['hours'])
+    if not result:
+        return _err("bad_request", "Failed to update working hours")
+
+    return _ok({
+        "message": "Working hours updated successfully",
+        "effect": "Barber availability overlapping these hours is now treated as salon context",
+        "updated_hours": len(data['hours'])
+    })
+
+
+@salon_bp.route("/location-context", methods=["PUT"])
+@login_required
+@role_required(["salon"])
+def update_location_context():
+    """PUT /salon/location-context - Update how salon location is shown on barber bookings."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
+    
     data = request.get_json()
 
     updated = services.update_salon_location_context(salon_id, data)
     if not updated:
-        return jsonify({"error": "Salon not found"}), 404
+        return _err("not_found", "Salon not found", 404)
 
-    return jsonify({
+    return _ok({
         "message": "Location context updated successfully",
         "frontend_effect": f"Will show 'At {updated['name']} Salon' instead of freelance",
         "location": {
@@ -149,15 +245,19 @@ def update_location_context():
     })
 
 
-# Salon Paymentt
 @salon_bp.route("/payment-policy", methods=["GET"])
+@login_required
+@role_required(["salon"])
 def get_payment_policy():
-    """Return the active payment policy"""
-    salon_id = request.args.get('salon_id', 1, type=int)
+    """GET /salon/payment-policy - Return the active payment policy."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
 
     policy = services.get_payment_policy(salon_id)
 
-    return jsonify({
+    return _ok({
         "salon_id": salon_id,
         "policy_type": policy['policy_type'],
         "commission_percentage": policy['commission_percentage'],
@@ -167,30 +267,36 @@ def get_payment_policy():
 
 
 @salon_bp.route("/payment-policy", methods=["PUT"])
+@login_required
+@role_required(["salon"])
 def update_payment_policy():
-    """Set or change the salon's payment rule"""
-    salon_id = request.args.get('salon_id', 1, type=int)
+    """PUT /salon/payment-policy - Set or change the salon's payment rule."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
+    
     data = request.get_json()
 
     # Validate policy type
     valid_types = ['SALARY', 'COMMISSION', 'HYBRID']
     if 'policy_type' not in data or data['policy_type'] not in valid_types:
-        return jsonify({"error": f"Valid policy_type required: {valid_types}"}), 400
+        return _err("bad_request", f"Valid policy_type required: {valid_types}")
 
     # Validate commission if provided
     if 'commission_percentage' in data:
         try:
             commission = float(data['commission_percentage'])
             if not 0 <= commission <= 100:
-                return jsonify({"error": "Commission percentage must be between 0 and 100"}), 400
+                return _err("bad_request", "Commission percentage must be between 0 and 100")
         except ValueError:
-            return jsonify({"error": "Invalid commission percentage"}), 400
+            return _err("bad_request", "Invalid commission percentage")
 
     policy = services.update_payment_policy(salon_id, data)
     if not policy:
-        return jsonify({"error": "Failed to update payment policy"}), 400
+        return _err("bad_request", "Failed to update payment policy")
 
-    return jsonify({
+    return _ok({
         "message": "Payment policy updated successfully",
         "effect": "All future bookings during salon context will use this policy",
         "policy": {
@@ -200,122 +306,87 @@ def update_payment_policy():
     })
 
 
-# Salon - Barber association
 @salon_bp.route("/barbers/invite", methods=["POST"])
+@login_required
+@role_required(["salon"])
 def invite_barber():
-    """Invite a barber to work under salon rules"""
-    salon_id = request.args.get('salon_id', 1, type=int)
+    """POST /salon/barbers/invite - Invite a barber to work under salon rules."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
+    
     data = request.get_json()
 
     if 'barber_id' not in data:
-        return jsonify({"error": "barber_id required"}), 400
+        return _err("bad_request", "barber_id required")
 
     result = services.invite_barber_to_salon(salon_id, data['barber_id'])
 
     if 'error' in result:
         status_code = 409 if 'already' in result['error'] else 404
-        return jsonify(result), status_code
+        return _err("conflict" if 'already' in result['error'] else "not_found", result['error'], status_code)
 
-    return jsonify(result), 201
+    return _ok(result, "Barber invited", 201)
 
 
 @salon_bp.route("/barbers/accept", methods=["POST"])
+@login_required
+@role_required(["barber"])
 def accept_collaboration():
-    """Barber accepts the salon's rules"""
+    """POST /salon/barbers/accept - Barber accepts the salon's rules."""
     data = request.get_json()
 
     if 'salon_id' not in data or 'barber_id' not in data:
-        return jsonify({"error": "salon_id and barber_id required"}), 400
+        return _err("bad_request", "salon_id and barber_id required")
 
     result = services.accept_barber_collaboration(data['barber_id'], data['salon_id'])
 
     if 'error' in result:
-        return jsonify(result), 404
+        return _err("not_found", result['error'], 404)
 
-    return jsonify(result)
+    return _ok(result)
 
 
 @salon_bp.route("/barbers/remove", methods=["POST"])
+@login_required
+@role_required(["salon"])
 def remove_barber():
-    """Stop applying salon rules to that barber"""
-    salon_id = request.args.get('salon_id', 1, type=int)
+    """POST /salon/barbers/remove - Stop applying salon rules to that barber."""
+    # Get salon for current user
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "Salon profile not found for this user", 404)
+    
     data = request.get_json()
 
     if 'barber_id' not in data:
-        return jsonify({"error": "barber_id required"}), 400
+        return _err("bad_request", "barber_id required")
 
     result = services.remove_barber_from_salon(salon_id, data['barber_id'])
 
     if 'error' in result:
-        return jsonify(result), 404
+        return _err("not_found", result['error'], 404)
 
-    return jsonify(result)
-
-
-@salon_bp.route("/barbers", methods=["GET"])
-def list_barbers():
-    """List barbers associated with salon"""
-    salon_id = request.args.get('salon_id', 1, type=int)
-    active_only = request.args.get('active_only', 'true').lower() == 'true'
-
-    barbers = services.get_salon_barbers(salon_id, active_only)
-
-    return jsonify({
-        "salon_id": salon_id,
-        "barbers": barbers,
-        "count": len(barbers),
-        "active_only": active_only,
-        "note": "This is collaboration control, not employment management"
-    })
-
-
-# ========== UTILITY ENDPOINTS ==========
-@salon_bp.route("/check-context", methods=["POST"])
-def check_salon_context():
-    """
-    Check if a specific booking should use salon context
-    Useful for frontend to determine display/booking rules
-    """
-    data = request.get_json()
-
-    if 'barber_id' not in data or 'appointment_datetime' not in data:
-        return jsonify({"error": "barber_id and appointment_datetime required"}), 400
-
-    is_salon_context = services.is_in_salon_context(data['barber_id'], data['appointment_datetime'])
-
-    return jsonify({
-        "is_salon_context": is_salon_context,
-        "barber_id": data['barber_id'],
-        "appointment_datetime": data['appointment_datetime'],
-        "implication": "Salon payment policy and location context apply" if is_salon_context else "Freelance rules apply"
-    })
+    return _ok(result)
 
 
 @salon_bp.route("/my-salon", methods=["GET"])
+@login_required
+@role_required(["salon"])
 def get_my_salon():
-    """Get salon for currently authenticated user (owner)"""
-    owner_id = request.args.get('owner_id', 1, type=int)
+    """GET /salon/my-salon - Get salon for currently authenticated user (owner)."""
+    salon_id = _get_salon_id_from_user()
+    if not salon_id:
+        return _err("not_found", "You don't own a salon", 404)
 
-    salon = services.get_salon_by_owner(owner_id)
+    salon = services.get_salon_by_id(salon_id)
     if not salon:
-        return jsonify({"error": "You don't own a salon"}), 404
+        return _err("not_found", "Salon not found", 404)
 
-    return jsonify({
+    return _ok({
         "salon_id": salon["id"],
         "name": salon["name"],
         "address": salon["address"]
     })
 
-
-# Testing
-@salon_bp.route("/debug/data", methods=["GET"])
-def debug_data():
-    """Debug endpoint to see all dummy data (remove in production)"""
-    return jsonify({
-        "salons": services._SALONS if hasattr(services, '_SALONS') else [],
-        "working_hours": services._SALON_WORKING_HOURS if hasattr(services, '_SALON_WORKING_HOURS') else [],
-        "payment_policies": services._SALON_PAYMENT_POLICIES if hasattr(services, '_SALON_PAYMENT_POLICIES') else [],
-        "barber_associations": services._SALON_BARBER_ASSOCIATIONS if hasattr(services,
-                                                                              '_SALON_BARBER_ASSOCIATIONS') else [],
-        "note": "This is for testing only with dummy data"
-    })

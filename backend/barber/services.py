@@ -7,7 +7,8 @@ from datetime import datetime, timezone
 # =============================================================================
 
 def get_db_connection():
-    conn = sqlite3.connect("styloq.db")
+    """Connect to the centralized database."""
+    conn = sqlite3.connect("backend/database.db")
     conn.row_factory = sqlite3.Row
     return conn
 
