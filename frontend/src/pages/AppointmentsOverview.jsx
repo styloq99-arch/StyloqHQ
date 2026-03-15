@@ -21,6 +21,33 @@ const AppointmentsOverview = () => {
 
       {/* ── MAIN ────────────────────────────────────────────────── */}
       <div className="overview-main main-content">
+        {/* Header */}
+        <header className="overview-header">
+          <img
+            src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=900&q=60"
+            alt=""
+            className="overview-header-bg"
+          />
+          <div className="overview-header-top">
+            <Link to="/barber-home" className="back-arrow">
+              <i className="fas fa-chevron-left" />
+            </Link>
+            <div className="header-titles">
+              <h1>APPOINTMENTS</h1>
+              <h1>OVERVIEW</h1>
+            </div>
+            <img
+              src="https://i.pravatar.cc/150?img=11"
+              alt="Barber"
+              className="overview-avatar"
+            />
+          </div>
+        </header>
+
+        {/* Body */}
+        <div className="overview-body">
+            
+        </div>{/* end overview-body */}
 
         {/* ── MOBILE BOTTOM NAV ────────────────────────────────── */}
         <nav className="bottom-nav">
