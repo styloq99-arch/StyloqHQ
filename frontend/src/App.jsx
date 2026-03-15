@@ -23,6 +23,7 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
+import AppointmentsOverview from "./pages/AppointmentsOverview.jsx";
 import Chatbot from "./pages/Chatbot";
 import BookingPage from "./pages/BookingPage";
 import Messages from "./pages/Messages.jsx";
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/signup-salon" element={<SignUpSalon />} />
 
           <Route path="/barber-home" element={<BarberHomePage />} />
+          <Route path="/Appointment-overview" element={<AppointmentsOverview />} />
 
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />
