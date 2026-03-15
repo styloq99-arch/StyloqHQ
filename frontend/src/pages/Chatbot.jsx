@@ -84,6 +84,9 @@ export default function Chatbot() {
                 {m.text}
               </div>
             ))}
+            {typing && <div className="chat-message bot typing">typing...</div>}
+            {/* anchor for auto scroll  */}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="chatbot-input">
