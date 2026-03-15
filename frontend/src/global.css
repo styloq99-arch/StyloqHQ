@@ -3892,3 +3892,26 @@ html, body {
   padding: 0 14px;
   cursor: pointer;
 }
+
+/* CHATBOT FAQ BUTTONS */
+
+.faq-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:10px;
+}
+
+.faq-buttons button{
+  background: var(--fill-glass-mid);
+  border:1px solid var(--border-subtle);
+  color:var(--text-primary);
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.faq-buttons button:hover{
+  border-color: var(--color-accent);
+}

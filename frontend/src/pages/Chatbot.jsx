@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -9,6 +9,12 @@ export default function Chatbot() {
       text: "Hi 👋 I'm the StyloQ assistant. How can I help you?",
     },
   ]);
+  const [typing, setTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -31,7 +37,16 @@ export default function Chatbot() {
 
     const botMsg = { sender: "bot", text: botReply };
 
-    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setMessages((prev) => [...prev, userMsg]);
+    setTyping(true);
+
+    setTimeout(() => {
+      setTyping(false);
+
+      const botMsg = { sender: "bot", text: botReply };
+
+      setMessages((prev) => [...prev, botMsg]);
+    }, 700);
 
     setInput("");
   };
@@ -51,11 +66,27 @@ export default function Chatbot() {
           </div>
 
           <div className="chatbot-messages">
+            <div className="faq-buttons">
+              <button onClick={() => setInput("How do I book?")}>
+                Book Appointment
+              </button>
+
+              <button onClick={() => setInput("Find barber")}>
+                Find Barber
+              </button>
+
+              <button onClick={() => setInput("Cancel booking")}>
+                Cancel Booking
+              </button>
+            </div>
             {messages.map((m, i) => (
               <div key={i} className={`chat-message ${m.sender}`}>
                 {m.text}
               </div>
             ))}
+            {typing && <div className="chat-message bot typing">typing...</div>}
+            {/* anchor for auto scroll  */}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="chatbot-input">
