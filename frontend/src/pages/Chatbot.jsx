@@ -66,6 +66,19 @@ export default function Chatbot() {
           </div>
 
           <div className="chatbot-messages">
+            <div className="faq-buttons">
+              <button onClick={() => setInput("How do I book?")}>
+                Book Appointment
+              </button>
+
+              <button onClick={() => setInput("Find barber")}>
+                Find Barber
+              </button>
+
+              <button onClick={() => setInput("Cancel booking")}>
+                Cancel Booking
+              </button>
+            </div>
             {messages.map((m, i) => (
               <div key={i} className={`chat-message ${m.sender}`}>
                 {m.text}
