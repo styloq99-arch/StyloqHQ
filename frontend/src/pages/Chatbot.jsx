@@ -37,7 +37,16 @@ export default function Chatbot() {
 
     const botMsg = { sender: "bot", text: botReply };
 
-    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setMessages((prev) => [...prev, userMsg]);
+    setTyping(true);
+
+    setTimeout(() => {
+      setTyping(false);
+
+      const botMsg = { sender: "bot", text: botReply };
+
+      setMessages((prev) => [...prev, botMsg]);
+    }, 700);
 
     setInput("");
   };
