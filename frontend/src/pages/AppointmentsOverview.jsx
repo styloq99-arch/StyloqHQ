@@ -30,6 +30,110 @@ const PEAK_HOURS_RAW = {
 
 const STATS = { today: 10, total: 45, cancelled: 10, paid: 5 };
 
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+const buildPeakData = (raw, { start, end }) => {
+  const result = [];
+  for (let h = start; h < end; h++) {
+    // Show 12-hr label (9, 10, 11, 12, 1, 2 …)
+    const label = h > 12 ? String(h - 12) : String(h);
+    result.push({ label, value: raw[h] ?? 0 });
+  }
+  return result;
+};
+
+const getMax = (arr) => Math.max(...arr.map((d) => d.value), 1);
+
+// Colour by relative height
+const getBarColor = (value, max) => {
+  const pct = value / max;
+  if (pct >= 1)    return '#D32F2F';   // peak  – deep red
+  if (pct > 0.55)  return '#FF5722';   // high  – accent orange
+  if (pct > 0.25)  return '#FF7043';   // mid   – light orange
+  return '#8D5524';                    // low   – brown
+};
+
+// Y-axis tick values (5 evenly spaced labels: max … 0)
+const buildYTicks = (max) => {
+  const step = max / 4;
+  return [max, Math.round(step * 3), Math.round(step * 2), Math.round(step), 0];
+};
+
+// ─── ANIMATED BAR ────────────────────────────────────────────────────────────
+const AnimatedBar = ({ value, max, label, delay = 0, isPeak = false, showValue = true }) => {
+  const [height, setHeight] = useState('0%');
+  const pct = max > 0 ? (value / max) * 100 : 0;
+  const color = isPeak ? '#D32F2F' : getBarColor(value, max);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeight(`${pct}%`), 200 + delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+
+  return (
+    <div className="bar-column">
+      {showValue && <span className="bar-value">{value > 0 ? value : ''}</span>}
+      <div
+        className={`bar${isPeak ? ' bar--peak' : ''}`}
+        style={{
+          height,
+          backgroundColor: color,
+          transition: 'height 1.4s cubic-bezier(0.34,1.56,0.64,1)',
+        }}
+      />
+      <span className="x-axis-label">{label}</span>
+    </div>
+  );
+};
+
+// ─── CHART (grid + y-axis + bars) ────────────────────────────────────────────
+const BarChart = ({ data, animKey, xTitle }) => {
+  const max    = getMax(data);
+  const yticks = buildYTicks(max);
+  const peakVal = Math.max(...data.map((d) => d.value));
+
+  return (
+    <div className="chart-container" key={animKey}>
+      {/* Rotated y-axis label */}
+      <div className="y-axis-title-wrap">
+        <span className="y-axis-title">No of Appointments</span>
+      </div>
+
+      {/* Tick numbers */}
+      <div className="y-axis">
+        {yticks.map((v, i) => (
+          <span key={i} className="y-tick">{v}</span>
+        ))}
+      </div>
+
+      {/* Grid + bars + x-title */}
+      <div className="chart-inner">
+        {/* Grid lines (absolute, 5 lines for 4 intervals) */}
+        <div className="grid-lines">
+          {yticks.map((_, i) => <div key={i} className="grid-line" />)}
+        </div>
+
+        {/* Bars */}
+        <div className="bars-wrapper">
+          {data.map((d, i) => (
+            <AnimatedBar
+              key={i}
+              value={d.value}
+              max={max}
+              label={d.day}
+              delay={i * 60}
+              isPeak={d.value === peakVal && d.value > 0}
+              showValue
+            />
+          ))}
+        </div>
+
+        {/* X-axis title (bottom-right) */}
+        <div className="x-axis-title">{xTitle}</div>
+      </div>
+    </div>
+  );
+};
+
 const AppointmentsOverview = () => {
   return (
     <div className="overview-page app-layout">

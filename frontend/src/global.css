@@ -3720,6 +3720,162 @@ html, body {
   margin: 4px 0 20px;
 }
 
+/* ================================================================
+   CHART LAYOUT
+   ================================================================ */
+
+.chart-container {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
+}
+
+/* Rotated Y-axis label */
+.y-axis-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  flex-shrink: 0;
+  padding-bottom: 22px; /* matches x-label row height */
+}
+.y-axis-title {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+  transform: rotate(-90deg);
+}
+
+/* Y-axis tick numbers */
+.y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-right: 6px;
+  padding-bottom: 22px; /* align to bars — matches x-label row */
+  flex-shrink: 0;
+  width: 26px;
+}
+.y-tick {
+  font-size: 9px;
+  color: var(--text-faint);
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* Main chart area (grid + bars + x-title) */
+.chart-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+/* Grid lines sit absolutely behind the bars */
+.grid-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 22px; /* sit above x-label row */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 0;
+}
+.grid-line {
+  width: 100%;
+  height: 1px;
+  background: var(--border-faint);
+  opacity: 0.55;
+}
+
+/* Bars area — flex-end so bars grow upward */
+.bars-wrapper {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 140px;
+  position: relative;
+  z-index: 1;
+  padding: 0 2px;
+  gap: 3px;
+}
+
+/* X-axis label row */
+.x-axis-title {
+  height: 18px;
+  line-height: 18px;
+  text-align: right;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding-right: 2px;
+  flex-shrink: 0;
+}
+
+/* ── INDIVIDUAL BAR ─────────────────────────────────────────────── */
+.bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  height: 140px;
+}
+
+.bar-value {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  height: 12px;
+  line-height: 12px;
+  text-align: center;
+}
+
+/* The rectangle */
+.bar {
+  width: 100%;
+  max-width: 28px;
+  min-height: 3px;
+  border-radius: 4px 4px 2px 2px;
+  position: relative;
+  /* height animated via JS */
+}
+/* Shine strip on top */
+.bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 4px 4px 0 0;
+}
+/* Glow on peak bar */
+.bar.bar--peak {
+  box-shadow: 0 -5px 16px rgba(211,47,47,0.55);
+}
+
+.x-axis-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  height: 18px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
 
 
 
@@ -4294,6 +4450,10 @@ html, body {
 
   /* Hide mobile divider — charts are side-by-side */
   .overview-divider { display: none; }
+
+  .bars-wrapper { height: 190px; }
+  .bar-column   { height: 190px; }
+  .bar          { max-width: 36px; }
 
 }
 
