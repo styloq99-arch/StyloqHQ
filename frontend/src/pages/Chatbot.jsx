@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -9,6 +9,12 @@ export default function Chatbot() {
       text: "Hi 👋 I'm the StyloQ assistant. How can I help you?",
     },
   ]);
+  const [typing, setTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = () => {
     if (!input.trim()) return;
