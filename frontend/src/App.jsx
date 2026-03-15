@@ -25,6 +25,7 @@ import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
 import Chatbot from "./pages/Chatbot";
 import BookingPage from "./pages/BookingPage";
+import Messages from "./pages/Messages.jsx";
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/barber-profile-view" element={<BarberProfileView />} />
           <Route path="/customer-profile" element={<CustomerProfile />} />
           <Route path="/favourites" element={<Favourites />} />
+          <Route path="/messages" element={<Messages />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
