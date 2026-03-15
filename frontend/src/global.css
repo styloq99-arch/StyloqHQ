@@ -4048,3 +4048,23 @@ html, body {
   opacity: 0.3;
 }
 
+/* Messages.JSX mobile adjustments */
+@media (max-width: 767px) {
+  .messages-contact-item {
+    padding: 10px 12px;
+  }
+
+  .messages-contact-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .messages-contact-name {
+    font-size: 14px;
+  }
+
+  .messages-contact-preview {
+    font-size: 11px;
+  }
+}
