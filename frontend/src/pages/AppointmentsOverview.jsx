@@ -135,6 +135,32 @@ const BarChart = ({ data, animKey, xTitle }) => {
 };
 
 const AppointmentsOverview = () => {
+  const [filter, setFilter]     = useState('week');
+  const [dropOpen, setDropOpen] = useState(false);
+  const [animKey, setAnimKey]   = useState(0);
+  const dropRef = useRef(null);
+
+  const chartData = filter === 'week' ? WEEK_DATA : MONTH_DATA;
+  const peakData  = buildPeakData(PEAK_HOURS_RAW, BARBER_WORKING_HOURS);
+  const peakMax   = getMax(peakData);
+  const peakPeakVal = Math.max(...peakData.map((d) => d.value));
+  const peakPeakLabel = peakData.find((d) => d.value === peakPeakVal)?.label;
+
+  const handleFilter = (val) => {
+    setFilter(val);
+    setDropOpen(false);
+    setAnimKey((k) => k + 1);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   return (
     <div className="overview-page app-layout">
 
@@ -202,7 +228,51 @@ const AppointmentsOverview = () => {
           <hr className="overview-divider" />
 
           {/* ── CHARTS ROW (side-by-side on desktop) ────────────── */}
-          <div className="charts-row"></div>
+          <div className="charts-row">
+
+                        {/* Appointments Overview chart */}
+            <div className="chart-section">
+              <div className="chart-section-header">
+                <h2 className="chart-title">Appointments Overview</h2>
+
+                {/* Filter dropdown */}
+                <div className="chart-filter-wrapper" ref={dropRef}>
+                  <button
+                    className="overview-filter-btn"
+                    onClick={() => setDropOpen((o) => !o)}
+                  >
+                    {filter === 'week' ? 'For week' : 'For month'}
+                    <i className={`fas fa-chevron-down overview-filter-chevron${dropOpen ? ' open' : ''}`} />
+                  </button>
+
+                  {dropOpen && (
+                    <div className="overview-dropdown">
+                      <button
+                        className={`overview-dropdown-item${filter === 'week' ? ' active' : ''}`}
+                        onClick={() => handleFilter('week')}
+                      >
+                        <i className="fas fa-calendar-week" /> Weekly
+                      </button>
+                      <button
+                        className={`overview-dropdown-item${filter === 'month' ? ' active' : ''}`}
+                        onClick={() => handleFilter('month')}
+                      >
+                        <i className="fas fa-calendar-alt" /> Monthly
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <BarChart
+                data={chartData}
+                animKey={`chart-${animKey}`}
+                xTitle={filter === 'week' ? 'Day' : 'Week'}
+              />
+            </div>
+
+            
+          </div>
 
         </div>{/* end overview-body */}
 
