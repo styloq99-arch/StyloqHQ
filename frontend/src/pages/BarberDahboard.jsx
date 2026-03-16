@@ -2,6 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 /* ═══════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════ */
+const BARBER = {
+  name: 'Mr. Perera',
+  avatar: 'https://i.pravatar.cc/150?img=11',
+  rating: 4.0,
+  reviewCount: '1.2K',
+};
+
+/* ═══════════════════════════════════════════════════════
    MAIN
 ═══════════════════════════════════════════════════════ */
 export default function BarberDashboard() {
@@ -35,6 +45,12 @@ export default function BarberDashboard() {
 
       {/* ═══ MAIN ═══ */}
       <div className="db-main">
+        {/* HEADER */}
+        <header className="db-header">
+          <Link to="/barber-home" className="db-back-btn"><i className="fas fa-chevron-left"></i></Link>
+          <h2 className="db-header-title">DASHBOARD</h2>
+          <img src={BARBER.avatar} alt="Profile" className="db-header-avatar" />
+        </header>
 
       </div>{/* end main */}
 
