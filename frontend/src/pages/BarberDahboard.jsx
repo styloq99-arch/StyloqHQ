@@ -11,6 +11,14 @@ const BARBER = {
   reviewCount: '1.2K',
 };
 
+
+const SUBSCRIPTION = {
+  activeSubscribers: 145,
+  monthlyRevenue: 24500,
+  renewalRate: 71.1,
+};
+
+
 /* ═══════════════════════════════════════════════════════
    STAR RATING
 ═══════════════════════════════════════════════════════ */
@@ -91,8 +99,33 @@ export default function BarberDashboard() {
                                 ))}
                                 </div>
                             </section>
+                            {/* 2. SUBSCRIPTION PERFORMANCE */}
+                            <section className="db-card">
+                                <h3 className="db-section-title">Subscription Performance</h3>
+                                <div className="db-sub-grid">
+                                <div className="db-sub-item">
+                                    <span className="db-sub-big">{SUBSCRIPTION.activeSubscribers}</span>
+                                    <span className="db-sub-label">Active Subscribers</span>
+                                </div>
+                                <div className="db-sub-item">
+                                    <span className="db-sub-big">Rs. {SUBSCRIPTION.monthlyRevenue.toLocaleString()}</span>
+                                    <span className="db-sub-label">Monthly Revenue</span>
+                                </div>
+                                <div className="db-sub-item">
+                                    <span className="db-sub-big db-sub-orange">{SUBSCRIPTION.renewalRate}%</span>
+                                    <span className="db-sub-label">Renewal Rate</span>
+                                </div>
+                                </div>
+                                <div className="db-renewal-bar-wrap">
+                                <span className="db-renewal-label-text">Renewal Progress</span>
+                                <div className="db-renewal-track">
+                                    <div className="db-renewal-fill" style={{ width: `${SUBSCRIPTION.renewalRate}%` }} />
+                                </div>
+                                <span className="db-renewal-pct">{SUBSCRIPTION.renewalRate}%</span>
+                                </div>
+                            </section>
 
-                            
+
 
                       </div>
                       <div className="db-col">{/* right */}</div>

@@ -2255,6 +2255,73 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
+/* ─────────────────────────────────────
+   SUBSCRIPTION PERFORMANCE
+───────────────────────────────────── */
+.db-sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.db-sub-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.db-sub-big {
+  font-family: 'Viga', sans-serif;
+  font-size: 22px;
+  color: #fff;
+  line-height: 1;
+}
+
+.db-sub-orange { color: #FF5722 !important; }
+
+.db-sub-label {
+  font-size: 11px;
+  color: #888;
+}
+
+.db-renewal-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.db-renewal-label-text {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.db-renewal-track {
+  flex: 1;
+  height: 6px;
+  background: #2a2a2a;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.db-renewal-fill {
+  height: 100%;
+  background: linear-gradient(to right, #FF5722, #ff8c00);
+  border-radius: 999px;
+  animation: db-fillIn 1.2s ease forwards;
+}
+
+.db-renewal-pct {
+  font-size: 12px;
+  color: #FF5722;
+  font-weight: bold;
+  min-width: 36px;
+  text-align: right;
+}
+
+
 
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
