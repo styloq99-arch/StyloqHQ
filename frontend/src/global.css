@@ -3987,6 +3987,38 @@ html, body {
 .overview-dropdown-item:hover  { background: var(--color-accent-hover); color: var(--text-primary); }
 .overview-dropdown-item.active { color: var(--color-accent); font-weight: 700; }
 
+/* ── PEAK HOURS LEGEND ──────────────────────────────────────────── */
+.peak-hours-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Peak chart — horizontally scrollable on small phones */
+.peak-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.peak-scroll::-webkit-scrollbar { display: none; }
+.peak-inner { min-width: 300px; }
+
 
 
 
@@ -4570,6 +4602,7 @@ html, body {
   .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .chart-section { margin-bottom: 0;
 
+}
 }
 
 @media (max-width: 767px) {

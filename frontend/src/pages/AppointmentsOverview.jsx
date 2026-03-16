@@ -270,9 +270,77 @@ const AppointmentsOverview = () => {
                 xTitle={filter === 'week' ? 'Day' : 'Week'}
               />
             </div>
-
             
-          </div>
+                        {/* Peak Hours chart */}
+            <div className="chart-section">
+              <div className="chart-section-header">
+                <div>
+                  <h2 className="chart-title">Peak Hours</h2>
+                  <p className="peak-hours-subtitle">
+                    {BARBER_WORKING_HOURS.start}:00 – {BARBER_WORKING_HOURS.end}:00
+                    &nbsp;·&nbsp;Peak:&nbsp;
+                    <span className="peak-hours-highlight">
+                      {peakPeakLabel}:00 ({peakPeakVal} appts)
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Scrollable on small phones */}
+              <div className="peak-scroll">
+                <div className="peak-inner">
+                  <div className="chart-container" key={`peak-${animKey}`}>
+                    <div className="y-axis-title-wrap">
+                      <span className="y-axis-title">No of Appointments</span>
+                    </div>
+                    <div className="y-axis">
+                      {buildYTicks(peakMax).map((v, i) => (
+                        <span key={i} className="y-tick">{v}</span>
+                      ))}
+                    </div>
+                    <div className="chart-inner">
+                      <div className="grid-lines">
+                        {buildYTicks(peakMax).map((_, i) => <div key={i} className="grid-line" />)}
+                      </div>
+                      <div className="bars-wrapper">
+                        {peakData.map((d, i) => (
+                          <AnimatedBar
+                            key={i}
+                            value={d.value}
+                            max={peakMax}
+                            label={d.label}
+                            delay={i * 50}
+                            isPeak={d.value === peakPeakVal && d.value > 0}
+                            showValue={false}
+                          />
+                        ))}
+                      </div>
+                      <div className="x-axis-title">Hour</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="peak-hours-legend">
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#D32F2F' }} />Peak
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#FF5722' }} />High
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#FF7043' }} />Mid
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#8D5524' }} />Normal
+                </div>
+              </div>
+            </div>
+            
+
+
+          </div>{/* end charts-row */}
 
         </div>{/* end overview-body */}
 
