@@ -1,0 +1,361 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+
+
+// ─── MOCK DATA ───────────────────────────────────────────────────────────────
+// workingHours drives Peak Hours x-axis — comes from SignUpBarberStep6 data.
+const BARBER_WORKING_HOURS = { start: 9, end: 19 }; // 9 AM – 7 PM
+
+const WEEK_DATA = [
+  { day: 'S', value: 15 },
+  { day: 'M', value: 4  },
+  { day: 'T', value: 5  },
+  { day: 'W', value: 1  },
+  { day: 'T', value: 3  },
+  { day: 'F', value: 7  },
+  { day: 'S', value: 10 },
+];
+
+const MONTH_DATA = [
+  { day: 'W1', value: 28 },
+  { day: 'W2', value: 34 },
+  { day: 'W3', value: 19 },
+  { day: 'W4', value: 41 },
+];
+
+const PEAK_HOURS_RAW = {
+  9: 6, 10: 4, 11: 3, 12: 2, 13: 3,
+  14: 5, 15: 7, 16: 9, 17: 12, 18: 5,
+};
+
+const STATS = { today: 10, total: 45, cancelled: 10, paid: 5 };
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+const buildPeakData = (raw, { start, end }) => {
+  const result = [];
+  for (let h = start; h < end; h++) {
+    // Show 12-hr label (9, 10, 11, 12, 1, 2 …)
+    const label = h > 12 ? String(h - 12) : String(h);
+    result.push({ label, value: raw[h] ?? 0 });
+  }
+  return result;
+};
+
+const getMax = (arr) => Math.max(...arr.map((d) => d.value), 1);
+
+// Colour by relative height
+const getBarColor = (value, max) => {
+  const pct = value / max;
+  if (pct >= 1)    return '#D32F2F';   // peak  – deep red
+  if (pct > 0.55)  return '#FF5722';   // high  – accent orange
+  if (pct > 0.25)  return '#FF7043';   // mid   – light orange
+  return '#8D5524';                    // low   – brown
+};
+
+// Y-axis tick values (5 evenly spaced labels: max … 0)
+const buildYTicks = (max) => {
+  const step = max / 4;
+  return [max, Math.round(step * 3), Math.round(step * 2), Math.round(step), 0];
+};
+
+// ─── ANIMATED BAR ────────────────────────────────────────────────────────────
+const AnimatedBar = ({ value, max, label, delay = 0, isPeak = false, showValue = true }) => {
+  const [height, setHeight] = useState('0%');
+  const pct = max > 0 ? (value / max) * 100 : 0;
+  const color = isPeak ? '#D32F2F' : getBarColor(value, max);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeight(`${pct}%`), 200 + delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+
+  return (
+    <div className="bar-column">
+      {showValue && <span className="bar-value">{value > 0 ? value : ''}</span>}
+      <div
+        className={`bar${isPeak ? ' bar--peak' : ''}`}
+        style={{
+          height,
+          backgroundColor: color,
+          transition: 'height 1.4s cubic-bezier(0.34,1.56,0.64,1)',
+        }}
+      />
+      <span className="x-axis-label">{label}</span>
+    </div>
+  );
+};
+
+// ─── CHART (grid + y-axis + bars) ────────────────────────────────────────────
+const BarChart = ({ data, animKey, xTitle }) => {
+  const max    = getMax(data);
+  const yticks = buildYTicks(max);
+  const peakVal = Math.max(...data.map((d) => d.value));
+
+  return (
+    <div className="chart-container" key={animKey}>
+      {/* Rotated y-axis label */}
+      <div className="y-axis-title-wrap">
+        <span className="y-axis-title">No of Appointments</span>
+      </div>
+
+      {/* Tick numbers */}
+      <div className="y-axis">
+        {yticks.map((v, i) => (
+          <span key={i} className="y-tick">{v}</span>
+        ))}
+      </div>
+
+      {/* Grid + bars + x-title */}
+      <div className="chart-inner">
+        {/* Grid lines (absolute, 5 lines for 4 intervals) */}
+        <div className="grid-lines">
+          {yticks.map((_, i) => <div key={i} className="grid-line" />)}
+        </div>
+
+        {/* Bars */}
+        <div className="bars-wrapper">
+          {data.map((d, i) => (
+            <AnimatedBar
+              key={i}
+              value={d.value}
+              max={max}
+              label={d.day}
+              delay={i * 60}
+              isPeak={d.value === peakVal && d.value > 0}
+              showValue
+            />
+          ))}
+        </div>
+
+        {/* X-axis title (bottom-right) */}
+        <div className="x-axis-title">{xTitle}</div>
+      </div>
+    </div>
+  );
+};
+
+const AppointmentsOverview = () => {
+  const [filter, setFilter]     = useState('week');
+  const [dropOpen, setDropOpen] = useState(false);
+  const [animKey, setAnimKey]   = useState(0);
+  const dropRef = useRef(null);
+
+  const chartData = filter === 'week' ? WEEK_DATA : MONTH_DATA;
+  const peakData  = buildPeakData(PEAK_HOURS_RAW, BARBER_WORKING_HOURS);
+  const peakMax   = getMax(peakData);
+  const peakPeakVal = Math.max(...peakData.map((d) => d.value));
+  const peakPeakLabel = peakData.find((d) => d.value === peakPeakVal)?.label;
+
+  const handleFilter = (val) => {
+    setFilter(val);
+    setDropOpen(false);
+    setAnimKey((k) => k + 1);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="overview-page app-layout">
+
+      {/* ── DESKTOP SIDEBAR ─────────────────────────────────────── */}
+      <aside className="desktop-sidebar">
+        <div className="sidebar-logo">
+          <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
+        </div>
+        <nav className="sidebar-nav">
+          <Link to="/barber-home"      className="sidebar-link"><i className="fas fa-home" /><span>Home</span></Link>
+          <Link to="/barber-dashboard" className="sidebar-link"><i className="fas fa-calendar-alt" /><span>DashBoard</span></Link>
+          <Link to="/message"          className="sidebar-link"><i className="fas fa-comments" /><span>Message</span></Link>
+          <Link to="/barber-OwnProfile"          className="sidebar-link"><i className="fas fa-user" /><span>Profile</span></Link>
+          <Link to="/postingPhotos"    className="sidebar-link"><i className="fa fa-plus" /></Link>
+        </nav>
+      </aside>
+
+      {/* ── MAIN ────────────────────────────────────────────────── */}
+      <div className="overview-main main-content">
+        {/* Header */}
+        <header className="overview-header">
+          <img
+            src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=900&q=60"
+            alt=""
+            className="overview-header-bg"
+          />
+          <div className="overview-header-top">
+            <Link to="/barber-home" className="back-arrow">
+              <i className="fas fa-chevron-left" />
+            </Link>
+            <div className="header-titles">
+              <h1>APPOINTMENTS</h1>
+              <h1>OVERVIEW</h1>
+            </div>
+            <img
+              src="https://i.pravatar.cc/150?img=11"
+              alt="Barber"
+              className="overview-avatar"
+            />
+          </div>
+        </header>
+
+        {/* Body */}
+        <div className="overview-body">
+            {/* ── STATS ───────────────────────────────────────────── */}
+          <div className="stats-grid">
+            <div className="stat-card stat-card--orange">
+              <span className="stat-label text-orange">TODAY<br />BOOKINGS</span>
+              <span className="stat-value">{STATS.today}</span>
+            </div>
+            <div className="stat-card stat-card--orange">
+              <span className="stat-label text-orange">TOTAL<br />BOOKINGS</span>
+              <span className="stat-value">{STATS.total}</span>
+            </div>
+            <div className="stat-card stat-card--red">
+              <span className="stat-label text-red">CANCEL<br />BOOKINGS</span>
+              <span className="stat-value">{STATS.cancelled}</span>
+            </div>
+            <div className="stat-card stat-card--green">
+              <span className="stat-label text-green">PAID<br />BOOKINGS</span>
+              <span className="stat-value">{STATS.paid}</span>
+            </div>
+          </div>
+
+          <hr className="overview-divider" />
+
+          {/* ── CHARTS ROW (side-by-side on desktop) ────────────── */}
+          <div className="charts-row">
+
+                        {/* Appointments Overview chart */}
+            <div className="chart-section">
+              <div className="chart-section-header">
+                <h2 className="chart-title">Appointments Overview</h2>
+
+                {/* Filter dropdown */}
+                <div className="chart-filter-wrapper" ref={dropRef}>
+                  <button
+                    className="overview-filter-btn"
+                    onClick={() => setDropOpen((o) => !o)}
+                  >
+                    {filter === 'week' ? 'For week' : 'For month'}
+                    <i className={`fas fa-chevron-down overview-filter-chevron${dropOpen ? ' open' : ''}`} />
+                  </button>
+
+                  {dropOpen && (
+                    <div className="overview-dropdown">
+                      <button
+                        className={`overview-dropdown-item${filter === 'week' ? ' active' : ''}`}
+                        onClick={() => handleFilter('week')}
+                      >
+                        <i className="fas fa-calendar-week" /> Weekly
+                      </button>
+                      <button
+                        className={`overview-dropdown-item${filter === 'month' ? ' active' : ''}`}
+                        onClick={() => handleFilter('month')}
+                      >
+                        <i className="fas fa-calendar-alt" /> Monthly
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <BarChart
+                data={chartData}
+                animKey={`chart-${animKey}`}
+                xTitle={filter === 'week' ? 'Day' : 'Week'}
+              />
+            </div>
+            
+                        {/* Peak Hours chart */}
+            <div className="chart-section">
+              <div className="chart-section-header">
+                <div>
+                  <h2 className="chart-title">Peak Hours</h2>
+                  <p className="peak-hours-subtitle">
+                    {BARBER_WORKING_HOURS.start}:00 – {BARBER_WORKING_HOURS.end}:00
+                    &nbsp;·&nbsp;Peak:&nbsp;
+                    <span className="peak-hours-highlight">
+                      {peakPeakLabel}:00 ({peakPeakVal} appts)
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Scrollable on small phones */}
+              <div className="peak-scroll">
+                <div className="peak-inner">
+                  <div className="chart-container" key={`peak-${animKey}`}>
+                    <div className="y-axis-title-wrap">
+                      <span className="y-axis-title">No of Appointments</span>
+                    </div>
+                    <div className="y-axis">
+                      {buildYTicks(peakMax).map((v, i) => (
+                        <span key={i} className="y-tick">{v}</span>
+                      ))}
+                    </div>
+                    <div className="chart-inner">
+                      <div className="grid-lines">
+                        {buildYTicks(peakMax).map((_, i) => <div key={i} className="grid-line" />)}
+                      </div>
+                      <div className="bars-wrapper">
+                        {peakData.map((d, i) => (
+                          <AnimatedBar
+                            key={i}
+                            value={d.value}
+                            max={peakMax}
+                            label={d.label}
+                            delay={i * 50}
+                            isPeak={d.value === peakPeakVal && d.value > 0}
+                            showValue={false}
+                          />
+                        ))}
+                      </div>
+                      <div className="x-axis-title">Hour</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="peak-hours-legend">
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#D32F2F' }} />Peak
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#FF5722' }} />High
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#FF7043' }} />Mid
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot" style={{ background: '#8D5524' }} />Normal
+                </div>
+              </div>
+            </div>
+            
+
+
+          </div>{/* end charts-row */}
+
+        </div>{/* end overview-body */}
+
+        {/* ── MOBILE BOTTOM NAV ────────────────────────────────── */}
+        <nav className="bottom-nav">
+          <Link to="/barber-home"      className="nav-item"><i className="fas fa-home" /><span>Home</span></Link>
+          <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-calendar-alt" /><span>DashBoard</span></Link>
+          <Link to="/addphoto"         className="nav-item add-circle-btn"><i className="fas fa-plus" /></Link>
+          <Link to="/message"          className="nav-item"><i className="fas fa-comments" /><span>Message</span></Link>
+          <Link to="/barber-OwnProfile"          className="nav-item"><i className="fas fa-user" /><span>Profile</span></Link>
+        </nav>
+
+      </div>{/* end overview-main */}
+    </div>
+  );
+};
+
+export default AppointmentsOverview;

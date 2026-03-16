@@ -181,7 +181,7 @@ export default function CustomerSearch() {
                       </div>
                       <div className="action-buttons">
                         
-                        <Link to="/barber-profile" className="btn btn-secondary" style={{width: '100%',height: '40px', marginTop: '2rem', borderRadius: '20px'}}>
+                        <Link to="/barber-profile-view" className="btn btn-secondary" style={{width: '100%',height: '40px', marginTop: '2rem', borderRadius: '20px'}}>
                             View Profile
                         </Link>
                        

@@ -1,11 +1,91 @@
 from datetime import datetime
 
-from extensions import db
-from models.barber import Barber, Availability
-from models.booking import Booking
-from models.social import Post
-from models.barber_portfolio import BarberPortfolio
-from models.salon import SalonBarberAssociation, SalonAvailability
+
+# =============================================================================
+# DB HELPER
+# =============================================================================
+
+def get_db_connection():
+    """Connect to the centralized database."""
+    conn = sqlite3.connect("backend/database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# =============================================================================
+# SCHEMA BOOTSTRAP
+# =============================================================================
+
+def init_tables():
+    """Create all module tables. Safe to call on every startup."""
+    conn = get_db_connection()
+    with conn:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS barbers (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                name       TEXT    NOT NULL,
+                email      TEXT    NOT NULL UNIQUE,
+                phone      TEXT,
+                bio        TEXT,
+                latitude   REAL,
+                longitude  REAL,
+                address    TEXT,
+                is_active  INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT    NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS barber_availability (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                barber_id   INTEGER NOT NULL,
+                day_of_week INTEGER NOT NULL,
+                start_time  TEXT    NOT NULL,
+                end_time    TEXT    NOT NULL,
+                is_active   INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE TABLE IF NOT EXISTS salon_availability (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                salon_id    INTEGER NOT NULL,
+                day_of_week INTEGER NOT NULL,
+                start_time  TEXT    NOT NULL,
+                end_time    TEXT    NOT NULL,
+                is_active   INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE TABLE IF NOT EXISTS salon_barber_associations (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                salon_id           INTEGER NOT NULL,
+                barber_id          INTEGER NOT NULL,
+                invitation_status  TEXT    NOT NULL DEFAULT 'PENDING',
+                salon_rules_active INTEGER NOT NULL DEFAULT 0
+            );
+
+            CREATE TABLE IF NOT EXISTS barber_portfolio (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                barber_id   INTEGER NOT NULL,
+                image_url   TEXT    NOT NULL,
+                description TEXT,
+                created_at  TEXT    NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS barber_posts (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                barber_id  INTEGER NOT NULL,
+                content    TEXT    NOT NULL,
+                created_at TEXT    NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS appointments (
+                id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+                barber_id            INTEGER NOT NULL,
+                customer_id          INTEGER NOT NULL,
+                appointment_datetime TEXT    NOT NULL,
+                status               TEXT    NOT NULL DEFAULT 'PENDING',
+                notes                TEXT,
+                created_at           TEXT    NOT NULL
+            );
+        """)
+    conn.close()
 
 
 # =============================================================================
