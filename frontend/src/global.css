@@ -2384,6 +2384,72 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
+/* ── RECENT REVIEWS ── */
+.db-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.db-review-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #252525;
+}
+.db-review-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.db-review-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #FF5722;
+  flex-shrink: 0;
+}
+
+.db-review-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.db-review-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.db-review-name {
+  font-family: 'Viga', sans-serif;
+  font-size: 13px;
+  color: #f0f0f0;
+  font-weight: 600;
+}
+
+.db-review-time {
+  font-size: 10px;
+  color: #666;
+}
+
+.db-review-stars {
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.db-review-comment {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+
 
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }

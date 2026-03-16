@@ -219,6 +219,34 @@ export default function BarberDashboard() {
                                 <DonutChart data={retentionData} />
                             </section>
 
+                            {/* 4. RECENT REVIEWS */}
+                            <section className="db-card">
+                                <h3 className="db-section-title">Recent Reviews</h3>
+                                <div className="db-reviews-list">
+                                {[
+                                    { name: 'Chamodi W.',  avatar: 'https://i.pravatar.cc/150?img=5',  rating: 5, comment: 'Amazing fade, very clean lines!', time: '2h ago' },
+                                    { name: 'Danush W.',   avatar: 'https://i.pravatar.cc/150?img=12', rating: 4, comment: 'Great service, will come back.', time: '1d ago' },
+                                    { name: 'Ranuthi D.', avatar: 'https://i.pravatar.cc/150?img=9',  rating: 5, comment: 'Best barber in town honestly.', time: '2d ago' },
+                                ].map((r, i) => (
+                                    <div key={i} className="db-review-item">
+                                    <img src={r.avatar} alt={r.name} className="db-review-avatar" />
+                                    <div className="db-review-body">
+                                        <div className="db-review-top">
+                                        <span className="db-review-name">{r.name}</span>
+                                        <span className="db-review-time">{r.time}</span>
+                                        </div>
+                                        <div className="db-review-stars">
+                                        {Array.from({ length: 5 }).map((_, s) => (
+                                            <span key={s} style={{ color: s < r.rating ? '#FFB300' : '#3a3a3a', fontSize: 13 }}>★</span>
+                                        ))}
+                                        </div>
+                                        <p className="db-review-comment">"{r.comment}"</p>
+                                    </div>
+                                    </div>
+                                ))}
+                                </div>
+                            </section>
+
 
 
                       </div>
