@@ -23,6 +23,14 @@ const RETENTION = {
   newCustomers: 38,
 };
 
+const TRENDS = [
+  { id: 1, name: 'Taper Fade', views: '4.2k', image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300&h=380&fit=crop' },
+  { id: 2, name: 'Bob Cut',    views: '1.2M', image: 'https://images.unsplash.com/photo-1605980766347-c2943e0d9b31?w=300&h=380&fit=crop' },
+  { id: 3, name: 'Wolf Cut',   views: '890k', image: 'https://images.unsplash.com/photo-1618354691551-44de113f0164?w=300&h=380&fit=crop' },
+  { id: 4, name: 'Mullet',     views: '560k', image: 'https://images.unsplash.com/photo-1567894340315-735d7c361db0?w=300&h=380&fit=crop' },
+  { id: 5, name: 'Buzz Cut',   views: '320k', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&h=380&fit=crop' },
+];
+
 
 /* ═══════════════════════════════════════════════════════
    STAR RATING
@@ -247,10 +255,26 @@ export default function BarberDashboard() {
                                 </div>
                             </section>
 
-
-
                       </div>
-                      <div className="db-col">{/* right */}</div>
+                      <div className="db-col">
+
+                        {/* 4. NEW TRENDS */}
+                        <section className="db-card">
+                            <h3 className="db-section-title">New Trends</h3>
+                            <div className="db-trends-scroll">
+                            {TRENDS.map(t => (
+                                <div key={t.id} className="db-trend-card">
+                                <div className="db-trend-badge">
+                                    <span>{t.views}</span>
+                                    <span className="db-trend-star">★</span>
+                                </div>
+                                <img src={t.image} alt={t.name} className="db-trend-img" />
+                                <p className="db-trend-name">{t.name}</p>
+                                </div>
+                            ))}
+                            </div>
+                        </section>
+                      </div>
                   </div>
                   <div style={{ height: 90 }} />
               </div>
