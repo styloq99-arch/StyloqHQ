@@ -2322,6 +2322,68 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
+/* ─────────────────────────────────────
+   DONUT CHART
+───────────────────────────────────── */
+.db-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.db-donut-svg {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.db-donut-seg {
+  cursor: pointer;
+  transition: stroke-width 0.2s;
+}
+
+.db-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+}
+
+.db-legend-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.db-legend-row:hover,
+.db-legend-row--active { background: rgba(255,255,255,0.05); }
+
+.db-legend-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.db-legend-label {
+  font-size: 11px;
+  color: #aaa;
+  margin: 0;
+}
+
+.db-legend-val {
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+  margin: 2px 0 0 0;
+  font-family: 'Viga', sans-serif;
+}
+
+
 
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }

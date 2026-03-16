@@ -18,6 +18,11 @@ const SUBSCRIPTION = {
   renewalRate: 71.1,
 };
 
+const RETENTION = {
+  returning: 62,
+  newCustomers: 38,
+};
+
 
 /* ═══════════════════════════════════════════════════════
    STAR RATING
@@ -32,12 +37,95 @@ function Stars({ rating, max = 5 }) {
   );
 }
 
+
+/* ═══════════════════════════════════════════════════════
+   DONUT CHART
+═══════════════════════════════════════════════════════ */
+function DonutChart({ data }) {
+  const [animated, setAnimated] = useState(false);
+  const [hovered, setHovered]   = useState(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 200);
+    return () => clearTimeout(t);
+  }, []);
+
+  const r    = 62;
+  const cx   = 85;
+  const cy   = 85;
+  const circ = 2 * Math.PI * r;
+  const total = data.reduce((s, d) => s + d.value, 0);
+
+  let cum = 0;
+  const segments = data.map((d) => {
+    const pct  = d.value / total;
+    const dash = pct * circ;
+    const off  = cum;
+    cum += dash;
+    return { ...d, pct, dash, off };
+  });
+
+  const active = hovered !== null ? segments[hovered] : segments[0];
+
+  return (
+    <div className="db-donut-wrap">
+      <svg viewBox="0 0 170 170" className="db-donut-svg">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#2a2a2a" strokeWidth="24" />
+        {segments.map((seg, i) => (
+          <circle
+            key={i}
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth={hovered === i ? 30 : 24}
+            strokeDasharray={`${animated ? seg.dash : 0} ${circ}`}
+            strokeDashoffset={-seg.off}
+            transform={`rotate(-90 ${cx} ${cy})`}
+            style={{ transition: `stroke-dasharray 1.2s ease ${i * 0.25}s, stroke-width 0.2s` }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+            className="db-donut-seg"
+          />
+        ))}
+        <text x={cx} y={cy - 8} textAnchor="middle" fill="#fff" fontSize="20" fontWeight="bold" fontFamily="Viga,sans-serif">
+          {Math.round(active.pct * 100)}%
+        </text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fill="#aaa" fontSize="9" fontFamily="Viga,sans-serif">
+          {active.label.split(' ')[0]}
+        </text>
+      </svg>
+
+      <div className="db-donut-legend">
+        {segments.map((seg, i) => (
+          <div
+            key={i}
+            className={`db-legend-row${hovered === i ? ' db-legend-row--active' : ''}`}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <span className="db-legend-dot" style={{ background: seg.color }} />
+            <div>
+              <p className="db-legend-label">{seg.label}</p>
+              <p className="db-legend-val">{Math.round(seg.pct * 100)}%</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════
    MAIN
 ═══════════════════════════════════════════════════════ */
 export default function BarberDashboard() {
 
      const ratingBreakdown = { 5: 45, 4: 30, 3: 15, 2: 7, 1: 3 };
+
+       const retentionData = [
+    { label: 'Returning Customers', value: RETENTION.returning,    color: '#FF5722' },
+    { label: 'New Customers',       value: RETENTION.newCustomers, color: '#666666' },
+  ];
 
   return (
     <div className="db-root">
@@ -123,6 +211,12 @@ export default function BarberDashboard() {
                                 </div>
                                 <span className="db-renewal-pct">{SUBSCRIPTION.renewalRate}%</span>
                                 </div>
+                            </section>
+
+                            {/* 3. CUSTOMER RETENTION */}
+                            <section className="db-card">
+                                <h3 className="db-section-title">Customer Retention</h3>
+                                <DonutChart data={retentionData} />
                             </section>
 
 
