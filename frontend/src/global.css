@@ -2189,6 +2189,72 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
+/* ─────────────────────────────────────
+   STAR RATING
+───────────────────────────────────── */
+.db-stars { display: flex; gap: 2px; }
+.db-star  { font-size: 18px; color: #3a3a3a; }
+.db-star.filled { color: #FFB300; }
+.db-star.half   { color: #FFB300; opacity: 0.5; }
+
+.db-rating-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.db-rating-count {
+  font-size: 11px;
+  color: #888;
+}
+
+/* Rating breakdown bars */
+.db-rating-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.db-rbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-rbar-star {
+  font-size: 11px;
+  color: #FFB300;
+  min-width: 22px;
+  text-align: right;
+}
+
+.db-rbar-track {
+  flex: 1;
+  height: 5px;
+  background: #2a2a2a;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.db-rbar-fill {
+  height: 100%;
+  background: linear-gradient(to right, #FF5722, #FFB300);
+  border-radius: 999px;
+  animation: db-fillIn 1s ease forwards;
+}
+
+@keyframes db-fillIn {
+  from { width: 0 !important; }
+}
+
+.db-rbar-pct {
+  font-size: 11px;
+  color: #888;
+  min-width: 28px;
+}
+
+
 
 @media (max-width: 600px) {
   .barber-result-card { flex-direction: column; }
