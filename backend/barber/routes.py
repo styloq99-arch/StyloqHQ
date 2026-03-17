@@ -50,6 +50,27 @@ def _get_barber_id_from_user():
         db.close()
 
 
+def _get_client_id_from_user():
+    """
+    Resolve the client_id from the JWT-authenticated user.
+    Queries Client directly rather than accessing user.client_profile to
+    prevent DetachedInstanceError.
+    """
+    from backend.models.base import SessionLocal
+    from backend.models.user import Client
+
+    user = get_current_user()
+    if not user:
+        return None
+
+    db = SessionLocal()
+    try:
+        client = db.query(Client).filter(Client.user_id == user.id).first()
+        return client.id if client else None
+    finally:
+        db.close()
+
+
 def _owns_barber(barber_id):
     """Return True if the logged-in barber owns this barber_id."""
     return _get_barber_id_from_user() == barber_id
@@ -272,8 +293,8 @@ def book_appointment(barber_id):
     client_id is resolved from the JWT token — not accepted from the body
     to prevent a client booking on behalf of another client.
     """
-    user = get_current_user()
-    if not user or not user.client_profile:
+    client_id = _get_client_id_from_user()
+    if not client_id:
         return jsonify({"error": "Client profile not found."}), 403
 
     data = request.get_json() or {}
@@ -285,7 +306,7 @@ def book_appointment(barber_id):
     return _respond(
         handle_booking_request(
             barber_id  = barber_id,
-            client_id  = user.client_profile.id,
+            client_id  = client_id,
             service_id = data.get("service_id"),
             appointment_datetime = data.get("appointment_datetime"),
         ),
