@@ -2511,6 +2511,64 @@ body::-webkit-scrollbar-thumb:hover {
   font-family: 'Viga', sans-serif;
 }
 
+/* ─────────────────────────────────────
+   EARNING SUMMARY
+───────────────────────────────────── */
+.db-earn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.db-earn-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #252525;
+  border-radius: 12px;
+  padding: 14px 18px;
+  border: 1px solid #2e2e2e;
+  transition: background 0.2s;
+}
+.db-earn-item:hover { background: #2a2a2a; }
+
+.db-earn-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.db-earn-period {
+  font-family: 'Viga', sans-serif;
+  font-size: 12px;
+  color: #FF5722;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.db-earn-sublabel {
+  font-family: 'Viga', sans-serif;
+  font-size: 12px;
+  color: #FF5722;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.db-earn-amount {
+  font-family: 'Viga', sans-serif;
+  font-size: 17px;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+
+
+
+
+
+
+
 
 
 @media (max-width: 600px) {

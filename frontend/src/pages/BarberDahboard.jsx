@@ -31,6 +31,10 @@ const TRENDS = [
   { id: 5, name: 'Buzz Cut',   views: '320k', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&h=380&fit=crop' },
 ];
 
+const EARNINGS = { today: 10000, week: 80000, month: 210000 };
+
+const fmt = (n) => 'RS. ' + n.toLocaleString('en-US');
+
 
 /* ═══════════════════════════════════════════════════════
    STAR RATING
@@ -255,7 +259,8 @@ export default function BarberDashboard() {
                                 </div>
                             </section>
 
-                      </div>
+                      </div> {/*end of the left column */}
+                      {/* ═══ RIGHT COLUMN ═══ */}
                       <div className="db-col">
 
                         {/* 4. NEW TRENDS */}
@@ -274,6 +279,26 @@ export default function BarberDashboard() {
                             ))}
                             </div>
                         </section>
+                        {/* 5. EARNING SUMMARY */}
+                        <section className="db-card">
+                          <h3 className="db-section-title">Earning Summary</h3>
+                          <div className="db-earn-list">
+                            {[
+                              { period: 'TODAY',  sub: 'TOTAL EARNING', val: EARNINGS.today  },
+                              { period: 'WEEK',   sub: 'TOTAL EARNING', val: EARNINGS.week   },
+                              { period: 'MONTH',  sub: 'TOTAL EARNING', val: EARNINGS.month  },
+                            ].map(({ period, sub, val }) => (
+                              <div key={period} className="db-earn-item">
+                                <div className="db-earn-left">
+                                  <p className="db-earn-period">{period}</p>
+                                  <p className="db-earn-sublabel">{sub}</p>
+                                </div>
+                                <p className="db-earn-amount">{fmt(val)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+
                       </div>
                   </div>
                   <div style={{ height: 90 }} />
