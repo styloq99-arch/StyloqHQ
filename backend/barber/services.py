@@ -419,7 +419,7 @@ def create_post(barber_id, content):
         return {"error": f"content exceeds {MAX_POST_LENGTH} characters."}
 
     # Post.caption maps to the barber's text content; image_url is optional
-    post = Post(barber_id=barber_id, caption=content, image_url=None)
+    post = Post(barber_id=barber_id, caption=content, image_url="")
     db.session.add(post)
     db.session.commit()
 
@@ -539,7 +539,7 @@ def reschedule_appointment(booking_id, new_datetime):
     }
 
 
-def handle_booking_request(barber_id, client_id, appointment_datetime, notes=None):
+def handle_booking_request(barber_id, client_id, service_id, appointment_datetime, notes=None):
     """
     UC-003-aware booking. Checks salon hours (if associated) then barber hours,
     then double-booking, then inserts with status Pending.
@@ -574,6 +574,7 @@ def handle_booking_request(barber_id, client_id, appointment_datetime, notes=Non
     booking = Booking(
         barber_id            = barber_id,
         client_id            = client_id,
+        service_id           = service_id,
         appointment_datetime = appt_dt,
         status               = "Pending",
     )
