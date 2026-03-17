@@ -1,6 +1,12 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Database
+*.db
+*.sqlite3
 
 # IDE
 .idea/
@@ -12,6 +18,11 @@ __pycache__/
 # Logs
 *.log
 
-# React (future)
+# Node (if used)
 node_modules/
 build/
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
