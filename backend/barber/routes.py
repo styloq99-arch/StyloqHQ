@@ -31,12 +31,23 @@ barber_bp = Blueprint("barber", __name__)
 def _get_barber_id_from_user():
     """
     Resolve the barber_id from the JWT-authenticated user.
-    JWT stores user_id → user.barber_profile is the linked Barber row.
+    Queries Barber directly rather than accessing user.barber_profile —
+    auth/utils.py closes its session before this runs, so lazy-loading
+    the relationship would raise DetachedInstanceError.
     """
+    from backend.models.base import SessionLocal
+    from backend.models.barber import Barber
+
     user = get_current_user()
-    if not user or not user.barber_profile:
+    if not user:
         return None
-    return user.barber_profile.id
+
+    db = SessionLocal()
+    try:
+        barber = db.query(Barber).filter(Barber.user_id == user.id).first()
+        return barber.id if barber else None
+    finally:
+        db.close()
 
 
 def _owns_barber(barber_id):
@@ -46,11 +57,17 @@ def _owns_barber(barber_id):
 
 def _owns_booking(booking_id):
     """Return True if the logged-in barber owns this booking."""
-    from models.booking import Booking
-    booking = Booking.query.get(booking_id)
-    if not booking:
-        return False
-    return booking.barber_id == _get_barber_id_from_user()
+    from backend.models.base import SessionLocal
+    from backend.models.booking import Booking
+
+    db = SessionLocal()
+    try:
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            return False
+        return booking.barber_id == _get_barber_id_from_user()
+    finally:
+        db.close()
 
 
 def _respond(result, created=False):
