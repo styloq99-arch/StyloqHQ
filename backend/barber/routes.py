@@ -1,305 +1,276 @@
-from flask import Blueprint, jsonify, request
-from backend.auth.utils import login_required, get_current_user_from_token, role_required
-from backend.barber import services
+from flask import Blueprint, request, jsonify, g
 
-barber_bp = Blueprint("barber", __name__, url_prefix="/barber")
+from auth.utils import role_required, get_current_user
+from barber.services import (
+    get_barber_profile,
+    update_barber_profile,
+    update_location,
+    update_availability,
+    get_availability,
+    add_portfolio_item,
+    delete_portfolio_item,
+    get_portfolio,
+    create_post,
+    get_my_posts,
+    view_barber_appointments,
+    handle_booking_request,
+    accept_appointment,
+    reject_appointment,
+    reschedule_appointment,
+    change_booking_status,
+)
+
+# url_prefix is set in app.py: app.register_blueprint(barber_bp, url_prefix='/barber')
+barber_bp = Blueprint("barber", __name__)
 
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-_STATUS_MAP = {
-    "bad_request":  400,
-    "not_found":    404,
-    "unavailable":  400,
-    "conflict":     409,
-    "db_error":     500,
-}
+def _get_barber_id_from_user():
+    """
+    Resolve the barber_id from the JWT-authenticated user.
+    JWT stores user_id → user.barber_profile is the linked Barber row.
+    """
+    user = get_current_user()
+    if not user or not user.barber_profile:
+        return None
+    return user.barber_profile.id
 
 
-def _ok(data, message: str = "", status: int = 200):
-    """Uniform success envelope."""
-    body = {"success": True, "data": data}
-    if message:
-        body["message"] = message
-    return jsonify(body), status
+def _owns_barber(barber_id):
+    """Return True if the logged-in barber owns this barber_id."""
+    return _get_barber_id_from_user() == barber_id
 
 
-def _err(reason: str, message: str, status: int = None):
-    """Uniform error envelope."""
-    if status is None:
-        status = _STATUS_MAP.get(reason, 400)
+def _owns_booking(booking_id):
+    """Return True if the logged-in barber owns this booking."""
+    from models.booking import Booking
+    booking = Booking.query.get(booking_id)
+    if not booking:
+        return False
+    return booking.barber_id == _get_barber_id_from_user()
+
+
+def _respond(result, created=False):
+    """
+    Uniform response envelope matching project convention.
+      None          → 404
+      {"error":...} → 409 (conflict) | 400 (all other errors)
+      anything else → 200 or 201
+    """
+    if result is None:
+        return jsonify({"error": "Not found"}), 404
+
+    if isinstance(result, dict) and "error" in result:
+        code = 409 if result.get("reason") == "conflict" else 400
+        return jsonify(result), code
+
+    return jsonify(result), 201 if created else 200
+
+
+def _forbidden():
     return jsonify({
         "success": False,
-        "reason":  reason,
-        "message": message,
-    }), status
-
-
-def _svc(result):
-    """Unpack a service 3-tuple (data, reason, error) and return a Flask response."""
-    data, reason, error = result
-    if error:
-        return _err(reason, error)
-    return _ok(data)
-
-
-def _get_barber_id_from_user():
-    """Get barber_id from current authenticated user."""
-    current_user = get_current_user_from_token()
-    if not current_user:
-        return None
-    if current_user.role != "barber":
-        return None
-    # Get barber profile from user
-    session = None
-    try:
-        from backend.models.base import SessionLocal
-        session = SessionLocal()
-        from backend.models.barber import Barber
-        barber = session.query(Barber).filter(Barber.user_id == current_user.id).first()
-        return barber.id if barber else None
-    finally:
-        if session:
-            session.close()
+        "reason":  "forbidden",
+        "message": "You can only manage your own barber account.",
+    }), 403
 
 
 # =============================================================================
-# PUBLIC ENDPOINTS (no authentication required)
+# PUBLIC ROUTES  (no auth required)
 # =============================================================================
 
-@barber_bp.get("/<int:barber_id>/profile")
-def get_profile(barber_id: int):
-    """GET /barber/{barber_id}/profile - Get barber profile (public)."""
-    data, reason, error = services.get_barber_profile(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/profile", methods=["GET"])
+def get_profile(barber_id):
+    return _respond(get_barber_profile(barber_id))
 
 
-@barber_bp.get("/<int:barber_id>/availability")
-def get_availability(barber_id: int):
-    """GET /barber/{barber_id}/availability - Get barber availability (public)."""
-    data, reason, error = services.get_availability(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/availability", methods=["GET"])
+def get_barber_availability(barber_id):
+    return _respond(get_availability(barber_id))
 
 
-@barber_bp.get("/<int:barber_id>/portfolio")
-def get_portfolio(barber_id: int):
-    """GET /barber/{barber_id}/portfolio - Get barber portfolio (public)."""
-    data, reason, error = services.get_portfolio(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/portfolio", methods=["GET"])
+def list_portfolio(barber_id):
+    return _respond(get_portfolio(barber_id))
 
 
-@barber_bp.get("/<int:barber_id>/posts")
-def get_posts(barber_id: int):
-    """GET /barber/{barber_id}/posts - Get barber posts (public)."""
-    data, reason, error = services.get_my_posts(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+@barber_bp.route("/<int:barber_id>/posts", methods=["GET"])
+def list_posts(barber_id):
+    return _respond(get_my_posts(barber_id))
 
 
 # =============================================================================
-# PROTECTED ENDPOINTS (authentication + barber role required)
+# PROFILE ROUTES  (barber role + ownership)
 # =============================================================================
 
-@barber_bp.put("/<int:barber_id>/profile")
-@login_required
+@barber_bp.route("/<int:barber_id>/profile", methods=["PUT"])
 @role_required(["barber"])
-def update_profile(barber_id: int):
-    """PUT /barber/{barber_id}/profile - Update barber profile."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only update your own profile", 403)
-    
-    body = request.get_json(silent=True) or {}
-    data, reason, error = services.update_barber_profile(barber_id, body)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Profile updated successfully.")
+def update_profile(barber_id):
+    if not _owns_barber(barber_id):
+        return _forbidden()
+    return _respond(update_barber_profile(barber_id, request.get_json() or {}))
 
 
-@barber_bp.put("/<int:barber_id>/location")
-@login_required
+@barber_bp.route("/<int:barber_id>/location", methods=["PUT"])
 @role_required(["barber"])
-def update_location(barber_id: int):
-    """PUT /barber/{barber_id}/location - Update barber location."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only update your own location", 403)
-    
-    body = request.get_json(silent=True) or {}
-    data, reason, error = services.update_location(barber_id, body)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Location updated successfully.")
+def update_barber_location(barber_id):
+    if not _owns_barber(barber_id):
+        return _forbidden()
+    return _respond(update_location(barber_id, request.get_json() or {}))
 
 
-@barber_bp.put("/<int:barber_id>/availability")
-@login_required
+# =============================================================================
+# AVAILABILITY ROUTES  (barber role + ownership)
+# =============================================================================
+
+@barber_bp.route("/<int:barber_id>/availability", methods=["PUT"])
 @role_required(["barber"])
-def update_availability(barber_id: int):
-    """PUT /barber/{barber_id}/availability - Replace the barber's full availability schedule."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only update your own availability", 403)
-    
-    body  = request.get_json(silent=True) or {}
-    slots = body.get("availability")
+def set_availability(barber_id):
+    """
+    Body: { "availability": [{ "day_of_week": 0, "start_time": "09:00", "end_time": "17:00" }] }
+    Replaces all existing slots. Send [] to clear.
+    """
+    if not _owns_barber(barber_id):
+        return _forbidden()
 
+    data  = request.get_json() or {}
+    slots = data.get("availability")
     if slots is None:
         return jsonify({"error": "availability array is required."}), 400
 
-    result = update_availability(barber_id, slots)
-    return _respond(result)
+    return _respond(update_availability(barber_id, slots))
 
 
-@barber_bp.post("/<int:barber_id>/portfolio")
-@login_required
+# =============================================================================
+# PORTFOLIO ROUTES  (barber role + ownership)
+# =============================================================================
+
+@barber_bp.route("/<int:barber_id>/portfolio", methods=["POST"])
 @role_required(["barber"])
-def add_portfolio_item(barber_id: int):
-    """POST /barber/{barber_id}/portfolio - Add portfolio item."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only add to your own portfolio", 403)
-    
-    body        = request.get_json(silent=True) or {}
-    image_url   = body.get("image_url")
-    description = body.get("description")
+def create_portfolio_item(barber_id):
+    """Body: { "image_url": "https://...", "description": "..." }"""
+    if not _owns_barber(barber_id):
+        return _forbidden()
 
-    if not image_url:
+    data = request.get_json() or {}
+    if not data.get("image_url"):
         return jsonify({"error": "image_url is required."}), 400
 
-    result = add_portfolio_item(barber_id, image_url, description)
-    return _respond(result, created=True)
-
-
-@barber_bp.delete("/<int:barber_id>/portfolio/<int:portfolio_id>")
-@login_required
-@role_required(["barber"])
-def delete_portfolio_item(barber_id: int, portfolio_id: int):
-    """DELETE /barber/{barber_id}/portfolio/{portfolio_id} - Delete portfolio item."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only delete from your own portfolio", 403)
-    
-    data, reason, error = services.delete_portfolio_item(barber_id, portfolio_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Portfolio item {portfolio_id} deleted.")
-
-
-@barber_bp.post("/<int:barber_id>/posts")
-@login_required
-@role_required(["barber"])
-def create_post(barber_id: int):
-    """POST /barber/{barber_id}/posts - Create a post."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only create posts for your own profile", 403)
-    
-    body    = request.get_json(silent=True) or {}
-    content = body.get("content")
-
-    if not content:
-        return jsonify({"error": "content is required."}), 400
-
-    result = create_post(barber_id, content)
-    return _respond(result, created=True)
-
-
-@barber_bp.get("/<int:barber_id>/appointments")
-@login_required
-@role_required(["barber"])
-def get_appointments(barber_id: int):
-    """GET /barber/{barber_id}/appointments - Returns appointments grouped by status."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only view your own appointments", 403)
-    
-    data, reason, error = services.view_barber_appointments(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
-
-
-@barber_bp.patch("/appointments/<int:appointment_id>/accept")
-@login_required
-@role_required(["barber"])
-def accept_appointment(appointment_id: int):
-    """PATCH /barber/appointments/{appointment_id}/accept - Accept an appointment."""
-    data, reason, error = services.accept_appointment(appointment_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Appointment {appointment_id} accepted.")
-
-
-@barber_bp.patch("/appointments/<int:appointment_id>/reject")
-@login_required
-@role_required(["barber"])
-def reject_appointment(appointment_id: int):
-    """PATCH /barber/appointments/{appointment_id}/reject - Reject an appointment."""
-    data, reason, error = services.reject_appointment(appointment_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data, f"Appointment {appointment_id} rejected.")
-
-
-@barber_bp.patch("/appointments/<int:appointment_id>/reschedule")
-@login_required
-@role_required(["barber"])
-def reschedule_appointment(appointment_id: int):
-    """PATCH /barber/appointments/{appointment_id}/reschedule - Reschedule an appointment."""
-    body         = request.get_json(silent=True) or {}
-    new_datetime = body.get("new_datetime")
-
-    if not new_datetime:
-        return _err("bad_request", "new_datetime is required (format: YYYY-MM-DDTHH:MM:SS).")
-
-    result = reschedule_appointment(booking_id, new_datetime)
-    return _respond(result)
-
-
-@barber_bp.post("/<int:barber_id>/book")
-@login_required
-@role_required(["barber"])
-def book_appointment(barber_id: int):
-    """POST /barber/{barber_id}/book - Book an appointment (barber books for client)."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only book appointments for your own profile", 403)
-    
-    body        = request.get_json(silent=True) or {}
-    customer_id = body.get("customer_id")
-    appt_dt     = body.get("appointment_datetime")
-    notes       = body.get("notes")
-
-    if not client_id:
-        return jsonify({"error": "client_id is required."}), 400
-    if not appt_dt:
-        return _err("bad_request", "appointment_datetime is required.")
-
-    data, reason, error = services.handle_booking_request(
-        barber_id=barber_id,
-        customer_id=customer_id,
-        appointment_datetime=appt_dt,
-        notes=notes,
+    return _respond(
+        add_portfolio_item(barber_id, data.get("image_url"), data.get("description")),
+        created=True
     )
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Appointment request submitted."), 201
 
+
+@barber_bp.route("/<int:barber_id>/portfolio/<int:portfolio_id>", methods=["DELETE"])
+@role_required(["barber"])
+def remove_portfolio_item(barber_id, portfolio_id):
+    if not _owns_barber(barber_id):
+        return _forbidden()
+    return _respond(delete_portfolio_item(barber_id, portfolio_id))
+
+
+# =============================================================================
+# SOCIAL ROUTES  (barber role + ownership)
+# =============================================================================
+
+@barber_bp.route("/<int:barber_id>/posts", methods=["POST"])
+@role_required(["barber"])
+def new_post(barber_id):
+    """
+    Body: { "caption": "...", "image_url": "https://..." }
+    image_url is required — Post.image_url is NOT NULL in the schema.
+    """
+    if not _owns_barber(barber_id):
+        return _forbidden()
+
+    data = request.get_json() or {}
+    if not data.get("caption"):
+        return jsonify({"error": "caption is required."}), 400
+    if not data.get("image_url"):
+        return jsonify({"error": "image_url is required."}), 400
+
+    return _respond(
+        create_post(barber_id, data.get("caption"), data.get("image_url")),
+        created=True
+    )
+
+
+# =============================================================================
+# APPOINTMENT ROUTES
+# =============================================================================
+
+@barber_bp.route("/<int:barber_id>/appointments", methods=["GET"])
+@role_required(["barber"])
+def list_appointments(barber_id):
+    if not _owns_barber(barber_id):
+        return _forbidden()
+    return _respond(view_barber_appointments(barber_id))
+
+
+@barber_bp.route("/appointments/<int:booking_id>/accept", methods=["PATCH"])
+@role_required(["barber"])
+def accept_booking(booking_id):
+    if not _owns_booking(booking_id):
+        return _forbidden()
+    return _respond(accept_appointment(booking_id))
+
+
+@barber_bp.route("/appointments/<int:booking_id>/reject", methods=["PATCH"])
+@role_required(["barber"])
+def reject_booking(booking_id):
+    if not _owns_booking(booking_id):
+        return _forbidden()
+    return _respond(reject_appointment(booking_id))
+
+
+@barber_bp.route("/appointments/<int:booking_id>/reschedule", methods=["PATCH"])
+@role_required(["barber"])
+def reschedule_booking(booking_id):
+    """Body: { "new_datetime": "2026-03-01T10:00:00" }"""
+    if not _owns_booking(booking_id):
+        return _forbidden()
+
+    data = request.get_json() or {}
+    if not data.get("new_datetime"):
+        return jsonify({"error": "new_datetime is required."}), 400
+
+    return _respond(reschedule_appointment(booking_id, data.get("new_datetime")))
+
+
+# =============================================================================
+# BOOKING ROUTE  (client role — customer books a barber)
+# =============================================================================
+
+@barber_bp.route("/<int:barber_id>/book", methods=["POST"])
+@role_required(["client"])
+def book_appointment(barber_id):
+    """
+    A client books an appointment with a barber.
+    Body: { "service_id": 1, "appointment_datetime": "2026-02-25T15:00:00" }
+
+    client_id is resolved from the JWT token — not accepted from the body
+    to prevent a client booking on behalf of another client.
+    """
+    user = get_current_user()
+    if not user or not user.client_profile:
+        return jsonify({"error": "Client profile not found."}), 403
+
+    data = request.get_json() or {}
+    if not data.get("service_id"):
+        return jsonify({"error": "service_id is required."}), 400
+    if not data.get("appointment_datetime"):
+        return jsonify({"error": "appointment_datetime is required."}), 400
+
+    return _respond(
+        handle_booking_request(
+            barber_id  = barber_id,
+            client_id  = user.client_profile.id,
+            service_id = data.get("service_id"),
+            appointment_datetime = data.get("appointment_datetime"),
+        ),
+        created=True
+    )
