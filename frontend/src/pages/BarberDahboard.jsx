@@ -35,6 +35,29 @@ const EARNINGS = { today: 10000, week: 80000, month: 210000 };
 
 const fmt = (n) => 'RS. ' + n.toLocaleString('en-US');
 
+const WEEKLY_DATA = [
+  { label: 'S', value: 9200 },
+  { label: 'M', value: 4500 },
+  { label: 'T', value: 3800 },
+  { label: 'W', value: 2900 },
+  { label: 'T', value: 5600 },
+  { label: 'F', value: 7800 },
+  { label: 'S', value: 8400 },
+];
+const MONTHLY_DATA = [
+  { label: '1',  value: 6200 }, { label: '2',  value: 5800 }, { label: '3',  value: 7100 },
+  { label: '4',  value: 4900 }, { label: '5',  value: 5300 }, { label: '6',  value: 6800 },
+  { label: '7',  value: 7400 }, { label: '8',  value: 4200 }, { label: '9',  value: 3900 },
+  { label: '10', value: 5100 }, { label: '11', value: 6300 }, { label: '12', value: 7200 },
+  { label: '13', value: 3600 }, { label: '14', value: 4100 }, { label: '15', value: 5500 },
+  { label: '16', value: 6100 }, { label: '17', value: 7800 }, { label: '18', value: 5200 },
+  { label: '19', value: 4700 }, { label: '20', value: 3800 }, { label: '21', value: 4400 },
+  { label: '22', value: 5900 }, { label: '23', value: 6700 }, { label: '24', value: 7300 },
+  { label: '25', value: 5600 }, { label: '26', value: 4800 }, { label: '27', value: 6200 },
+  { label: '28', value: 7100 }, { label: '29', value: 5400 }, { label: '30', value: 6800 },
+  { label: '31', value: 7600 },
+];
+
 
 /* ═══════════════════════════════════════════════════════
    STAR RATING
@@ -128,6 +151,200 @@ function DonutChart({ data }) {
 }
 
 /* ═══════════════════════════════════════════════════════
+   LINE CHART
+═══════════════════════════════════════════════════════ */
+function LineChart({ data, color = '#FF5722', chartH = 160 }) {
+  const [animated, setAnimated] = useState(false);
+  const [tooltip,  setTooltip]  = useState(null);
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    setAnimated(false);
+    const t = setTimeout(() => setAnimated(true), 80);
+    return () => clearTimeout(t);
+  }, [data]);
+
+  const W = 320, H = chartH;
+  const pL = 14, pR = 14, pT = 16, pB = 14;
+  const vals = data.map(d => d.value);
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  const range = maxV - minV || 1;
+
+  const pts = data.map((d, i) => ({
+    x: pL + (i / (data.length - 1)) * (W - pL - pR),
+    y: pT + ((maxV - d.value) / range) * (H - pT - pB),
+    label: d.label, value: d.value,
+  }));
+
+  const pathD = pts.map((p, i) => {
+    if (i === 0) return `M${p.x},${p.y}`;
+    const prev = pts[i - 1];
+    const cx1 = prev.x + (p.x - prev.x) * 0.45;
+    const cx2 = p.x   - (p.x - prev.x) * 0.45;
+    return `C${cx1},${prev.y} ${cx2},${p.y} ${p.x},${p.y}`;
+  }).join(' ');
+
+  const areaD = pathD + ` L${pts[pts.length-1].x},${H-pB} L${pts[0].x},${H-pB} Z`;
+  const pathLen = pts.length * 45;
+  const gradId = `grad${color.replace('#','')}${data.length}`;
+
+  const onMove = (clientX) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mx = ((clientX - rect.left) / rect.width) * W;
+    let best = pts[0], bestD = Infinity;
+    pts.forEach(p => { const d = Math.abs(p.x - mx); if (d < bestD) { bestD = d; best = p; } });
+    setTooltip(best);
+  };
+
+  return (
+    <div className="db-chart-wrap">
+      <span className="db-chart-ylabel">total earning / day</span>
+      <div className="db-chart-inner">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${W} ${H}`}
+          className="db-chart-svg"
+          style={{ height: chartH }}
+          onMouseMove={e => onMove(e.clientX)}
+          onMouseLeave={() => setTooltip(null)}
+          onTouchMove={e => { e.preventDefault(); onMove(e.touches[0].clientX); }}
+        >
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor={color} stopOpacity="0.35" />
+              <stop offset="100%" stopColor={color} stopOpacity="0"    />
+            </linearGradient>
+          </defs>
+
+          {/* Grid */}
+          {[0.25, 0.5, 0.75].map((f, i) => (
+            <line key={i}
+              x1={pL} y1={pT + f*(H-pT-pB)} x2={W-pR} y2={pT + f*(H-pT-pB)}
+              stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4 4"
+            />
+          ))}
+
+          {/* Axes */}
+          <line x1={pL} y1={pT-6} x2={pL} y2={H-pB} stroke="#fff" strokeWidth="1.5" />
+          <line x1={pL} y1={H-pB} x2={W-pR+6} y2={H-pB} stroke="#fff" strokeWidth="1.5" />
+          <polygon points={`${pL-4},${pT} ${pL+4},${pT} ${pL},${pT-8}`} fill="#fff" />
+          <polygon points={`${W-pR+4},${H-pB-4} ${W-pR+4},${H-pB+4} ${W-pR+10},${H-pB}`} fill="#fff" />
+
+          {/* Area */}
+          <path d={areaD} fill={`url(#${gradId})`}
+            style={{ opacity: animated ? 1 : 0, transition: 'opacity 0.8s ease 0.6s' }}
+          />
+
+          {/* Line */}
+          <path d={pathD} fill="none" stroke={color} strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            style={{
+              strokeDasharray: pathLen,
+              strokeDashoffset: animated ? 0 : pathLen,
+              transition: 'stroke-dashoffset 1.6s ease',
+            }}
+          />
+
+          {/* Hover */}
+          {tooltip && (
+            <>
+              <line x1={tooltip.x} y1={pT} x2={tooltip.x} y2={H-pB}
+                stroke={color} strokeWidth="1" strokeDasharray="4 3" opacity="0.5" />
+              <circle cx={tooltip.x} cy={tooltip.y} r="5"
+                fill={color} stroke="#121212" strokeWidth="2" />
+            </>
+          )}
+        </svg>
+
+        {tooltip && (
+          <div className="db-chart-tooltip" style={{
+            left: `${(tooltip.x / W) * 100}%`,
+            top:  `${(tooltip.y / chartH) * 100}%`,
+          }}>
+            <span className="db-tt-label">{tooltip.label}</span>
+            <span className="db-tt-val">RS. {tooltip.value.toLocaleString()}</span>
+          </div>
+        )}
+
+        <div className="db-chart-xlabels" style={{ gridTemplateColumns: `repeat(${data.length},1fr)` }}>
+  {data.map((d, i) => (
+    <span key={i} className={data.length > 10 ? 'db-xlabel-condensed' : ''}>
+      {data.length > 10 ? (i % 5 === 0 ? d.label : '') : d.label}
+    </span>
+  ))}
+</div>
+<p className="db-chart-xtitle">Day</p>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   BAR CHART
+═══════════════════════════════════════════════════════ */
+function BarChart({ data, color = '#FF5722' }) {
+  const [animated, setAnimated] = useState(false);
+  const [hovered,  setHovered]  = useState(null);
+
+  useEffect(() => {
+    setAnimated(false);
+    const t = setTimeout(() => setAnimated(true), 80);
+    return () => clearTimeout(t);
+  }, [data]);
+
+  const maxV = Math.max(...data.map(d => d.value));
+
+  const isMany = data.length > 10;
+
+  return (
+    <div className="db-bar-chart-scroll">
+      <div
+        className="db-bar-chart"
+        style={isMany ? { minWidth: data.length * 23 + 16 } : { justifyContent: 'space-around' }}
+      >
+        {data.map((d, i) => (
+          <div
+            key={i}
+            className="db-bar-col"
+            style={isMany ? { width: 18 } : { flex: 1, width: 'auto' }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {hovered === i && (
+              <div className="db-bar-tooltip">
+                RS.{'\n'}{d.value.toLocaleString()}
+              </div>
+            )}
+
+            <div
+              className="db-bar-track"
+              style={isMany ? { width: '100%' } : { width: '60%' }}
+            >
+              <div
+                className="db-bar-fill"
+                style={{
+                  width: '100%',
+                  height: animated ? `${(d.value / maxV) * 100}%` : '0%',
+                  background: hovered === i
+                    ? '#ffffff'
+                    : `linear-gradient(to top, #FF5722, #FF572299)`,
+                  borderRadius: '4px 4px 0 0',
+                  transition: `height 0.8s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.07}s`,
+                }}
+              />
+            </div>
+            <span className="db-bar-label">{d.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
+/* ═══════════════════════════════════════════════════════
    MAIN
 ═══════════════════════════════════════════════════════ */
 export default function BarberDashboard() {
@@ -138,6 +355,12 @@ export default function BarberDashboard() {
     { label: 'Returning Customers', value: RETENTION.returning,    color: '#FF5722' },
     { label: 'New Customers',       value: RETENTION.newCustomers, color: '#666666' },
   ];
+
+  const [chartTab,   setChartTab]   = useState('line');    // line | bar
+  const [periodTab,  setPeriodTab]  = useState('weekly');  // weekly | monthly
+
+  const chartData    = periodTab === 'weekly' ? WEEKLY_DATA : MONTHLY_DATA;
+  const totalEarning = periodTab === 'weekly' ? EARNINGS.week : EARNINGS.month; 
 
   return (
     <div className="db-root">
@@ -294,6 +517,71 @@ export default function BarberDashboard() {
                                   <p className="db-earn-sublabel">{sub}</p>
                                 </div>
                                 <p className="db-earn-amount">{fmt(val)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+
+                        {/* 6. EARNINGS CHART */}
+                        <section className="db-card">
+                          {/* Chart header */}
+                          <div className="db-chart-header">
+                            <div>
+                              <p className="db-earn-period" style={{ margin: 0 }}>
+                                {periodTab === 'weekly' ? 'WEEKLY' : 'MONTHLY'} TOTAL EARNING
+                              </p>
+                              <p className="db-earn-amount" style={{ margin: '4px 0 0', fontSize: '1.15rem' }}>
+                                {fmt(totalEarning)}
+                              </p>
+                            </div>
+
+                            <div className="db-chart-controls">
+                              {/* Period toggle */}
+                              <div className="db-toggle-group">
+                                {['weekly','monthly'].map(p => (
+                                  <button
+                                    key={p}
+                                    className={`db-toggle-btn${periodTab === p ? ' active' : ''}`}
+                                    onClick={() => setPeriodTab(p)}
+                                  >
+                                    {p === 'weekly' ? 'Week' : 'Month'}
+                                  </button>
+                                ))}
+                              </div>
+                              {/* Chart type toggle */}
+                              <div className="db-toggle-group">
+                                <button
+                                  className={`db-toggle-btn${chartTab === 'line' ? ' active' : ''}`}
+                                  onClick={() => setChartTab('line')}
+                                  title="Line chart"
+                                ><i className="fas fa-chart-line"></i></button>
+                                <button
+                                  className={`db-toggle-btn${chartTab === 'bar' ? ' active' : ''}`}
+                                  onClick={() => setChartTab('bar')}
+                                  title="Bar chart"
+                                ><i className="fas fa-chart-bar"></i></button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Chart render */}
+                          <div className="db-chart-container" key={`${chartTab}-${periodTab}`}>
+                            {chartTab === 'line'
+                              ? <LineChart data={chartData} chartH={180} />
+                              : <BarChart  data={chartData} />
+                            }
+                          </div>
+
+                          {/* Quick stats */}
+                          <div className="db-chart-stats">
+                            {[
+                              { label: 'Peak',    val: Math.max(...chartData.map(d => d.value)) },
+                              { label: 'Average', val: Math.round(chartData.reduce((s,d)=>s+d.value,0)/chartData.length) },
+                              { label: 'Low',     val: Math.min(...chartData.map(d => d.value)) },
+                            ].map(({ label, val }) => (
+                              <div key={label} className="db-cstat">
+                                <span className="db-cstat-label">{label}</span>
+                                <span className="db-cstat-val">RS. {val.toLocaleString()}</span>
                               </div>
                             ))}
                           </div>
