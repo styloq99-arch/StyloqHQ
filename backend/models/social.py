@@ -9,7 +9,7 @@ class Post(Base):
 
     id = Column(Integer, primary_key=True)
     barber_id = Column(Integer, ForeignKey('barbers.id', ondelete="CASCADE"), nullable=False)
-    image_url = Column(String(255), nullable=False)
+    image_url = Column(String(255), nullable=True)
     caption = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
