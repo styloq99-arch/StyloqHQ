@@ -59,7 +59,12 @@ export default function Chatbot() {
         <div className="chatbot-container">
           <div className="chatbot-header">
             Styloq Assistant
-            <button onClick={() => setOpen(false)}>✖</button>
+            <button
+              className="chatbot-close-btn"
+              onClick={() => setOpen(false)}
+            >
+              ✖
+            </button>
           </div>
 
           <div className="chatbot-messages">
