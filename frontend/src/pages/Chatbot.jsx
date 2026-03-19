@@ -33,3 +33,16 @@ const chatbotData = {
     ],
   },
 };
+
+export default function Chatbot() {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [messages, setMessages] = useState([]);
+
+  const handleQuestionClick = (question) => {
+    setMessages((prev) => [
+      ...prev,
+      { type: "user", text: question.q },
+      { type: "bot", text: question.a },
+    ]);
+  };
+}
