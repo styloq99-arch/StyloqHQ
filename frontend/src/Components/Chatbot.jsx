@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const chatbotData = {
   booking: {
-    label: "Booking",
+    label: "💇 Booking",
     questions: [
       {
         q: "How do I book a barber?",
@@ -15,7 +15,7 @@ const chatbotData = {
     ],
   },
   barber: {
-    label: "Barber Profiles",
+    label: "👤 Barber Profiles",
     questions: [
       {
         q: "How do I follow a barber?",
@@ -24,7 +24,7 @@ const chatbotData = {
     ],
   },
   salon: {
-    label: "Salons",
+    label: "🏪 Salons",
     questions: [
       {
         q: "How do salons recruit barbers?",
@@ -47,118 +47,77 @@ export default function Chatbot() {
     ]);
   };
 
-  const goBack = () => {
-    setSelectedCategory(null);
-  };
-
   return (
     <>
       {/* Floating Button */}
       {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            padding: "14px",
-            borderRadius: "50%",
-            backgroundColor: "#ff7a00",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-            zIndex: 1000,
-            fontSize: "18px",
-          }}
-        >
+        <button style={styles.fab} onClick={() => setOpen(true)}>
           💬
         </button>
       )}
 
       {/* Chat Window */}
       {open && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            width: "320px",
-            backgroundColor: "#fff",
-            borderRadius: "10px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-            zIndex: 1000,
-            padding: "10px",
-          }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setOpen(false)}
-            style={{
-              float: "right",
-              border: "none",
-              background: "none",
-              cursor: "pointer",
-            }}
-          >
-            ✖
-          </button>
+        <div style={styles.container}>
+          {/* Header */}
+          <div style={styles.header}>
+            <span>Styloq Assistant</span>
+            <button onClick={() => setOpen(false)} style={styles.closeBtn}>
+              ✖
+            </button>
+          </div>
 
-          <h3>Styloq Assistant</h3>
+          {/* Chat Messages */}
+          <div style={styles.chatBox}>
+            {messages.length === 0 && (
+              <div style={styles.botMessage}>👋 Hi! How can I help you?</div>
+            )}
 
-          {/* CHAT AREA */}
-          <div
-            style={{
-              height: "250px",
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-              marginBottom: "10px",
-            }}
-          >
             {messages.map((msg, index) => (
               <div
                 key={index}
-                style={{
-                  alignSelf: msg.type === "user" ? "flex-end" : "flex-start",
-                  backgroundColor: msg.type === "user" ? "#ff7a00" : "#eee",
-                  color: msg.type === "user" ? "#fff" : "#000",
-                  padding: "8px 12px",
-                  borderRadius: "15px",
-                  maxWidth: "70%",
-                }}
+                style={
+                  msg.type === "user" ? styles.userMessage : styles.botMessage
+                }
               >
                 {msg.text}
               </div>
             ))}
           </div>
 
-          {/* CATEGORY / QUESTIONS */}
-          {!selectedCategory && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {Object.keys(chatbotData).map((key) => (
-                <button key={key} onClick={() => setSelectedCategory(key)}>
+          {/* Options */}
+          <div style={styles.options}>
+            {!selectedCategory &&
+              Object.keys(chatbotData).map((key) => (
+                <button
+                  key={key}
+                  style={styles.optionBtn}
+                  onClick={() => setSelectedCategory(key)}
+                >
                   {chatbotData[key].label}
                 </button>
               ))}
-            </div>
-          )}
 
-          {selectedCategory && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {chatbotData[selectedCategory].questions.map((q, index) => (
-                <button key={index} onClick={() => handleQuestionClick(q)}>
+            {selectedCategory &&
+              chatbotData[selectedCategory].questions.map((q, index) => (
+                <button
+                  key={index}
+                  style={styles.optionBtn}
+                  onClick={() => handleQuestionClick(q)}
+                >
                   {q.q}
                 </button>
               ))}
 
-              <button onClick={() => setSelectedCategory(null)}>⬅ Back</button>
-            </div>
-          )}
+            {selectedCategory && (
+              <button
+                style={styles.backBtn}
+                onClick={() => setSelectedCategory(null)}
+              >
+                ⬅ Back
+              </button>
+            )}
+          </div>
         </div>
       )}
     </>
@@ -166,47 +125,109 @@ export default function Chatbot() {
 }
 
 const styles = {
-  container: {
-    width: "350px",
-    margin: "20px auto",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    padding: "10px",
-    fontFamily: "Arial",
+  fab: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    width: "55px",
+    height: "55px",
+    borderRadius: "50%",
+    backgroundColor: "var(--color-accent)",
+    color: "#fff",
+    border: "none",
+    fontSize: "22px",
+    cursor: "pointer",
+    boxShadow: "0 4px 12px var(--color-accent-glow)",
+    zIndex: 1000,
   },
+
+  container: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    width: "320px",
+    height: "450px",
+    backgroundColor: "#000", // 🔥 black background
+    borderRadius: "15px",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
+    zIndex: 1000,
+    border: "1px solid var(--color-accent-border)",
+  },
+
+  header: {
+    backgroundColor: "var(--color-accent)",
+    color: "#fff",
+    padding: "12px",
+    fontWeight: "bold",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  closeBtn: {
+    background: "none",
+    border: "none",
+    color: "#fff",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
+
   chatBox: {
-    height: "300px",
+    flex: 1,
+    padding: "10px",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
-    marginBottom: "10px",
-    padding: "10px",
-    border: "1px solid #eee",
+    backgroundColor: "#111", // 🔥 dark grey for contrast
   },
-  message: {
+
+  userMessage: {
+    alignSelf: "flex-end",
+    backgroundColor: "var(--color-accent)",
+    color: "#fff",
     padding: "8px 12px",
     borderRadius: "15px",
     maxWidth: "70%",
   },
-  buttonContainer: {
+
+  botMessage: {
+    alignSelf: "flex-start",
+    backgroundColor: "#1e1e1e",
+    color: "#fff",
+    padding: "8px 12px",
+    borderRadius: "15px",
+    maxWidth: "70%",
+    border: "1px solid var(--color-accent-border)",
+  },
+
+  options: {
+    padding: "10px",
     display: "flex",
     flexDirection: "column",
     gap: "8px",
-  },
-  button: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
+    borderTop: "1px solid #222",
     backgroundColor: "#000",
+  },
+
+  optionBtn: {
+    padding: "10px",
+    borderRadius: "10px",
+    border: "1px solid var(--color-accent-border)",
+    backgroundColor: "#111",
     color: "#fff",
     cursor: "pointer",
+    textAlign: "left",
   },
-  backButton: {
+
+  backBtn: {
     padding: "10px",
-    borderRadius: "8px",
+    borderRadius: "10px",
     border: "none",
-    backgroundColor: "#888",
+    backgroundColor: "var(--color-accent)",
     color: "#fff",
     cursor: "pointer",
   },
