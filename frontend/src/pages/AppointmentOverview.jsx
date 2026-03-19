@@ -30,6 +30,7 @@ const PEAK_HOURS_RAW = {
 
 const STATS = { today: 10, total: 45, cancelled: 10, paid: 5 };
 
+
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const buildPeakData = (raw, { start, end }) => {
   const result = [];
@@ -135,6 +136,7 @@ const BarChart = ({ data, animKey, xTitle }) => {
 };
 
 const AppointmentsOverview = () => {
+
   const [filter, setFilter]     = useState('week');
   const [dropOpen, setDropOpen] = useState(false);
   const [animKey, setAnimKey]   = useState(0);
@@ -160,7 +162,6 @@ const AppointmentsOverview = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
   return (
     <div className="overview-page app-layout">
 
@@ -180,6 +181,7 @@ const AppointmentsOverview = () => {
 
       {/* ── MAIN ────────────────────────────────────────────────── */}
       <div className="overview-main main-content">
+
         {/* Header */}
         <header className="overview-header">
           <img
@@ -205,7 +207,8 @@ const AppointmentsOverview = () => {
 
         {/* Body */}
         <div className="overview-body">
-            {/* ── STATS ───────────────────────────────────────────── */}
+
+          {/* ── STATS ───────────────────────────────────────────── */}
           <div className="stats-grid">
             <div className="stat-card stat-card--orange">
               <span className="stat-label text-orange">TODAY<br />BOOKINGS</span>
@@ -270,8 +273,8 @@ const AppointmentsOverview = () => {
                 xTitle={filter === 'week' ? 'Day' : 'Week'}
               />
             </div>
-            
-                        {/* Peak Hours chart */}
+
+                                    {/* Peak Hours chart */}
             <div className="chart-section">
               <div className="chart-section-header">
                 <div>
@@ -341,7 +344,7 @@ const AppointmentsOverview = () => {
 
 
           </div>{/* end charts-row */}
-
+            
         </div>{/* end overview-body */}
 
         {/* ── MOBILE BOTTOM NAV ────────────────────────────────── */}
