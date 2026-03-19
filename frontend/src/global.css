@@ -5633,3 +5633,131 @@ html, body {
   background-color: var(--color-accent-light);
   transition: all 0.2s ease;
 }
+
+/* Floating Button */
+.chatbot-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-accent);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px var(--color-accent-glow);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.chatbot-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px var(--color-accent-glow-full);
+}
+
+/* Chat Container */
+.chatbot-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 330px;
+  height: 470px;
+  background: #000;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-accent-border);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  animation: fadeIn 0.3s ease;
+  z-index: 1000;
+}
+
+/* Header */
+.chatbot-header {
+  background: var(--color-accent);
+  color: white;
+  padding: 12px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Messages */
+.chatbot-messages {
+  flex: 1;
+  padding: 10px;
+  background: #111;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Chat bubbles */
+.user-msg {
+  align-self: flex-end;
+  background: var(--color-accent);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 70%;
+}
+
+.bot-msg {
+  align-self: flex-start;
+  background: #1e1e1e;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 70%;
+  border: 1px solid var(--color-accent-border);
+}
+
+/* Buttons */
+.chatbot-options {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #222;
+}
+
+.chatbot-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-accent-border);
+  background: #111;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chatbot-btn:hover {
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent-glow);
+}
+
+/* Back button */
+.chatbot-back {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-accent);
+  color: white;
+  cursor: pointer;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
