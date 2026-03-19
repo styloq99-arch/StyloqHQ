@@ -269,8 +269,10 @@ def reschedule_appointment(appointment_id: int):
     if not new_datetime:
         return _err("bad_request", "new_datetime is required (format: YYYY-MM-DDTHH:MM:SS).")
 
-    result = reschedule_appointment(booking_id, new_datetime)
-    return _respond(result)
+    result = services.reschedule_appointment(appointment_id, new_datetime)
+    if result[2]:
+        return _err(result[1], result[2])
+    return _ok(result[0], "Appointment rescheduled.")
 
 
 @barber_bp.post("/<int:barber_id>/book")
@@ -288,8 +290,8 @@ def book_appointment(barber_id: int):
     appt_dt     = body.get("appointment_datetime")
     notes       = body.get("notes")
 
-    if not client_id:
-        return jsonify({"error": "client_id is required."}), 400
+    if not customer_id:
+        return jsonify({"error": "customer_id is required."}), 400
     if not appt_dt:
         return _err("bad_request", "appointment_datetime is required.")
 

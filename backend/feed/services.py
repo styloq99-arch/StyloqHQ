@@ -23,10 +23,14 @@ def fetch_feed_posts_paginated(page=1, limit=5, current_user_id=None):
                 liked = any(l.user_id == current_user_id for l in post.likes)
                 saved = any(s.user_id == current_user_id for s in post.saved_by)
 
+            barber_name = "Unknown Barber"
+            if post.barber and post.barber.user:
+                barber_name = post.barber.user.full_name
+
             result.append({
                 "id": post.id,
                 "barber_id": post.barber_id,
-                "barberName": post.barber.user.full_name,
+                "barberName": barber_name,
                 "imageUrl": post.image_url,
                 "caption": post.caption,
                 "likes": like_count,
@@ -55,10 +59,14 @@ def fetch_single_post(post_id, current_user_id=None):
             liked = any(l.user_id == current_user_id for l in post.likes)
             saved = any(s.user_id == current_user_id for s in post.saved_by)
 
+        barber_name = "Unknown Barber"
+        if post.barber and post.barber.user:
+            barber_name = post.barber.user.full_name
+
         return {
             "id": post.id,
             "barber_id": post.barber_id,
-            "barberName": post.barber.user.full_name,
+            "barberName": barber_name,
             "imageUrl": post.image_url,
             "caption": post.caption,
             "likes": len(post.likes),

@@ -14,7 +14,7 @@ from backend.feed.services import (
     fetch_saved_posts
 )
 
-feed_bp = Blueprint("feed", __name__)
+feed_bp = Blueprint("feed", __name__, url_prefix="/feed")
 
 
 def _ok(data, message: str = "", status: int = 200):
