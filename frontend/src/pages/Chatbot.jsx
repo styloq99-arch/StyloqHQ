@@ -46,3 +46,63 @@ export default function Chatbot() {
     ]);
   };
 }
+
+const goBack = () => {
+  setSelectedCategory(null);
+};
+
+return (
+  <div style={styles.container}>
+    <h2>Styloq Assistant</h2>
+
+    <div style={styles.chatBox}>
+      {messages.map((msg, index) => (
+        <div
+          key={index}
+          style={{
+            ...styles.message,
+            alignSelf: msg.type === "user" ? "flex-end" : "flex-start",
+            backgroundColor: msg.type === "user" ? "#ff7a00" : "#eee",
+            color: msg.type === "user" ? "#fff" : "#000",
+          }}
+        >
+          {msg.text}
+        </div>
+      ))}
+    </div>
+
+    {/* CATEGORY VIEW */}
+    {!selectedCategory && (
+      <div style={styles.buttonContainer}>
+        {Object.keys(chatbotData).map((key) => (
+          <button
+            key={key}
+            style={styles.button}
+            onClick={() => setSelectedCategory(key)}
+          >
+            {chatbotData[key].label}
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* QUESTIONS VIEW */}
+    {selectedCategory && (
+      <div style={styles.buttonContainer}>
+        {chatbotData[selectedCategory].questions.map((q, index) => (
+          <button
+            key={index}
+            style={styles.button}
+            onClick={() => handleQuestionClick(q)}
+          >
+            {q.q}
+          </button>
+        ))}
+
+        <button style={styles.backButton} onClick={goBack}>
+          ⬅ Back
+        </button>
+      </div>
+    )}
+  </div>
+);
