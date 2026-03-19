@@ -35,6 +35,7 @@ const chatbotData = {
 };
 
 export default function Chatbot() {
+  const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [messages, setMessages] = useState([]);
 
@@ -51,59 +52,116 @@ export default function Chatbot() {
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Styloq Assistant</h2>
+    <>
+      {/* Floating Button */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            padding: "14px",
+            borderRadius: "50%",
+            backgroundColor: "#ff7a00",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            zIndex: 1000,
+            fontSize: "18px",
+          }}
+        >
+          💬
+        </button>
+      )}
 
-      <div style={styles.chatBox}>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
+      {/* Chat Window */}
+      {open && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            width: "320px",
+            backgroundColor: "#fff",
+            borderRadius: "10px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            zIndex: 1000,
+            padding: "10px",
+          }}
+        >
+          {/* Close Button */}
+          <button
+            onClick={() => setOpen(false)}
             style={{
-              ...styles.message,
-              alignSelf: msg.type === "user" ? "flex-end" : "flex-start",
-              backgroundColor: msg.type === "user" ? "#ff7a00" : "#eee",
-              color: msg.type === "user" ? "#fff" : "#000",
+              float: "right",
+              border: "none",
+              background: "none",
+              cursor: "pointer",
             }}
           >
-            {msg.text}
-          </div>
-        ))}
-      </div>
-
-      {/* CATEGORY VIEW */}
-      {!selectedCategory && (
-        <div style={styles.buttonContainer}>
-          {Object.keys(chatbotData).map((key) => (
-            <button
-              key={key}
-              style={styles.button}
-              onClick={() => setSelectedCategory(key)}
-            >
-              {chatbotData[key].label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* QUESTIONS VIEW */}
-      {selectedCategory && (
-        <div style={styles.buttonContainer}>
-          {chatbotData[selectedCategory].questions.map((q, index) => (
-            <button
-              key={index}
-              style={styles.button}
-              onClick={() => handleQuestionClick(q)}
-            >
-              {q.q}
-            </button>
-          ))}
-
-          <button style={styles.backButton} onClick={goBack}>
-            ⬅ Back
+            ✖
           </button>
+
+          <h3>Styloq Assistant</h3>
+
+          {/* CHAT AREA */}
+          <div
+            style={{
+              height: "250px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                style={{
+                  alignSelf: msg.type === "user" ? "flex-end" : "flex-start",
+                  backgroundColor: msg.type === "user" ? "#ff7a00" : "#eee",
+                  color: msg.type === "user" ? "#fff" : "#000",
+                  padding: "8px 12px",
+                  borderRadius: "15px",
+                  maxWidth: "70%",
+                }}
+              >
+                {msg.text}
+              </div>
+            ))}
+          </div>
+
+          {/* CATEGORY / QUESTIONS */}
+          {!selectedCategory && (
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {Object.keys(chatbotData).map((key) => (
+                <button key={key} onClick={() => setSelectedCategory(key)}>
+                  {chatbotData[key].label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {selectedCategory && (
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {chatbotData[selectedCategory].questions.map((q, index) => (
+                <button key={index} onClick={() => handleQuestionClick(q)}>
+                  {q.q}
+                </button>
+              ))}
+
+              <button onClick={() => setSelectedCategory(null)}>⬅ Back</button>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 

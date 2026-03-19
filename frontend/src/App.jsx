@@ -26,7 +26,7 @@ import BarberHomePage from "./pages/BarberHomePage.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
 
-import Chatbot from "./pages/Chatbot";
+import Chatbot from "./Components/Chatbot.jsx";
 import BookingPage from "./pages/BookingPage";
 
 export default function App() {
