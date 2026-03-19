@@ -23,6 +23,7 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
+import AppointmentsOverview from "./pages/AppointmentOverview.jsx";
 
 import Chatbot from "./pages/Chatbot";
 import BookingPage from "./pages/BookingPage";
