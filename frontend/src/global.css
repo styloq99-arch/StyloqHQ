@@ -5620,3 +5620,16 @@ html, body {
   border-radius: 10px;
 }
 .db-body::-webkit-scrollbar-thumb:hover { background: #FF5722; }
+
+/* Chatbot buttons hover */
+.chatbot-btn:hover {
+  background-color: var(--color-accent-light);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+
+}
+
+.chatbot-back-btn:hover {
+  background-color: var(--color-accent-light);
+  transition: all 0.2s ease;
+}

@@ -93,6 +93,7 @@ export default function Chatbot() {
                   key={key}
                   style={styles.optionBtn}
                   onClick={() => setSelectedCategory(key)}
+                  className="chatbot-btn"
                 >
                   {chatbotData[key].label}
                 </button>
@@ -104,6 +105,7 @@ export default function Chatbot() {
                   key={index}
                   style={styles.optionBtn}
                   onClick={() => handleQuestionClick(q)}
+                  className="chatbot-btn"
                 >
                   {q.q}
                 </button>
@@ -113,6 +115,7 @@ export default function Chatbot() {
               <button
                 style={styles.backBtn}
                 onClick={() => setSelectedCategory(null)}
+                className="chatbot-back-btn"
               >
                 ⬅ Back
               </button>
