@@ -23,10 +23,7 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
-<<<<<<< HEAD
-=======
-import AppointmentsOverview from "./pages/AppointmentsOverview.jsx";
->>>>>>> parent of c22d200 (Merge pull request #45 from styloq99-arch/main)
+
 import Chatbot from "./pages/Chatbot";
 import BookingPage from "./pages/BookingPage";
 
@@ -55,10 +52,11 @@ export default function App() {
           <Route path="/signup-salon" element={<SignUpSalon />} />
 
           <Route path="/barber-home" element={<BarberHomePage />} />
-<<<<<<< HEAD
-=======
-          <Route path="/Appointment-overview" element={<AppointmentsOverview />} />
->>>>>>> parent of c22d200 (Merge pull request #45 from styloq99-arch/main)
+
+          <Route
+            path="/Appointment-overview"
+            element={<AppointmentsOverview />}
+          />
 
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />
