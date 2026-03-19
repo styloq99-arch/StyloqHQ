@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const chatbotData = {
   booking: {
-    label: "Booking",
+    label: "💇 Booking",
     questions: [
       {
         q: "How do I book a barber?",
@@ -15,7 +15,7 @@ const chatbotData = {
     ],
   },
   barber: {
-    label: "Barber Profiles",
+    label: "👤 Barber Profiles",
     questions: [
       {
         q: "How do I follow a barber?",
@@ -24,7 +24,7 @@ const chatbotData = {
     ],
   },
   salon: {
-    label: "Salons",
+    label: "🏪 Salons",
     questions: [
       {
         q: "How do salons recruit barbers?",
@@ -39,175 +39,83 @@ export default function Chatbot() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [messages, setMessages] = useState([]);
 
-  const handleQuestionClick = (question) => {
+  const handleQuestionClick = (q) => {
     setMessages((prev) => [
       ...prev,
-      { type: "user", text: question.q },
-      { type: "bot", text: question.a },
+      { type: "user", text: q.q },
+      { type: "bot", text: q.a },
     ]);
-  };
-
-  const goBack = () => {
-    setSelectedCategory(null);
   };
 
   return (
     <>
-      {/* Floating Button */}
       {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            padding: "14px",
-            borderRadius: "50%",
-            backgroundColor: "#ff7a00",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-            zIndex: 1000,
-            fontSize: "18px",
-          }}
-        >
+        <button className="chatbot-fab" onClick={() => setOpen(true)}>
           💬
         </button>
       )}
 
-      {/* Chat Window */}
       {open && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            width: "320px",
-            backgroundColor: "#fff",
-            borderRadius: "10px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-            zIndex: 1000,
-            padding: "10px",
-          }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setOpen(false)}
-            style={{
-              float: "right",
-              border: "none",
-              background: "none",
-              cursor: "pointer",
-            }}
-          >
-            ✖
-          </button>
+        <div className="chatbot-container">
+          <div className="chatbot-header">
+            Styloq Assistant
+            <button
+              className="chatbot-close-btn"
+              onClick={() => setOpen(false)}
+            >
+              ✖
+            </button>
+          </div>
 
-          <h3>Styloq Assistant</h3>
+          <div className="chatbot-messages">
+            {messages.length === 0 && (
+              <div className="bot-msg">👋 Hi! How can I help you?</div>
+            )}
 
-          {/* CHAT AREA */}
-          <div
-            style={{
-              height: "250px",
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-              marginBottom: "10px",
-            }}
-          >
-            {messages.map((msg, index) => (
+            {messages.map((msg, i) => (
               <div
-                key={index}
-                style={{
-                  alignSelf: msg.type === "user" ? "flex-end" : "flex-start",
-                  backgroundColor: msg.type === "user" ? "#ff7a00" : "#eee",
-                  color: msg.type === "user" ? "#fff" : "#000",
-                  padding: "8px 12px",
-                  borderRadius: "15px",
-                  maxWidth: "70%",
-                }}
+                key={i}
+                className={msg.type === "user" ? "user-msg" : "bot-msg"}
               >
                 {msg.text}
               </div>
             ))}
           </div>
 
-          {/* CATEGORY / QUESTIONS */}
-          {!selectedCategory && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {Object.keys(chatbotData).map((key) => (
-                <button key={key} onClick={() => setSelectedCategory(key)}>
+          <div className="chatbot-options">
+            {!selectedCategory &&
+              Object.keys(chatbotData).map((key) => (
+                <button
+                  key={key}
+                  className="chatbot-btn"
+                  onClick={() => setSelectedCategory(key)}
+                >
                   {chatbotData[key].label}
                 </button>
               ))}
-            </div>
-          )}
 
-          {selectedCategory && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {chatbotData[selectedCategory].questions.map((q, index) => (
-                <button key={index} onClick={() => handleQuestionClick(q)}>
+            {selectedCategory &&
+              chatbotData[selectedCategory].questions.map((q, i) => (
+                <button
+                  key={i}
+                  className="chatbot-btn"
+                  onClick={() => handleQuestionClick(q)}
+                >
                   {q.q}
                 </button>
               ))}
 
-              <button onClick={() => setSelectedCategory(null)}>⬅ Back</button>
-            </div>
-          )}
+            {selectedCategory && (
+              <button
+                className="chatbot-back"
+                onClick={() => setSelectedCategory(null)}
+              >
+                ⬅ Back
+              </button>
+            )}
+          </div>
         </div>
       )}
     </>
   );
 }
-
-const styles = {
-  container: {
-    width: "350px",
-    margin: "20px auto",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    padding: "10px",
-    fontFamily: "Arial",
-  },
-  chatBox: {
-    height: "300px",
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    marginBottom: "10px",
-    padding: "10px",
-    border: "1px solid #eee",
-  },
-  message: {
-    padding: "8px 12px",
-    borderRadius: "15px",
-    maxWidth: "70%",
-  },
-  buttonContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  },
-  button: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#000",
-    color: "#fff",
-    cursor: "pointer",
-  },
-  backButton: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#888",
-    color: "#fff",
-    cursor: "pointer",
-  },
-};
