@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useFavourites } from "./FavouritesContext";
 import {
   getFeed,
-  likePost,
-  unlikePost,
-  commentPost,
-  savePost,
+  toggleLike,
+  addComment,
+  toggleSave,
   deletePost,
+  getComments,
 } from "../api/feedApi";
 
 export default function CustomerHome() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const { toggleFavourite, isFavourite } = useFavourites();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/signin');
+  };
 
   // Posts and pagination state
   const [posts, setPosts] = useState([]);
@@ -35,7 +43,29 @@ export default function CustomerHome() {
         setLoading(true);
         setError(null);
 
-        const newPosts = await getFeed(page, 5);
+        const response = await getFeed({ page, limit: 5 });
+
+        // getFeed returns { success, data, message } from the API helper
+        if (!response.success) {
+          setError(response.message || "Failed to load feed");
+          return;
+        }
+
+        const rawPosts = Array.isArray(response.data) ? response.data : [];
+
+        // Normalize backend snake_case to camelCase
+        const newPosts = rawPosts.map((p) => ({
+          id: p.id,
+          barber_id: p.barber_id,
+          barberName: p.barberName || p.barber_name || "Unknown",
+          imageUrl: p.imageUrl || p.image_url || "",
+          caption: p.caption || "",
+          likes: p.likes || 0,
+          commentsCount: p.commentsCount ?? p.comments_count ?? 0,
+          liked: p.liked || false,
+          saved: p.saved || false,
+          createdAt: p.createdAt || p.created_at || "",
+        }));
 
         if (page === 1) {
           setPosts(newPosts);
@@ -45,17 +75,16 @@ export default function CustomerHome() {
 
         const newStates = {};
         newPosts.forEach((post) => {
-          if (!postStates[post.id]) {
-            newStates[post.id] = {
-              liked: post.liked || false,
-              likes: post.likes || 0,
-              commentsCount: post.commentsCount || 0,
-              saved: post.saved || false,
-              showComments: false,
-              commentText: "",
-              commentList: [],
-            };
-          }
+          // Always update liked/saved status from backend, even if post exists
+          newStates[post.id] = {
+            liked: post.liked || false,
+            likes: post.likes || 0,
+            commentsCount: post.commentsCount || 0,
+            saved: post.saved || false,
+            showComments: postStates[post.id]?.showComments || false,
+            commentText: postStates[post.id]?.commentText || "",
+            commentList: postStates[post.id]?.commentList || [],
+          };
         });
 
         if (Object.keys(newStates).length > 0) {
@@ -92,7 +121,21 @@ const handleLike = async (postId) => {
       }
     }));
 
-    await likePost(postId); // toggle endpoint
+    const response = await toggleLike(postId);
+    console.log('Like API response:', response);
+    
+    // Revert on error
+    if (!response.success) {
+      console.error('Like failed:', response.message);
+      setPostStates(prev => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          liked: isLiked,
+          likes: isLiked ? prev[postId].likes + 1 : prev[postId].likes - 1,
+        }
+      }));
+    }
 
   } catch (err) {
     console.error('Error liking post:', err);
@@ -115,9 +158,11 @@ const handleLike = async (postId) => {
       }));
 
       // API call
-      const response = await savePost(post.id);
+      const response = await toggleSave(post.id);
+      console.log('Save API response:', response);
 
       if (!response.success) {
+        console.error('Save failed:', response.message);
         // Revert on error
         toggleFavourite(post);
         setPostStates((prev) => ({
@@ -138,11 +183,33 @@ const handleLike = async (postId) => {
     }
   };
 
-  const handleToggleComments = (postId) => {
+  const handleToggleComments = async (postId) => {
+    const isOpening = !postStates[postId]?.showComments;
+
     setPostStates((prev) => ({
       ...prev,
       [postId]: { ...prev[postId], showComments: !prev[postId].showComments },
     }));
+
+    // Fetch comments from backend when opening
+    if (isOpening) {
+      try {
+        const response = await getComments(postId);
+        if (response.success && Array.isArray(response.data)) {
+          const comments = response.data.map((c) => ({
+            id: c.id,
+            author: c.username || "Unknown",
+            text: c.content,
+          }));
+          setPostStates((prev) => ({
+            ...prev,
+            [postId]: { ...prev[postId], commentList: comments },
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching comments:", err);
+      }
+    }
   };
 
   const handleCommentChange = (postId, value) => {
@@ -175,8 +242,26 @@ const handleLike = async (postId) => {
         },
       }));
 
-      // API call
-      const response = await commentPost(postId, text);
+      // API call - backend expects { comment: "text" }
+      const response = await addComment(postId, text);
+
+      if (response.success && response.data) {
+        // Update with real comment data from backend
+        setPostStates((prev) => ({
+          ...prev,
+          [postId]: {
+            ...prev[postId],
+            commentList: [
+              ...prev[postId].commentList.slice(0, -1),
+              {
+                id: response.data.id,
+                author: response.data.username,
+                text: response.data.content,
+              },
+            ],
+          },
+        }));
+      }
 
       if (!response.success) {
         // Revert on error
@@ -224,9 +309,9 @@ const handleLike = async (postId) => {
 
       if (!response.success) {
         // Revert on error - fetch posts again
-        const feedResponse = await getFeed(1, 5);
+        const feedResponse = await getFeed({ page: 1, limit: 5 });
         if (feedResponse.success) {
-          setPosts(feedResponse.data);
+          setPosts(Array.isArray(feedResponse.data) ? feedResponse.data : []);
           setPostStates({});
           const newStates = {};
           feedResponse.data.forEach((post) => {
@@ -390,7 +475,7 @@ const handleLike = async (postId) => {
           </h1>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/customer-home" className="sidebar-link active">
+          <Link to="/home" className="sidebar-link active">
             <i className="fas fa-home"></i> <span>Home</span>
           </Link>
           <Link to="/customer-search" className="sidebar-link">
@@ -402,6 +487,9 @@ const handleLike = async (postId) => {
           <Link to="/profile" className="sidebar-link">
             <i className="fas fa-user"></i> <span>Profile</span>
           </Link>
+          <button className="sidebar-link" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF5722', width: '100%', textAlign: 'left', padding: '12px 16px', marginTop: 'auto' }}>
+            <i className="fas fa-sign-out-alt"></i> <span>Logout</span>
+          </button>
         </nav>
         <div className="sidebar-user">
           <img
@@ -513,12 +601,15 @@ const handleLike = async (postId) => {
                     <div className="card-header">
                       <div className="header-left">
                         <img
-                          src={post.avatar || "https://via.placeholder.com/48"}
+                          src={post.avatar || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23333'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20'%3E%3F%3C/text%3E%3C/svg%3E"}
                           alt="Avatar"
                           className="profile-avatar"
-                          onError={(e) =>
-                            (e.target.src = "https://via.placeholder.com/48")
-                          }
+                          onError={(e) => {
+                            if (!e.target.dataset.fallback) {
+                              e.target.dataset.fallback = '1';
+                              e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23333'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20'%3E%3F%3C/text%3E%3C/svg%3E";
+                            }
+                          }}
                         />
                         <div className="header-text">
                           <h4 className="barber-name">{post.barberName}</h4>
@@ -550,13 +641,16 @@ const handleLike = async (postId) => {
                     <div className="image-container">
                       <img
                         src={
-                          post.imageUrl || "https://via.placeholder.com/400x300"
+                          post.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E"
                         }
                         alt="Post"
                         className="feed-image"
-                        onError={(e) =>
-                          (e.target.src = "https://via.placeholder.com/400x300")
-                        }
+                        onError={(e) => {
+                          if (!e.target.dataset.fallback) {
+                            e.target.dataset.fallback = '1';
+                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+                          }
+                        }}
                       />
                     </div>
 
@@ -844,7 +938,7 @@ const handleLike = async (postId) => {
 
       {/* Mobile Bottom Nav */}
       <nav className="bottom-nav">
-        <Link to="/customer-home" className="nav-item active">
+        <Link to="/home" className="nav-item active">
           <i className="fas fa-home"></i>
           <span>Home</span>
         </Link>

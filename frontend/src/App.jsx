@@ -28,7 +28,9 @@ import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
+import SalonDashboard from "./pages/SalonDashboard.jsx";
 
+import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Chatbot from "./Components/Chatbot.jsx";
 import BookingPage from "./pages/BookingPage";
 
@@ -49,6 +51,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ErrorBoundary>
         <FavouritesProvider>
           <Routes>
             {/* Public Routes - Protected from authenticated users */}
@@ -103,20 +106,11 @@ export default function App() {
               path="/salon-dashboard" 
               element={
                 <ProtectedRoute allowedRoles={['salon']}>
-                  <div>Salon Dashboard - Coming Soon</div>
+                  <SalonDashboard />
                 </ProtectedRoute>
               } 
             />
             
-            {/* Other Protected Routes */}
-            <Route 
-              path="/customer-home" 
-              element={
-                <ProtectedRoute allowedRoles={['client']}>
-                  <CustomerHome />
-                </ProtectedRoute>
-              } 
-            />
             
             <Route 
               path="/customer-profile" 
@@ -127,8 +121,12 @@ export default function App() {
               } 
             />
 
-            {/* Profile - any authenticated user */}
-            <Route path="/profile" element={<CustomerProfile />} />
+            {/* Profile - authenticated clients */}
+            <Route path="/profile" element={
+              <ProtectedRoute allowedRoles={['client']}>
+                <CustomerProfile />
+              </ProtectedRoute>
+            } />
             
             <Route 
               path="/favourites" 
@@ -175,6 +173,7 @@ export default function App() {
           </Routes>
           <Chatbot />
         </FavouritesProvider>
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -8,9 +8,19 @@ export default function CreatePassword() {
   const {
     register: registerUser,
     getRoleRedirect,
+    isAuthenticated,
+    user,
     error: authError,
     loading: authLoading,
   } = useAuth();
+
+  // Navigate AFTER auth state updates (avoids race condition with ProtectedRoute)
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dest = getRoleRedirect(user.role);
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, user]);
 
   // 1. Retrieve data from Step 1
   const prevData = location.state || {};
@@ -66,8 +76,7 @@ export default function CreatePassword() {
     const res = await registerUser(registrationData);
 
     if (res.success) {
-      const dest = getRoleRedirect(res.user?.role || prevData.role || 'client');
-      navigate(dest, { replace: true });
+      // Navigation handled by useEffect above when auth state updates
     } else {
       setLoading(false);
       setError(res.message || "Registration failed");

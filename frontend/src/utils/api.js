@@ -3,10 +3,13 @@
  * Automatically attaches Authorization header if token exists
  */
 
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5000").replace(/\/+$/, "");
+// In development, use empty string so Vite proxy handles API routing (avoids CORS)
+// In production, set VITE_API_BASE_URL in .env to your backend URL
+const API_BASE_URL = import.meta.env.PROD
+  ? (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "")
+  : "";
 
-console.log("API Base URL:", API_BASE_URL);
+console.log("API Base URL:", API_BASE_URL || "(using Vite proxy)");
 
 function getAuthToken() {
   return localStorage.getItem("token");

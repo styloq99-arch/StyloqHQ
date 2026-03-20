@@ -36,7 +36,8 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(auth_bp)
-    app.register_blueprint(feed_bp)
+    # feed_bp removed — customer_feed_bp at /feed handles all feed routes
+    # app.register_blueprint(feed_bp)
     app.register_blueprint(customer_bp)
     app.register_blueprint(customer_feed_bp)
     app.register_blueprint(salon_bp)

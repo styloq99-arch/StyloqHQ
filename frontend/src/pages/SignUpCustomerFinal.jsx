@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function SignUpCustomerFinal() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { register } = useAuth();
+  const { register, isAuthenticated, user, getRoleRedirect } = useAuth();
+
+  // Navigate AFTER auth state updates (avoids race condition with ProtectedRoute)
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dest = getRoleRedirect(user.role);
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, user]);
 
   // Get data from previous step
   const step1Data = location.state?.step1 || {};
@@ -57,7 +65,7 @@ export default function SignUpCustomerFinal() {
       const res = await register(userData);
 
       if (res.success) {
-        navigate("/home");
+        // Navigation handled by useEffect above when auth state updates
       } else {
         setError(res.message || "Registration failed");
         // Redirect to signin if account already exists

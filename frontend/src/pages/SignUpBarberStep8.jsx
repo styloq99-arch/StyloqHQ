@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function SignUpBarberStep8() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { register } = useAuth();
+  const { register, isAuthenticated, user, getRoleRedirect } = useAuth();
+
+  // Navigate AFTER auth state updates (avoids race condition with ProtectedRoute)
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dest = getRoleRedirect(user.role);
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, user]);
 
   // 1. Retrieve data from previous steps
   const prevData = location.state || {};
-  
-  // Debug: Log what data we received
-  console.log("SignUpBarberStep8 - prevData:", prevData);
 
   // 2. State for LIST of Locations
   const [locations, setLocations] = useState([
@@ -126,7 +131,7 @@ export default function SignUpBarberStep8() {
       const res = await register(userData);
 
       if (res.success) {
-        navigate("/barber-dashboard");
+        // Navigation handled by useEffect above when auth state updates
       } else {
         setError(res.message || "Registration failed");
         // Redirect to signin if account already exists
