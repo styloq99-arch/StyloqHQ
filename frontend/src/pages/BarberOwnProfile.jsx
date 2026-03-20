@@ -69,6 +69,446 @@ const TIME_SLOTS = [
 ];
 
 
+// ─── Edit Modal ───────────────────────────────────────────────────────────────
+
+function EditModal({ section, profile, onSave, onClose }) {
+  const [data, setData] = useState(() => JSON.parse(JSON.stringify(profile)));
+  const avatarRef = useRef(null);
+  const coverRef  = useRef(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [coverPreview,  setCoverPreview]  = useState(null);
+
+  // specialty tag input
+  const [newSpecialty, setNewSpecialty] = useState('');
+
+  const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setAvatarPreview(URL.createObjectURL(file));
+  };
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setCoverPreview(URL.createObjectURL(file));
+  };
+
+  // ── specialty handlers ──
+  const addCustomSpecialty = () => {
+    const trimmed = newSpecialty.trim();
+    if (!trimmed) return;
+    if ((data.specialties || []).includes(trimmed)) return;
+    setData(prev => ({ ...prev, specialties: [...(prev.specialties || []), trimmed] }));
+    setNewSpecialty('');
+  };
+
+  const removeSpecialty = (s) => {
+    setData(prev => ({ ...prev, specialties: (prev.specialties || []).filter(x => x !== s) }));
+  };
+
+  // ── working hours handlers ──
+  const toggleDay = (day) => {
+    setData(prev => ({
+      ...prev,
+      workingHours: {
+        ...prev.workingHours,
+        [day]: {
+          ...prev.workingHours[day],
+          active: !prev.workingHours[day].active,
+          start: !prev.workingHours[day].active ? '09:00 AM' : 'Closed',
+          end:   !prev.workingHours[day].active ? '06:00 PM' : 'Closed',
+        },
+      },
+    }));
+  };
+
+  const handleTimeChange = (day, field, val) => {
+    setData(prev => ({
+      ...prev,
+      workingHours: {
+        ...prev.workingHours,
+        [day]: { ...prev.workingHours[day], [field]: val },
+      },
+    }));
+  };
+
+  // ── service handlers ──
+  const addService = () => {
+    setData(prev => ({
+      ...prev,
+      services: [...prev.services, { id: Date.now(), name: '', price: '', desc: '' }],
+    }));
+  };
+  const removeService = (id) => setData(prev => ({ ...prev, services: prev.services.filter(s => s.id !== id) }));
+  const updateService = (id, field, val) => setData(prev => ({
+    ...prev,
+    services: prev.services.map(s => s.id === id ? { ...s, [field]: val } : s),
+  }));
+
+  // ── location handlers ──
+  const addLocation = () => setData(prev => ({
+    ...prev,
+    locations: [...prev.locations, { id: Date.now(), salonName: '', address: '', district: '', postalCode: '' }],
+  }));
+  const removeLocation = (id) => setData(prev => ({ ...prev, locations: prev.locations.filter(l => l.id !== id) }));
+  const updateLocation = (id, field, val) => setData(prev => ({
+    ...prev,
+    locations: prev.locations.map(l => l.id === id ? { ...l, [field]: val } : l),
+  }));
+
+  // ── certification handlers ──
+  const addCert = () => setData(prev => ({
+    ...prev,
+    certifications: [...prev.certifications, { title: '', institute: '', date: '', desc: '' }],
+  }));
+  const removeCert = (i) => setData(prev => ({
+    ...prev,
+    certifications: prev.certifications.filter((_, idx) => idx !== i),
+  }));
+  const updateCert = (i, field, val) => setData(prev => ({
+    ...prev,
+    certifications: prev.certifications.map((c, idx) => idx === i ? { ...c, [field]: val } : c),
+  }));
+
+  const handleSave = () => {
+    const saved = { ...data };
+    if (avatarPreview) saved.avatar = avatarPreview;
+    if (coverPreview)  saved.coverImage = coverPreview;
+    onSave(saved);
+  };
+
+  const renderContent = () => {
+    switch (section) {
+
+      // ── Photos ──
+      case 'photo':
+        return (
+          <div className="bop-modal-photo-section">
+            <input type="file" ref={avatarRef} accept="image/*" style={{ display:'none' }} onChange={handleAvatarChange} />
+            <input type="file" ref={coverRef}  accept="image/*" style={{ display:'none' }} onChange={handleCoverChange}  />
+            <div className="bop-photo-row">
+              <div className="bop-photo-block">
+                <p className="bop-photo-label">Profile Photo</p>
+                <div className="bop-avatar-edit-wrap" onClick={() => avatarRef.current.click()}>
+                  <img src={avatarPreview || data.avatar} alt="avatar" className="bop-avatar-edit-img" />
+                  <div className="bop-avatar-edit-overlay"><i className="fas fa-camera"></i></div>
+                </div>
+              </div>
+              <div className="bop-photo-block">
+                <p className="bop-photo-label">Cover Photo</p>
+                <div className="bop-cover-edit-wrap" onClick={() => coverRef.current.click()}>
+                  <img src={coverPreview || data.coverImage} alt="cover" className="bop-cover-edit-img" />
+                  <div className="bop-cover-edit-overlay"><i className="fas fa-camera"></i><span>Change Cover</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      // ── Personal Info ──
+      case 'personal':
+        return (
+          <div className="bop-modal-fields">
+            {[
+              { label: 'Full Name',          key: 'name',       type: 'text'   },
+              { label: 'Email Address',       key: 'email',      type: 'email'  },
+              { label: 'Phone Number',        key: 'phone',      type: 'tel'    },
+              { label: 'City',               key: 'city',       type: 'text'   },
+              { label: 'Years of Experience', key: 'experience', type: 'number' },
+            ].map(f => (
+              <div key={f.key} className="bop-field-group">
+                <label className="bop-field-label">{f.label}</label>
+                <input
+                  type={f.type}
+                  className="bop-field-input"
+                  value={data[f.key] || ''}
+                  onChange={e => set(f.key, e.target.value)}
+                />
+              </div>
+            ))}
+            <div className="bop-field-group">
+              <label className="bop-field-label">Professional Bio</label>
+              <textarea
+                className="bop-field-input bop-textarea"
+                value={data.bio || ''}
+                onChange={e => set('bio', e.target.value)}
+                maxLength={300}
+                rows={4}
+              />
+              <span className="bop-char-count">{(data.bio || '').length}/300</span>
+            </div>
+          </div>
+        );
+
+      // ── Specialties — personalised tag input only, no fixed list ──
+      case 'specialties':
+        return (
+          <div className="bop-modal-fields">
+            <p className="bop-field-hint">Type and add your own specialties</p>
+
+            <div className="bop-tag-input-row">
+              <input
+                className="bop-field-input bop-tag-input"
+                value={newSpecialty}
+                onChange={e => setNewSpecialty(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addCustomSpecialty()}
+                placeholder="e.g. Hot Towel Shave"
+                maxLength={30}
+              />
+              <button className="bop-tag-add-btn" onClick={addCustomSpecialty}>
+                <i className="fas fa-plus"></i> Add
+              </button>
+            </div>
+
+            {(data.specialties || []).length > 0 ? (
+              <div className="bop-specialty-grid">
+                {(data.specialties || []).map(s => (
+                  <span key={s} className="bop-specialty-chip active">
+                    {s}
+                    <button className="bop-tag-remove" onClick={() => removeSpecialty(s)}>
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="bop-no-tags-hint">No specialties added yet.</p>
+            )}
+          </div>
+        );
+
+      // ── Working Hours ──
+      case 'hours':
+        return (
+          <div className="bop-modal-fields">
+            {Object.keys(data.workingHours).map(day => (
+              <div key={day} className="bop-hours-row">
+                <div className="bop-hours-day-wrap">
+                  <label className="bop-hours-toggle">
+                    <input
+                      type="checkbox"
+                      checked={data.workingHours[day].active}
+                      onChange={() => toggleDay(day)}
+                    />
+                    <span className="bop-hours-slider"></span>
+                  </label>
+                  <span className={`bop-hours-day ${data.workingHours[day].active ? 'on' : 'off'}`}>{day}</span>
+                </div>
+                {data.workingHours[day].active ? (
+                  <div className="bop-hours-times">
+                    <select
+                      className="bop-time-select"
+                      value={data.workingHours[day].start}
+                      onChange={e => handleTimeChange(day, 'start', e.target.value)}
+                    >
+                      {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <span className="bop-hours-dash">–</span>
+                    <select
+                      className="bop-time-select"
+                      value={data.workingHours[day].end}
+                      onChange={e => handleTimeChange(day, 'end', e.target.value)}
+                    >
+                      {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                ) : (
+                  <span className="bop-hours-closed">Closed</span>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      // ── Services ──
+      case 'services':
+        return (
+          <div className="bop-modal-fields">
+            {data.services.map((svc, i) => (
+              <div key={svc.id} className="bop-service-edit-card">
+                <div className="bop-service-edit-header">
+                  <span className="bop-service-edit-num">Service {i + 1}</span>
+                  <button className="bop-service-remove" onClick={() => removeService(svc.id)}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                <div className="bop-field-group">
+                  <label className="bop-field-label">Service Name</label>
+                  <input className="bop-field-input" value={svc.name} onChange={e => updateService(svc.id, 'name', e.target.value)} placeholder="e.g. Classic Cut" />
+                </div>
+                <div className="bop-service-edit-row">
+                  <div className="bop-field-group" style={{ flex: 1 }}>
+                    <label className="bop-field-label">Price (LKR)</label>
+                    <input type="number" className="bop-field-input" value={svc.price} onChange={e => updateService(svc.id, 'price', e.target.value)} placeholder="0" />
+                  </div>
+                </div>
+                <div className="bop-field-group">
+                  <label className="bop-field-label">Description</label>
+                  <input className="bop-field-input" value={svc.desc} onChange={e => updateService(svc.id, 'desc', e.target.value)} placeholder="Brief description..." />
+                </div>
+              </div>
+            ))}
+            <button className="bop-add-btn" onClick={addService}>
+              <i className="fas fa-plus"></i> Add Service
+            </button>
+          </div>
+        );
+
+      // ── Locations ──
+      case 'locations':
+        return (
+          <div className="bop-modal-fields">
+            {data.locations.map((loc, i) => (
+              <div key={loc.id} className="bop-service-edit-card">
+                <div className="bop-service-edit-header">
+                  <span className="bop-service-edit-num">Location {i + 1}</span>
+                  {data.locations.length > 1 && (
+                    <button className="bop-service-remove" onClick={() => removeLocation(loc.id)}>
+                      <i className="fas fa-times"></i>
+                    </button>
+                  )}
+                </div>
+                {[
+                  { label: 'Salon Name',  key: 'salonName',  placeholder: "e.g. The Gentleman's Cut" },
+                  { label: 'Address',     key: 'address',    placeholder: 'Street address'            },
+                  { label: 'District',    key: 'district',   placeholder: 'e.g. Colombo 05'           },
+                  { label: 'Postal Code', key: 'postalCode', placeholder: 'e.g. 00100'                },
+                ].map(f => (
+                  <div key={f.key} className="bop-field-group">
+                    <label className="bop-field-label">{f.label}</label>
+                    <input className="bop-field-input" value={loc[f.key]} onChange={e => updateLocation(loc.id, f.key, e.target.value)} placeholder={f.placeholder} />
+                  </div>
+                ))}
+              </div>
+            ))}
+            <button className="bop-add-btn" onClick={addLocation}>
+              <i className="fas fa-plus"></i> Add Location
+            </button>
+          </div>
+        );
+
+      // ── Certifications ──
+      case 'certifications':
+        return (
+          <div className="bop-modal-fields">
+            {data.certifications.map((cert, i) => (
+              <div key={i} className="bop-service-edit-card">
+                <div className="bop-service-edit-header">
+                  <span className="bop-service-edit-num">Certificate {i + 1}</span>
+                  <button className="bop-service-remove" onClick={() => removeCert(i)}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                {[
+                  { label: 'Certificate Title', key: 'title',     type: 'text', placeholder: 'e.g. Master Barber Diploma'    },
+                  { label: 'Issuing Institute',  key: 'institute', type: 'text', placeholder: 'e.g. IHB Academy'             },
+                  { label: 'Issue Date',         key: 'date',      type: 'date', placeholder: ''                             },
+                  { label: 'Description',        key: 'desc',      type: 'text', placeholder: 'Brief summary of the cert...' },
+                ].map(f => (
+                  <div key={f.key} className="bop-field-group">
+                    <label className="bop-field-label">{f.label}</label>
+                    <input
+                      type={f.type}
+                      className="bop-field-input"
+                      value={cert[f.key] || ''}
+                      onChange={e => updateCert(i, f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+            <button className="bop-add-btn" onClick={addCert}>
+              <i className="fas fa-plus"></i> Add Certificate
+            </button>
+          </div>
+        );
+
+      default: return null;
+    }
+  };
+
+  const TITLES = {
+    photo:          'Edit Photos',
+    personal:       'Edit Profile Info',
+    specialties:    'Edit Specialties',
+    hours:          'Edit Working Hours',
+    services:       'Edit Services',
+    locations:      'Edit Locations',
+    certifications: 'Edit Certifications',
+  };
+
+  return (
+    <div className="bop-modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="bop-modal">
+        <div className="bop-modal-header">
+          <h3 className="bop-modal-title">{TITLES[section]}</h3>
+          <button className="bop-modal-close" onClick={onClose}>
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
+        <div className="bop-modal-body">{renderContent()}</div>
+        <div className="bop-modal-footer">
+          <button className="bop-modal-cancel" onClick={onClose}>Cancel</button>
+          <button className="bop-modal-save" onClick={handleSave}>
+            <i className="fas fa-check"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Photo Upload Modal ───────────────────────────────────────────────────────
+
+function PhotoUploadModal({ onClose, onUpload }) {
+  const fileRef = useRef(null);
+  const [preview, setPreview] = useState(null);
+  const [caption, setCaption] = useState('');
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (file) setPreview(URL.createObjectURL(file));
+  };
+
+  return (
+    <div className="bop-modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="bop-modal bop-modal-sm">
+        <div className="bop-modal-header">
+          <h3 className="bop-modal-title">Upload Work Photo</h3>
+          <button className="bop-modal-close" onClick={onClose}><i className="fas fa-times"></i></button>
+        </div>
+        <div className="bop-modal-body">
+          <input type="file" ref={fileRef} accept="image/*" style={{ display:'none' }} onChange={handleFile} />
+          {preview ? (
+            <div className="bop-photo-preview-wrap">
+              <img src={preview} alt="preview" className="bop-photo-preview" />
+              <button className="bop-photo-change" onClick={() => fileRef.current.click()}>Change Photo</button>
+            </div>
+          ) : (
+            <div className="bop-upload-zone" onClick={() => fileRef.current.click()}>
+              <i className="fas fa-cloud-upload-alt"></i>
+              <p>Tap to select photo</p>
+              <span>JPG, PNG, WEBP</span>
+            </div>
+          )}
+          <div className="bop-field-group" style={{ marginTop: 16 }}>
+            <label className="bop-field-label">Caption (optional)</label>
+            <input className="bop-field-input" value={caption} onChange={e => setCaption(e.target.value)} placeholder="Describe the work..." />
+          </div>
+        </div>
+        <div className="bop-modal-footer">
+          <button className="bop-modal-cancel" onClick={onClose}>Cancel</button>
+          <button className="bop-modal-save" disabled={!preview} onClick={() => { onUpload(preview, caption); onClose(); }}>
+            <i className="fas fa-upload"></i> Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
 
 
 
@@ -193,7 +633,7 @@ export default function BarberOwnProfile() {
               </div>
             </div>
 
-                        {/* ─── BIO SECTION ─── */}
+            9{/* ─── BIO SECTION ─── */}
             <div className="bop-bio-section">
               <div className="bop-bio-name-row">
                 <h2 className="bop-name">{profile.name}</h2>
