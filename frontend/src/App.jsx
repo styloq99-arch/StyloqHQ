@@ -1,12 +1,15 @@
 import "./global.css";
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FavouritesProvider } from "./pages/FavouritesContext.jsx";
+import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 import Index from "./pages/Index.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUpBarber from "./pages/SignUpBarber.jsx";
 import SignUpCustomer from "./pages/SignUpCustomer.jsx";
+import SignUpCustomerFinal from "./pages/SignUpCustomerFinal.jsx";
 import VerificationStep1 from "./pages/VerificationStep1.jsx";
 import VerificationStep2 from "./pages/VerificationStep2.jsx";
 import SignUpBarberStep4 from "./pages/SignUpBarberStep4.jsx";
@@ -29,50 +32,150 @@ import BarberDashboard from "./pages/BarberDashboard.jsx";
 import Chatbot from "./Components/Chatbot.jsx";
 import BookingPage from "./pages/BookingPage";
 
+// Component to protect public routes from authenticated users
+function PublicRoute({ children }) {
+  const { isAuthenticated, getRoleRedirect, user } = useAuth();
+  
+  if (isAuthenticated) {
+    // Redirect authenticated users to their dashboard
+    const correctPath = getRoleRedirect(user?.role);
+    return <Navigate to={correctPath} replace />;
+  }
+  
+  return children;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      {/* FavouritesProvider wraps all routes so CustomerHome and
-          Favourites share the same bookmarked state */}
-      <FavouritesProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/signin" element={<SignIn />} />
+      <AuthProvider>
+        <FavouritesProvider>
+          <Routes>
+            {/* Public Routes - Protected from authenticated users */}
+            <Route path="/" element={<Index />} />
+            <Route 
+              path="/signin" 
+              element={
+                <PublicRoute>
+                  <SignIn />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Signup Routes - Allow access for both logged in and logged out users */}
+            <Route path="/signup-barber" element={<SignUpBarber />} />
+            <Route path="/signup-customer" element={<SignUpCustomer />} />
+            <Route path="/signup-customer-final" element={<SignUpCustomerFinal />} />
+            <Route path="/signup-salon" element={<SignUpSalon />} />
+            
+            {/* Verification Routes */}
+            <Route path="/verification-step1" element={<VerificationStep1 />} />
+            <Route path="/verification-step2" element={<VerificationStep2 />} />
+            <Route path="/create-password" element={<CreatePassword />} />
+            
+            {/* Barber Signup Steps */}
+            <Route path="/signup-barber-step4" element={<SignUpBarberStep4 />} />
+            <Route path="/signup-barber-step5" element={<SignUpBarberStep5 />} />
+            <Route path="/signup-barber-step6" element={<SignUpBarberStep6 />} />
+            <Route path="/signup-barber-step7" element={<SignUpBarberStep7 />} />
+            <Route path="/signup-barber-step8" element={<SignUpBarberStep8 />} />
+            
+            {/* Protected Routes - Role Based */}
+            <Route 
+              path="/home" 
+              element={
+                <ProtectedRoute allowedRoles={['client']}>
+                  <CustomerHome />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/barber-dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['barber']}>
+                  <BarberDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/salon-dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['salon']}>
+                  <div>Salon Dashboard - Coming Soon</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Other Protected Routes */}
+            <Route 
+              path="/customer-home" 
+              element={
+                <ProtectedRoute allowedRoles={['client']}>
+                  <CustomerHome />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/customer-profile" 
+              element={
+                <ProtectedRoute allowedRoles={['client']}>
+                  <CustomerProfile />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route path="/signup-barber" element={<SignUpBarber />} />
-          <Route path="/signup-barber-step4" element={<SignUpBarberStep4 />} />
-          <Route path="/signup-barber-step5" element={<SignUpBarberStep5 />} />
-          <Route path="/signup-barber-step6" element={<SignUpBarberStep6 />} />
-          <Route path="/signup-barber-step7" element={<SignUpBarberStep7 />} />
-          <Route path="/signup-barber-step8" element={<SignUpBarberStep8 />} />
+            {/* Profile - any authenticated user */}
+            <Route path="/profile" element={<CustomerProfile />} />
+            
+            <Route 
+              path="/favourites" 
+              element={
+                <ProtectedRoute allowedRoles={['client']}>
+                  <Favourites />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/booking" 
+              element={
+                <ProtectedRoute>
+                  <BookingPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/Appointment-overview" 
+              element={
+                <ProtectedRoute allowedRoles={['barber']}>
+                  <AppointmentOverview />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/barber-home" 
+              element={
+                <ProtectedRoute allowedRoles={['barber']}>
+                  <BarberHomePage />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route path="/signup-customer" element={<SignUpCustomer />} />
-          <Route path="/verification-step1" element={<VerificationStep1 />} />
-          <Route path="/verification-step2" element={<VerificationStep2 />} />
-          <Route path="/create-password" element={<CreatePassword />} />
+            {/* Public Routes */}
+            <Route path="/customer-search" element={<CustomerSearch />} />
+            <Route path="/add-review" element={<AddReviewPage />} />
+            <Route path="/barber-profile-view/:barberId?" element={<BarberProfileView />} />
 
-          <Route path="/signup-salon" element={<SignUpSalon />} />
-
-          <Route path="/barber-home" element={<BarberHomePage />} />
-
-          <Route
-            path="/Appointment-overview"
-            element={<AppointmentOverview />}
-          />
-          <Route path="/barber-dashboard" element={<BarberDashboard />} />
-
-          <Route path="/customer-home" element={<CustomerHome />} />
-          <Route path="/customer-search" element={<CustomerSearch />} />
-          <Route path="/booking" element={<BookingPage />} />
-          <Route path="/add-review" element={<AddReviewPage />} />
-          <Route path="/barber-profile-view" element={<BarberProfileView />} />
-          <Route path="/customer-profile" element={<CustomerProfile />} />
-          <Route path="/favourites" element={<Favourites />} />
-
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Chatbot />
-      </FavouritesProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Chatbot />
+        </FavouritesProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

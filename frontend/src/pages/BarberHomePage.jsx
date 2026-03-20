@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function BarberHomePage() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => { logout(); navigate('/signin'); };
   const appointments = [
     {
       id: 1,
@@ -126,6 +131,9 @@ export default function BarberHomePage() {
           <Link to="/postingPhotos" className="sidebar-link">
             <i className="fa fa-plus"></i>
           </Link>
+          <button className="sidebar-link" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF5722', width: '100%', textAlign: 'left', padding: '12px 16px', marginTop: 'auto' }}>
+            <i className="fas fa-sign-out-alt"></i> <span>Logout</span>
+          </button>
         </nav>
       </aside>
 

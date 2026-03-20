@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignUpBarberStep8() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { register } = useAuth();
 
   // 1. Retrieve data from previous steps
   const prevData = location.state || {};
+  
+  // Debug: Log what data we received
+  console.log("SignUpBarberStep8 - prevData:", prevData);
 
   // 2. State for LIST of Locations
   const [locations, setLocations] = useState([
     { id: 1, salonName: "", address: "", district: "", postalCode: "" }
   ]);
 
-  // 3. State for Validation/Loading
+  // 3. State for Account Details (pre-filled from previous steps if available)
+  const [fullName, setFullName] = useState(prevData.name || "");
+  const [email, setEmail] = useState(prevData.email || "");
+  const [phone, setPhone] = useState(prevData.phone || "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // 4. State for Validation/Loading
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -49,38 +61,84 @@ export default function SignUpBarberStep8() {
     setLocations(prev => prev.filter(loc => loc.id !== id));
   };
 
-  // Handle NEXT BUTTON (Renamed from Complete Registration)
-  const handleNext = (e) => {
+  // Handle COMPLETE REGISTRATION
+  const handleNext = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
-    // Simulate API Save
-    setTimeout(() => {
-      setLoading(false);
-
-      // --- AUTO-FILL LOGIC: Ensure data exists before navigating ---
-      let finalLocations = locations;
-      if (finalLocations.length === 0) {
-        // If empty, add a default "Home Salon" entry
-        finalLocations = [{
-          id: Date.now(),
-          salonName: "Home Salon",
-          address: "",
-          district: "",
-          postalCode: ""
-        }];
+    try {
+      // Validate account details
+      if (!fullName.trim()) {
+        setError("Full name is required");
+        setLoading(false);
+        return;
+      }
+      if (!email.trim()) {
+        setError("Email is required");
+        setLoading(false);
+        return;
       }
 
-      const finalData = {
-        ...prevData,
-        locations: finalLocations
+      // Validate password
+      if (!password.trim()) {
+        setError("Password is required");
+        setLoading(false);
+        return;
+      }
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        setLoading(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        setLoading(false);
+        return;
+      }
+
+      // Validate locations
+      const validLocations = locations.filter(loc => 
+        loc.salonName.trim() && loc.address.trim()
+      );
+
+      if (validLocations.length === 0) {
+        setError("Please add at least one complete location");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare registration data
+      const userData = {
+        name: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password: password,
+        role: "barber",
+        locations: validLocations,
+        // Add other barber-specific fields from previous steps
+        experience: prevData.experience,
+        specialties: prevData.specialties,
+        about: prevData.about,
+        availability: prevData.availability,
       };
 
-      console.log("Step 8 Data Saved, Proceeding to Step 9:", finalData);
+      const res = await register(userData);
 
-      // Navigate to Next Step (Step 9) instead of Dashboard
-      navigate("/signup-barber-step9", { state: finalData });
-    }, 1500);
+      if (res.success) {
+        navigate("/barber-dashboard");
+      } else {
+        setError(res.message || "Registration failed");
+        // Redirect to signin if account already exists
+        if (res.redirect) {
+          setTimeout(() => navigate(res.redirect), 2000);
+        }
+      }
+    } catch (err) {
+      setError("An error occurred during registration");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,10 +153,6 @@ export default function SignUpBarberStep8() {
         <div className="header-text">
           <h1>Current Working Location</h1>
         </div>
-
-        <Link to="/signup-barber-step8" className="skip-btn">
-            Skip
-        </Link>
       </header>
 
       {/* --- Main Content --- */}
@@ -115,6 +169,75 @@ export default function SignUpBarberStep8() {
             {error}
           </div>
         )}
+
+        {/* --- ACCOUNT DETAILS --- */}
+        <section style={{ marginBottom: "20px" }}>
+          <div className="section-card">
+            <label className="section-label">Account Details</label>
+            <div className="input-group">
+              <label>Full Name</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="Enter your full name"
+                value={fullName}
+                onChange={(e) => { setFullName(e.target.value); if (error) setError(""); }}
+                disabled={loading}
+              />
+            </div><br />
+            <div className="input-group">
+              <label>Email</label>
+              <input 
+                type="email" 
+                className="input-field" 
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
+                disabled={loading}
+              />
+            </div><br />
+            <div className="input-group">
+              <label>Phone</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="Enter your phone number"
+                value={phone}
+                onChange={(e) => { setPhone(e.target.value); if (error) setError(""); }}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* --- PASSWORD FIELDS --- */}
+        <section style={{ marginBottom: "20px" }}>
+          <div className="section-card">
+            <label className="section-label">Create Your Password</label>
+            <div className="input-group">
+              <label>Password</label>
+              <input 
+                type="password" 
+                className="input-field" 
+                placeholder="Enter password (min 6 characters)"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); if (error) setError(""); }}
+                disabled={loading}
+              />
+            </div><br />
+            <div className="input-group">
+              <label>Confirm Password</label>
+              <input 
+                type="password" 
+                className="input-field" 
+                placeholder="Re-enter password"
+                value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); if (error) setError(""); }}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </section>
 
         {/* --- LOCATIONS LIST --- */}
         {locations.map((loc, idx) => (
@@ -203,7 +326,7 @@ export default function SignUpBarberStep8() {
             <i className="fas fa-plus"></i> Add Another Location
         </button>
 
-        {/* --- NEXT BUTTON --- */}
+        {/* --- COMPLETE REGISTRATION BUTTON --- */}
         <button 
             onClick={handleNext}
             className="btn btn-primary" 
@@ -216,7 +339,7 @@ export default function SignUpBarberStep8() {
                 opacity: loading ? 0.7 : 1
             }}
         >
-            {loading ? "LOADING..." : "Next"}
+            {loading ? "CREATING ACCOUNT..." : "Complete Registration"}
         </button>
 
       </main>

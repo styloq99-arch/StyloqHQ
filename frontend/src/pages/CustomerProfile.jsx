@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // ─── Static Data ─────────────────────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ const formatDate = (dateStr) =>
 
 export default function CustomerProfile() {
   const navigate     = useNavigate();
+  const { logout }   = useAuth();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState(() => {
@@ -309,7 +311,7 @@ export default function CustomerProfile() {
               <div className="cp-danger-title">
                 <i className="fas fa-exclamation-triangle"></i> Account
               </div>
-              <button className="cp-logout-btn" onClick={() => navigate('/')}>
+              <button className="cp-logout-btn" onClick={() => { logout(); navigate('/signin'); }}>
                 <i className="fas fa-sign-out-alt"></i> Log Out
               </button>
             </div>

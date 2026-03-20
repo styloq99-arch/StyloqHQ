@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 /* ═══════════════════════════════════════════════════════
    DATA
@@ -348,6 +348,10 @@ function BarChart({ data, color = '#FF5722' }) {
    MAIN
 ═══════════════════════════════════════════════════════ */
 export default function BarberDashboard() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => { logout(); navigate('/signin'); };
 
   const ratingBreakdown = { 5: 45, 4: 30, 3: 15, 2: 7, 1: 3 };
 
@@ -388,6 +392,9 @@ export default function BarberDashboard() {
               <Link to="/postingPhotos" className="sidebar-link">
                 <i className="fa fa-plus"></i>
               </Link>
+              <button className="sidebar-link" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF5722', width: '100%', textAlign: 'left', padding: '12px 16px', marginTop: 'auto' }}>
+                <i className="fas fa-sign-out-alt"></i> <span>Logout</span>
+              </button>
             </nav>
           </aside>
 
