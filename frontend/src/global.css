@@ -6042,7 +6042,99 @@ body::-webkit-scrollbar-thumb:hover {
 .bop-hours-display-day { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: #e0e0e0; width: 60px; }
 .bop-hours-display-time { font-family: 'Poppins', sans-serif; font-size: 13px; color: #888; }
 
+/* ── Info Tab ────────────────────────────────────────────────── */
 
+.bop-info-tab { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+
+.bop-info-card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #252525;
+}
+
+.bop-info-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.bop-info-row:last-child { border-bottom: none; }
+
+.bop-info-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,87,34,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-accent);
+  font-size: 13px;
+}
+
+.bop-info-content { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bop-info-label { font-family: 'Poppins', sans-serif; font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+.bop-info-value { font-family: 'Poppins', sans-serif; font-size: 13px; color: #d0d0d0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Location blocks */
+.bop-location-block {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.bop-location-block:last-child { border-bottom: none; }
+
+.bop-location-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,87,34,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-accent);
+  font-size: 13px;
+}
+
+.bop-location-name { font-family: 'Poppins', sans-serif; font-size: 13px; color: #e0e0e0; font-weight: 600; margin: 0 0 3px; }
+.bop-location-addr { font-family: 'Poppins', sans-serif; font-size: 12px; color: #666; margin: 0; }
+
+/* Cert blocks */
+.bop-cert-block {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.bop-cert-block:last-child { border-bottom: none; }
+
+.bop-cert-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,215,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-gold);
+  font-size: 14px;
+}
+
+.bop-cert-name      { font-family: 'Poppins', sans-serif; font-size: 13px; color: #e0e0e0; font-weight: 600; margin: 0 0 2px; }
+.bop-cert-inst      { font-family: 'Poppins', sans-serif; font-size: 11px; color:  #9a9898; margin: 0 0 4px; }
+.bop-cert-date      { font-family: 'Poppins', sans-serif; font-size: 11px; color: #555; margin: 0 0 4px; display: flex; align-items: center; gap: 5px; }
+.bop-cert-date i    { color: #444; }
+.bop-cert-desc-text { font-family: 'Poppins', sans-serif; font-size: 11px; color: #666; margin: 0; line-height: 1.5; }
 
 /*Barber own profile page media queries*/
 @media (min-width: 768px) {
@@ -6056,6 +6148,7 @@ body::-webkit-scrollbar-thumb:hover {
    .bop-action-row-mobile { display: none; }
    .bop-toast { bottom: 30px; }
    .bop-services-tab { padding: 20px; }
+   .bop-info-tab { padding: 20px; }
 
 
 }

@@ -310,6 +310,87 @@ export default function BarberOwnProfile() {
             </div>
           )}
 
+          {/* ─── TAB: INFO ─── */}
+          {activeTab === 'info' && (
+            <div className="bop-info-tab">
+
+              {/* Personal Info */}
+              <div className="bop-info-card">
+                <div className="bop-section-head">
+                  <h3 className="bop-section-title">Personal Info</h3>
+                  <button className="bop-edit-btn" onClick={() => setEditSection('personal')}>
+                    <i className="fas fa-pen"></i> Edit
+                  </button>
+                </div>
+                {[
+                  { icon: 'fa-user',          label: 'Full Name',  value: profile.name                  },
+                  { icon: 'fa-envelope',       label: 'Email',      value: profile.email                 },
+                  { icon: 'fa-phone',          label: 'Phone',      value: profile.phone                 },
+                  { icon: 'fa-id-card',        label: 'ID Number',  value: profile.idNumber              },
+                  { icon: 'fa-map-marker-alt', label: 'City',       value: profile.city                  },
+                  { icon: 'fa-briefcase',      label: 'Experience', value: `${profile.experience} years` },
+                ].map((f, idx) => (
+                  <div key={idx} className="bop-info-row">
+                    <div className="bop-info-icon"><i className={`fas ${f.icon}`}></i></div>
+                    <div className="bop-info-content">
+                      <span className="bop-info-label">{f.label}</span>
+                      <span className="bop-info-value">{f.value}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Locations */}
+              <div className="bop-info-card">
+                <div className="bop-section-head">
+                  <h3 className="bop-section-title">Locations</h3>
+                  <button className="bop-edit-btn" onClick={() => setEditSection('locations')}>
+                    <i className="fas fa-pen"></i> Edit
+                  </button>
+                </div>
+                {profile.locations.map(loc => (
+                  <div key={loc.id} className="bop-location-block">
+                    <div className="bop-location-icon"><i className="fas fa-map-marker-alt"></i></div>
+                    <div>
+                      <p className="bop-location-name">{loc.salonName}</p>
+                      <p className="bop-location-addr">{loc.address}, {loc.district} {loc.postalCode}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Certifications — now editable */}
+              <div className="bop-info-card">
+                <div className="bop-section-head">
+                  <h3 className="bop-section-title">Certifications</h3>
+                  <button className="bop-edit-btn" onClick={() => setEditSection('certifications')}>
+                    <i className="fas fa-pen"></i> Edit
+                  </button>
+                </div>
+                {profile.certifications.length === 0 ? (
+                  <p className="bop-no-tags-hint">No certifications added yet.</p>
+                ) : (
+                  profile.certifications.map((cert, i) => (
+                    <div key={i} className="bop-cert-block">
+                      <div className="bop-cert-icon"><i className="fas fa-certificate"></i></div>
+                      <div>
+                        <p className="bop-cert-name">{cert.title}</p>
+                        <p className="bop-cert-inst">{cert.institute}</p>
+                        {cert.date && (
+                          <p className="bop-cert-date">
+                            <i className="fas fa-calendar-alt"></i> {cert.date}
+                          </p>
+                        )}
+                        <p className="bop-cert-desc-text">{cert.desc}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+          )}
+
 
         </div>
 
