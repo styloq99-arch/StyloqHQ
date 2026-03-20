@@ -103,6 +103,52 @@ export default function BarberOwnProfile() {
 
   return (
     <div className="app-layout">
+              {toast && (
+        <div className="bop-toast">
+          <i className="fas fa-check-circle"></i> {toast}
+        </div>
+      )}
+
+      {/* ── Edit Modal ── */}
+      {editSection && (
+        <EditModal
+          section={editSection}
+          profile={profile}
+          onSave={handleSave}
+          onClose={() => setEditSection(null)}
+        />
+      )}
+
+      {/* ── Photo Upload Modal ── */}
+      {photoModal && (
+        <PhotoUploadModal
+          onClose={() => setPhotoModal(false)}
+          onUpload={handlePhotoUpload}
+        />
+      )}
+
+      {/* ── Photo Viewer ── */}
+      {photoViewer !== null && (
+        <div className="bop-viewer-backdrop" onClick={() => setPhotoViewer(null)}>
+          <button className="bop-viewer-close" onClick={() => setPhotoViewer(null)}>
+            <i className="fas fa-times"></i>
+          </button>
+          <img src={workPhotos[photoViewer]} alt="work" className="bop-viewer-img" />
+          <div className="bop-viewer-nav">
+            <button
+              className="bop-viewer-btn"
+              disabled={photoViewer === 0}
+              onClick={e => { e.stopPropagation(); setPhotoViewer(v => v - 1); }}
+            ><i className="fas fa-chevron-left"></i></button>
+            <span className="bop-viewer-count">{photoViewer + 1} / {workPhotos.length}</span>
+            <button
+              className="bop-viewer-btn"
+              disabled={photoViewer === workPhotos.length - 1}
+              onClick={e => { e.stopPropagation(); setPhotoViewer(v => v + 1); }}
+            ><i className="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      )}
 
       {/* ── Desktop Sidebar ── */}
       <aside className="desktop-sidebar">
@@ -185,8 +231,49 @@ export default function BarberOwnProfile() {
             </div>
 
           </div>
+          {/* ─── TAB NAV ─── */}
+          <div className="bop-tabs">
+            <button className={`bop-tab ${activeTab === 'posts'    ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+              <i className="fas fa-th"></i> <span>Posts</span>
+            </button>
+            <button className={`bop-tab ${activeTab === 'services' ? 'active' : ''}`} onClick={() => setActiveTab('services')}>
+              <i className="fas fa-cut"></i> <span>Services</span>
+            </button>
+            <button className={`bop-tab ${activeTab === 'info'     ? 'active' : ''}`} onClick={() => setActiveTab('info')}>
+              <i className="fas fa-info-circle"></i> <span>Info</span>
+            </button>
+          </div>
+
+          {/* ─── TAB: POSTS ─── */}
+          {activeTab === 'posts' && (
+            <div className="bop-posts-tab">
+              <div className="bop-posts-toolbar">
+                <span className="bop-posts-count">{workPhotos.length} photos</span>
+                <button className="bop-upload-btn" onClick={() => setPhotoModal(true)}>
+                  <i className="fas fa-plus"></i> Upload
+                </button>
+              </div>
+              <div className="bop-grid">
+                {workPhotos.map((src, i) => (
+                  <div key={i} className="bop-grid-item" onClick={() => setPhotoViewer(i)}>
+                    <img src={src} alt={`work ${i + 1}`} className="bop-grid-img" />
+                    <div className="bop-grid-hover">
+                      <i className="fas fa-expand-alt"></i>
+                    </div>
+                  </div>
+                ))}
+                <div className="bop-grid-item bop-grid-add" onClick={() => setPhotoModal(true)}>
+                  <i className="fas fa-plus"></i>
+                  <span>Add</span>
+                </div>
+              </div>
+            </div>
+          )}
+
 
         </div>
+
+        
       </div>
 
       {/* ── Mobile Bottom Nav ── */}
