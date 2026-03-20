@@ -1,79 +1,155 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFavourites } from './FavouritesContext';
-
-// Mock Data
-const INITIAL_POSTS = [
-  {
-    id: 1,
-    name: "S.S.K. Perera",
-    rating: 5,
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    caption: "Another transformation in the chair 2 days ago",
-    image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    likes: 124,
-    comments: 15
-  },
-  {
-    id: 2,
-    name: "D.H.Pathirana",
-    rating: 4.5,
-    avatar: "https://randomuser.me/api/portraits/men/44.jpg",
-    caption: "Classic fade for the weekend. 1 day ago",
-    image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    likes: 89,
-    comments: 8
-  }
-];
+import { getFeed, likePost, unlikePost, commentPost, savePost, deletePost } from '../api/feedApi';
 
 
 export default function CustomerHome() {
 
   const { toggleFavourite, isFavourite } = useFavourites();
 
-  const [postStates, setPostStates] = useState(
-    Object.fromEntries(
-      INITIAL_POSTS.map(post => [
-        post.id,
-        {
-          liked: false,
-          likes: post.likes,
-          comments: post.comments,
-          showComments: false,
-          commentText: '',
-          commentList: [],
-        }
-      ])
-    )
-  );
+  // Posts and pagination state
+  const [posts, setPosts] = useState([]);
+  const [postStates, setPostStates] = useState({});
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(3);
   const [shareToast, setShareToast] = useState(null);
   const [bookmarkToast, setBookmarkToast] = useState(null);
 
-  const NOTIFICATIONS = [
-    { id: 1, text: "S.S.K. Perera posted a new style", time: "2m ago" },
-    { id: 2, text: "Your appointment is confirmed for tomorrow", time: "1h ago" },
-    { id: 3, text: "D.H.Pathirana liked your comment", time: "3h ago" },
-  ];
-
-  const handleLike = (postId) => {
-    setPostStates(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        liked: !prev[postId].liked,
-        likes: prev[postId].liked ? prev[postId].likes - 1 : prev[postId].likes + 1,
+  // ─────────────────────────────────────────────────────────────────────────
+  // FETCH FEED POSTS ON MOUNT AND PAGINATION
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchFeed = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await getFeed(page, 5);
+        
+        if (response.success) {
+          const newPosts = response.data || [];
+          
+          if (page === 1) {
+            setPosts(newPosts);
+          } else {
+            setPosts(prev => [...prev, ...newPosts]);
+          }
+          
+          // Initialize post states for new posts
+          const newStates = {};
+          newPosts.forEach(post => {
+            if (!postStates[post.id]) {
+              newStates[post.id] = {
+                liked: post.liked || false,
+                likes: post.likes || 0,
+                commentsCount: post.commentsCount || 0,
+                saved: post.saved || false,
+                showComments: false,
+                commentText: '',
+                commentList: [],
+              };
+            }
+          });
+          
+          if (Object.keys(newStates).length > 0) {
+            setPostStates(prev => ({ ...prev, ...newStates }));
+          }
+          
+          // Check if there are more posts
+          setHasMore(newPosts.length === 5);
+        } else {
+          setError(response.message || 'Failed to load feed');
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to load feed');
+        console.error('Error fetching feed:', err);
+      } finally {
+        setLoading(false);
       }
-    }));
+    };
+
+    fetchFeed();
+  }, [page]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // HANDLERS FOR INTERACTIONS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const handleLike = async (postId) => {
+    try {
+      const currentState = postStates[postId];
+      const isCurrentlyLiked = currentState.liked;
+
+      // Optimistic update
+      setPostStates(prev => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          liked: !isCurrentlyLiked,
+          likes: isCurrentlyLiked ? prev[postId].likes - 1 : prev[postId].likes + 1,
+        }
+      }));
+
+      // API call
+      const response = isCurrentlyLiked ? await unlikePost(postId) : await likePost(postId);
+      
+      if (!response.success) {
+        // Revert on error
+        setPostStates(prev => ({
+          ...prev,
+          [postId]: {
+            ...prev[postId],
+            liked: isCurrentlyLiked,
+            likes: isCurrentlyLiked ? prev[postId].likes + 1 : prev[postId].likes - 1,
+          }
+        }));
+      }
+    } catch (err) {
+      console.error('Error liking post:', err);
+    }
   };
 
-  const handleBookmark = (post) => {
-    const wasBookmarked = isFavourite(post.id);
-    toggleFavourite(post);
-    setBookmarkToast(wasBookmarked ? 'Removed from Favourites' : 'Saved to Favourites!');
-    setTimeout(() => setBookmarkToast(null), 2200);
+  const handleBookmark = async (post) => {
+    try {
+      const wasBookmarked = isFavourite(post.id);
+      const wasPostSaved = postStates[post.id]?.saved;
+
+      // Optimistic updates (both UI and local state)
+      toggleFavourite(post);
+      setPostStates(prev => ({
+        ...prev,
+        [post.id]: {
+          ...prev[post.id],
+          saved: !wasPostSaved,
+        }
+      }));
+
+      // API call
+      const response = await savePost(post.id);
+      
+      if (!response.success) {
+        // Revert on error
+        toggleFavourite(post);
+        setPostStates(prev => ({
+          ...prev,
+          [post.id]: {
+            ...prev[post.id],
+            saved: wasPostSaved,
+          }
+        }));
+      }
+
+      setBookmarkToast(wasBookmarked ? 'Removed from Favourites' : 'Saved to Favourites!');
+      setTimeout(() => setBookmarkToast(null), 2200);
+    } catch (err) {
+      console.error('Error saving post:', err);
+    }
   };
 
   const handleToggleComments = (postId) => {
@@ -90,18 +166,54 @@ export default function CustomerHome() {
     }));
   };
 
-  const handleCommentSubmit = (postId) => {
+  const handleCommentSubmit = async (postId) => {
     const text = postStates[postId].commentText.trim();
     if (!text) return;
-    setPostStates(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        commentText: '',
-        comments: prev[postId].comments + 1,
-        commentList: [...prev[postId].commentList, { id: Date.now(), author: 'You', text }],
+
+    try {
+      // Optimistic update
+      setPostStates(prev => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          commentText: '',
+          commentsCount: prev[postId].commentsCount + 1,
+          commentList: [...prev[postId].commentList, { 
+            id: Date.now(), 
+            author: 'You', 
+            text 
+          }],
+        }
+      }));
+
+      // API call
+      const response = await commentPost(postId, text);
+      
+      if (!response.success) {
+        // Revert on error
+        setPostStates(prev => ({
+          ...prev,
+          [postId]: {
+            ...prev[postId],
+            commentText: text,
+            commentsCount: prev[postId].commentsCount - 1,
+            commentList: prev[postId].commentList.slice(0, -1),
+          }
+        }));
       }
-    }));
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      // Revert on error
+      setPostStates(prev => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          commentText: text,
+          commentsCount: prev[postId].commentsCount - 1,
+          commentList: prev[postId].commentList.slice(0, -1),
+        }
+      }));
+    }
   };
 
   const handleShare = (postId, postName) => {
@@ -111,9 +223,51 @@ export default function CustomerHome() {
     setTimeout(() => setShareToast(null), 2500);
   };
 
+  const handleDeletePost = async (postId) => {
+    try {
+      if (!window.confirm('Are you sure you want to delete this post?')) return;
+
+      // Optimistic update
+      setPosts(prev => prev.filter(p => p.id !== postId));
+
+      // API call
+      const response = await deletePost(postId);
+      
+      if (!response.success) {
+        // Revert on error - fetch posts again
+        const feedResponse = await getFeed(1, 5);
+        if (feedResponse.success) {
+          setPosts(feedResponse.data);
+          setPostStates({});
+          const newStates = {};
+          feedResponse.data.forEach(post => {
+            newStates[post.id] = {
+              liked: post.liked || false,
+              likes: post.likes || 0,
+              commentsCount: post.commentsCount || 0,
+              saved: post.saved || false,
+              showComments: false,
+              commentText: '',
+              commentList: [],
+            };
+          });
+          setPostStates(newStates);
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting post:', err);
+    }
+  };
+
   const handleNotifOpen = () => {
     setNotifOpen(prev => !prev);
     if (!notifOpen) setNotifCount(0);
+  };
+
+  const handleLoadMore = () => {
+    if (hasMore && !loading) {
+      setPage(prev => prev + 1);
+    }
   };
 
   return (
@@ -158,12 +312,15 @@ export default function CustomerHome() {
               <i className="fas fa-times"></i>
             </button>
           </div>
-          {NOTIFICATIONS.map(n => (
-            <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-deep)' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>{n.text}</p>
-              <p style={{ color: 'var(--text-dim)', fontSize: '11px', margin: '4px 0 0' }}>{n.time}</p>
+          {notifCount > 0 ? (
+            <div style={{ padding: '12px 16px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>You have {notifCount} new notifications</p>
             </div>
-          ))}
+          ) : (
+            <div style={{ padding: '12px 16px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '13px' }}>
+              No new notifications
+            </div>
+          )}
         </div>
       )}
 
@@ -209,9 +366,50 @@ export default function CustomerHome() {
         <div className="page-body">
           <section>
             <div className="feed-container">
-              {INITIAL_POSTS.map((post) => {
+              {/* Error Message */}
+              {error && (
+                <div style={{
+                  padding: '1rem',
+                  background: '#fee',
+                  color: '#c00',
+                  borderRadius: '8px',
+                  marginBottom: '1rem',
+                  border: '1px solid #fcc'
+                }}>
+                  <i className="fas fa-exclamation-circle"></i> {error}
+                </div>
+              )}
+
+              {/* Loading State */}
+              {loading && posts.length === 0 && (
+                <div style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <i className="fas fa-spinner fa-spin" style={{ marginRight: '0.5rem' }}></i>
+                  Loading feed...
+                </div>
+              )}
+
+              {/* No Posts */}
+              {!loading && posts.length === 0 && !error && (
+                <div style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <i className="fas fa-inbox" style={{ fontSize: '2rem', marginBottom: '1rem', display: 'block' }}></i>
+                  No posts yet. Follow barbers to see their latest posts!
+                </div>
+              )}
+
+              {/* Posts List */}
+              {posts.map((post) => {
                 const state = postStates[post.id];
                 const bookmarked = isFavourite(post.id);
+                
+                if (!state) return null; // Skip if state not yet initialized
                 
                 return (
                   <div key={post.id} className="feed-card">
@@ -219,17 +417,22 @@ export default function CustomerHome() {
                     {/* Card Header */}
                     <div className="card-header">
                       <div className="header-left">
-                        <img src={post.avatar} alt="Avatar" className="profile-avatar" />
+                        <img 
+                          src={post.avatar || 'https://via.placeholder.com/48'} 
+                          alt="Avatar" 
+                          className="profile-avatar" 
+                          onError={(e) => e.target.src = 'https://via.placeholder.com/48'}
+                        />
                         <div className="header-text">
-                          <h4 className="barber-name">{post.name}</h4>
+                          <h4 className="barber-name">{post.barberName}</h4>
                           <div className="stars-container">
                             {[...Array(5)].map((_, i) => (
-                              <i key={i} className={`fas fa-star ${i < post.rating ? 'filled' : 'empty'}`}></i>
+                              <i key={i} className={`fas fa-star ${i < (post.rating || 5) ? 'filled' : 'empty'}`}></i>
                             ))}
                           </div>
                         </div>
                       </div>
-                      <Link to="/barber-profile-view" className="btn btn-secondary"
+                      <Link to={`/barber-profile-view/${post.barber_id}`} className="btn btn-secondary"
                         style={{ width: '40%', height: '45px', marginTop: '2rem', borderRadius: '20px' }}>
                         View Profile
                       </Link>
@@ -237,7 +440,12 @@ export default function CustomerHome() {
 
                     {/* Image */}
                     <div className="image-container">
-                      <img src={post.image} alt="Haircut" className="feed-image" />
+                      <img 
+                        src={post.imageUrl || 'https://via.placeholder.com/400x300'} 
+                        alt="Post" 
+                        className="feed-image"
+                        onError={(e) => e.target.src = 'https://via.placeholder.com/400x300'}
+                      />
                     </div>
 
                     {/* Like count */}
@@ -250,6 +458,11 @@ export default function CustomerHome() {
                     {/* Caption */}
                     <div className="card-content">
                       <p className="caption-text">{post.caption}</p>
+                      {post.createdAt && (
+                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '0.5rem' }}>
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
 
                     {/* Actions */}
@@ -273,20 +486,31 @@ export default function CustomerHome() {
                         </button>
 
                         {/* Share */}
-                        <button onClick={() => handleShare(post.id, post.name)}
+                        <button onClick={() => handleShare(post.id, post.barberName)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                           aria-label="Share">
                           <i className="far fa-paper-plane action-icon"></i>
                         </button>
                       </div>
 
-                      {/* Bookmark → Favourites */}
-                      <button onClick={() => handleBookmark(post)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        aria-label={bookmarked ? 'Remove from favourites' : 'Save to favourites'}>
-                        <i className={`${bookmarked ? 'fas' : 'far'} fa-bookmark action-icon`}
-                          style={{ color: bookmarked ? 'var(--color-accent)' : undefined }}></i>
-                      </button>
+                      <div className="action-right" style={{ display: 'flex', gap: '0.5rem' }}>
+                        {/* Bookmark → Favourites */}
+                        <button onClick={() => handleBookmark(post)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label={bookmarked ? 'Remove from favourites' : 'Save to favourites'}>
+                          <i className={`${bookmarked ? 'fas' : 'far'} fa-bookmark action-icon`}
+                            style={{ color: bookmarked ? 'var(--color-accent)' : undefined }}></i>
+                        </button>
+
+                        {/* Delete (if owner) */}
+                        {/* Note: Backend checks if user is owner or admin */}
+                        <button onClick={() => handleDeletePost(post.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label="Delete post"
+                          title="Delete post">
+                          <i className="far fa-trash-alt action-icon" style={{ color: '#ff6b6b' }}></i>
+                        </button>
+                      </div>
 
                     </div>
 
@@ -305,7 +529,7 @@ export default function CustomerHome() {
                           )}
                           {state.commentList.length === 0 && (
                             <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '10px' }}>
-                              {state.comments} comment{state.comments !== 1 ? 's' : ''} — be the first to reply
+                              {state.commentsCount} comment{state.commentsCount !== 1 ? 's' : ''} — be the first to reply
                             </p>
                           )}
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -340,6 +564,29 @@ export default function CustomerHome() {
                   </div>
                 );
               })}
+
+              {/* Load More Button */}
+              {hasMore && posts.length > 0 && (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loading}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      background: 'var(--color-accent)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '20px',
+                      cursor: loading ? 'default' : 'pointer',
+                      opacity: loading ? 0.6 : 1,
+                      fontSize: '14px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {loading ? 'Loading...' : 'Load More Posts'}
+                  </button>
+                </div>
+              )}
             </div>
           </section>
         </div>
