@@ -121,6 +121,33 @@ export default function BarberOwnProfile() {
       {/* ── Main Content ── */}
       <div className="main-content">
         <div className="bop-page">
+            {/* ─── COVER + AVATAR ─── */}
+          <div className="bop-hero">
+
+            {/* Cover — camera button removed, avatar camera handles both */}
+            <div className="bop-cover-wrap">
+              <img src={profile.coverImage} alt="Cover" className="bop-cover-img" />
+              <div className="bop-cover-gradient"></div>
+            </div>
+
+            {/* Avatar row */}
+            <div className="bop-avatar-row">
+              <div className="bop-avatar-wrap">
+                <img src={profile.avatar} alt={profile.name} className="bop-avatar" />
+                <button className="bop-avatar-cam" onClick={() => setEditSection('photo')}>
+                  <i className="fas fa-camera"></i>
+                </button>
+              </div>
+
+              {/* Desktop action buttons */}
+              <div className="bop-action-row-desktop">
+                <button className="bop-btn-outline" onClick={() => setEditSection('personal')}>
+                  <i className="fas fa-pen"></i> Edit Profile
+                </button>
+              </div>
+            </div>
+
+          </div>
 
         </div>
       </div>
