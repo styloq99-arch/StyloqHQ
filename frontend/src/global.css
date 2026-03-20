@@ -5952,6 +5952,96 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
+/* ── Services Tab ────────────────────────────────────────────── */
+
+.bop-services-tab { padding: 16px; }
+
+.bop-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.bop-section-title {
+  font-family: 'Viga', sans-serif;
+  font-size: 16px;
+  color: #e0e0e0;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.bop-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,87,34,0.3);
+  background: rgba(255,87,34,0.06);
+  color: var(--color-accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bop-edit-btn:hover { background: var(--color-accent-hover); border-color: var(--color-accent); }
+
+.bop-services-list {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #252525;
+}
+
+.bop-service-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid #252525;
+  transition: background 0.2s;
+}
+
+.bop-service-row:last-child { border-bottom: none; }
+.bop-service-row:hover { background: rgba(255,255,255,0.02); }
+
+.bop-service-info { display: flex; flex-direction: column; gap: 2px; }
+.bop-service-name { font-family: 'Poppins', sans-serif; font-size: 14px; color: #e0e0e0; font-weight: 500; }
+.bop-service-desc { font-family: 'Poppins', sans-serif; font-size: 11px; color: #666; }
+.bop-service-price {
+  font-family: 'Viga', sans-serif;
+  font-size: 15px;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+/* Hours card */
+.bop-hours-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #252525;
+}
+
+.bop-hours-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-bottom: 1px solid #252525;
+  transition: background 0.2s;
+}
+
+.bop-hours-display-row:last-child { border-bottom: none; }
+.bop-hours-display-row:hover { background: rgba(255,255,255,0.02); }
+.bop-hours-display-row.closed { opacity: 0.4; }
+
+.bop-hours-display-day { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: #e0e0e0; width: 60px; }
+.bop-hours-display-time { font-family: 'Poppins', sans-serif; font-size: 13px; color: #888; }
+
 
 
 /*Barber own profile page media queries*/
@@ -5965,6 +6055,7 @@ body::-webkit-scrollbar-thumb:hover {
    .bop-bio-edit { display: none; }
    .bop-action-row-mobile { display: none; }
    .bop-toast { bottom: 30px; }
+   .bop-services-tab { padding: 20px; }
 
 
 }

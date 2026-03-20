@@ -270,6 +270,46 @@ export default function BarberOwnProfile() {
             </div>
           )}
 
+          {/* ─── TAB: SERVICES ─── */}
+          {activeTab === 'services' && (
+            <div className="bop-services-tab">
+              <div className="bop-section-head">
+                <h3 className="bop-section-title">Service Rates</h3>
+                <button className="bop-edit-btn" onClick={() => setEditSection('services')}>
+                  <i className="fas fa-pen"></i> Edit
+                </button>
+              </div>
+              <div className="bop-services-list">
+                {profile.services.map(svc => (
+                  <div key={svc.id} className="bop-service-row">
+                    <div className="bop-service-info">
+                      <span className="bop-service-name">{svc.name}</span>
+                      {svc.desc && <span className="bop-service-desc">{svc.desc}</span>}
+                    </div>
+                    <span className="bop-service-price">LKR {parseInt(svc.price).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bop-section-head" style={{ marginTop: 28 }}>
+                <h3 className="bop-section-title">Working Hours</h3>
+                <button className="bop-edit-btn" onClick={() => setEditSection('hours')}>
+                  <i className="fas fa-pen"></i> Edit
+                </button>
+              </div>
+              <div className="bop-hours-card">
+                {Object.entries(profile.workingHours).map(([day, val]) => (
+                  <div key={day} className={`bop-hours-display-row ${!val.active ? 'closed' : ''}`}>
+                    <span className="bop-hours-display-day">{day}</span>
+                    <span className="bop-hours-display-time">
+                      {val.active ? `${val.start} – ${val.end}` : 'Closed'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
 
         </div>
 
