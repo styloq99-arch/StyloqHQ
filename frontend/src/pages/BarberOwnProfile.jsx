@@ -147,6 +147,43 @@ export default function BarberOwnProfile() {
               </div>
             </div>
 
+                        {/* ─── BIO SECTION ─── */}
+            <div className="bop-bio-section">
+              <div className="bop-bio-name-row">
+                <h2 className="bop-name">{profile.name}</h2>
+                <span className="bop-verified"><i className="fas fa-check-circle"></i></span>
+                <button className="bop-bio-edit" onClick={() => setEditSection('personal')} title="Edit info">
+                  <i className="fas fa-pen"></i>
+                </button>
+              </div>
+              <p className="bop-role">
+                <i className="fas fa-cut"></i> Barber · {profile.experience} yrs experience · {profile.city}
+              </p>
+              <p className="bop-bio-text">{profile.bio}</p>
+
+              {/* Specialty chips */}
+              <div className="bop-chips">
+                {profile.specialties.map(s => (
+                  <span key={s} className="bop-chip">{s}</span>
+                ))}
+                <button className="bop-chip bop-chip-edit" onClick={() => setEditSection('specialties')}>
+                  <i className="fas fa-pen"></i> Edit
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="bop-stats-row">
+                {STATS.map(st => (
+                  <div key={st.label} className="bop-stat">
+                    <span className="bop-stat-val">{st.value}</span>
+                    <span className="bop-stat-label">{st.label}</span>
+                  </div>
+                ))}
+              </div>
+
+            
+            </div>
+
           </div>
 
         </div>
