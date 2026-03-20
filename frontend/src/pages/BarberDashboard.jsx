@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+
 /* ═══════════════════════════════════════════════════════
    DATA
 ═══════════════════════════════════════════════════════ */
@@ -10,7 +11,6 @@ const BARBER = {
   rating: 4.0,
   reviewCount: '1.2K',
 };
-
 
 const SUBSCRIPTION = {
   activeSubscribers: 145,
@@ -33,8 +33,6 @@ const TRENDS = [
 
 const EARNINGS = { today: 10000, week: 80000, month: 210000 };
 
-const fmt = (n) => 'RS. ' + n.toLocaleString('en-US');
-
 const WEEKLY_DATA = [
   { label: 'S', value: 9200 },
   { label: 'M', value: 4500 },
@@ -44,6 +42,7 @@ const WEEKLY_DATA = [
   { label: 'F', value: 7800 },
   { label: 'S', value: 8400 },
 ];
+
 const MONTHLY_DATA = [
   { label: '1',  value: 6200 }, { label: '2',  value: 5800 }, { label: '3',  value: 7100 },
   { label: '4',  value: 4900 }, { label: '5',  value: 5300 }, { label: '6',  value: 6800 },
@@ -58,6 +57,9 @@ const MONTHLY_DATA = [
   { label: '31', value: 7600 },
 ];
 
+const fmt = (n) => 'RS. ' + n.toLocaleString('en-US');
+
+
 
 /* ═══════════════════════════════════════════════════════
    STAR RATING
@@ -71,7 +73,6 @@ function Stars({ rating, max = 5 }) {
     </div>
   );
 }
-
 
 /* ═══════════════════════════════════════════════════════
    DONUT CHART
@@ -149,6 +150,7 @@ function DonutChart({ data }) {
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════
    LINE CHART
@@ -342,25 +344,25 @@ function BarChart({ data, color = '#FF5722' }) {
   );
 }
 
-
-
 /* ═══════════════════════════════════════════════════════
    MAIN
 ═══════════════════════════════════════════════════════ */
 export default function BarberDashboard() {
 
-     const ratingBreakdown = { 5: 45, 4: 30, 3: 15, 2: 7, 1: 3 };
+  const ratingBreakdown = { 5: 45, 4: 30, 3: 15, 2: 7, 1: 3 };
 
        const retentionData = [
     { label: 'Returning Customers', value: RETENTION.returning,    color: '#FF5722' },
     { label: 'New Customers',       value: RETENTION.newCustomers, color: '#666666' },
   ];
 
-  const [chartTab,   setChartTab]   = useState('line');    // line | bar
+    const [chartTab,   setChartTab]   = useState('line');    // line | bar
   const [periodTab,  setPeriodTab]  = useState('weekly');  // weekly | monthly
 
   const chartData    = periodTab === 'weekly' ? WEEKLY_DATA : MONTHLY_DATA;
-  const totalEarning = periodTab === 'weekly' ? EARNINGS.week : EARNINGS.month; 
+  const totalEarning = periodTab === 'weekly' ? EARNINGS.week : EARNINGS.month;
+
+ 
 
   return (
     <div className="db-root">
@@ -398,7 +400,7 @@ export default function BarberDashboard() {
           <img src={BARBER.avatar} alt="Profile" className="db-header-avatar" />
         </header>
 
-              <div className="db-body">
+        <div className="db-body">
                   <div className="db-content-grid">
                       <div className="db-col">
                              {/* 1. AVERAGE RATING */}
@@ -422,6 +424,7 @@ export default function BarberDashboard() {
                                 ))}
                                 </div>
                             </section>
+
                             {/* 2. SUBSCRIPTION PERFORMANCE */}
                             <section className="db-card">
                                 <h3 className="db-section-title">Subscription Performance</h3>
@@ -449,79 +452,77 @@ export default function BarberDashboard() {
                             </section>
 
                             {/* 3. CUSTOMER RETENTION */}
-                            <section className="db-card">
-                                <h3 className="db-section-title">Customer Retention</h3>
-                                <DonutChart data={retentionData} />
-                            </section>
+              <section className="db-card">
+                <h3 className="db-section-title">Customer Retention</h3>
+                <DonutChart data={retentionData} />
+              </section>
 
-                            {/* 4. RECENT REVIEWS */}
+              {/* 4. RECENT REVIEWS */}
+              <section className="db-card">
+                <h3 className="db-section-title">Recent Reviews</h3>
+                <div className="db-reviews-list">
+                  {[
+                    { name: 'Chamodi W.',  avatar: 'https://i.pravatar.cc/150?img=5',  rating: 5, comment: 'Amazing fade, very clean lines!', time: '2h ago' },
+                    { name: 'Danush W.',   avatar: 'https://i.pravatar.cc/150?img=12', rating: 4, comment: 'Great service, will come back.', time: '1d ago' },
+                    { name: 'Ranuthi D.', avatar: 'https://i.pravatar.cc/150?img=9',  rating: 5, comment: 'Best barber in town honestly.', time: '2d ago' },
+                  ].map((r, i) => (
+                    <div key={i} className="db-review-item">
+                      <img src={r.avatar} alt={r.name} className="db-review-avatar" />
+                      <div className="db-review-body">
+                        <div className="db-review-top">
+                          <span className="db-review-name">{r.name}</span>
+                          <span className="db-review-time">{r.time}</span>
+                        </div>
+                        <div className="db-review-stars">
+                          {Array.from({ length: 5 }).map((_, s) => (
+                            <span key={s} style={{ color: s < r.rating ? '#FFB300' : '#3a3a3a', fontSize: 13 }}>★</span>
+                          ))}
+                        </div>
+                        <p className="db-review-comment">"{r.comment}"</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+
+                      </div>
+                      <div className="db-col">
+                          {/* 4. NEW TRENDS */}
                             <section className="db-card">
-                                <h3 className="db-section-title">Recent Reviews</h3>
-                                <div className="db-reviews-list">
-                                {[
-                                    { name: 'Chamodi W.',  avatar: 'https://i.pravatar.cc/150?img=5',  rating: 5, comment: 'Amazing fade, very clean lines!', time: '2h ago' },
-                                    { name: 'Danush W.',   avatar: 'https://i.pravatar.cc/150?img=12', rating: 4, comment: 'Great service, will come back.', time: '1d ago' },
-                                    { name: 'Ranuthi D.', avatar: 'https://i.pravatar.cc/150?img=9',  rating: 5, comment: 'Best barber in town honestly.', time: '2d ago' },
-                                ].map((r, i) => (
-                                    <div key={i} className="db-review-item">
-                                    <img src={r.avatar} alt={r.name} className="db-review-avatar" />
-                                    <div className="db-review-body">
-                                        <div className="db-review-top">
-                                        <span className="db-review-name">{r.name}</span>
-                                        <span className="db-review-time">{r.time}</span>
-                                        </div>
-                                        <div className="db-review-stars">
-                                        {Array.from({ length: 5 }).map((_, s) => (
-                                            <span key={s} style={{ color: s < r.rating ? '#FFB300' : '#3a3a3a', fontSize: 13 }}>★</span>
-                                        ))}
-                                        </div>
-                                        <p className="db-review-comment">"{r.comment}"</p>
+                                <h3 className="db-section-title">New Trends</h3>
+                                <div className="db-trends-scroll">
+                                {TRENDS.map(t => (
+                                    <div key={t.id} className="db-trend-card">
+                                    <div className="db-trend-badge">
+                                        <span>{t.views}</span>
+                                        <span className="db-trend-star">★</span>
                                     </div>
+                                    <img src={t.image} alt={t.name} className="db-trend-img" />
+                                    <p className="db-trend-name">{t.name}</p>
                                     </div>
                                 ))}
                                 </div>
                             </section>
-
-                      </div> {/*end of the left column */}
-                      {/* ═══ RIGHT COLUMN ═══ */}
-                      <div className="db-col">
-
-                        {/* 4. NEW TRENDS */}
-                        <section className="db-card">
-                            <h3 className="db-section-title">New Trends</h3>
-                            <div className="db-trends-scroll">
-                            {TRENDS.map(t => (
-                                <div key={t.id} className="db-trend-card">
-                                <div className="db-trend-badge">
-                                    <span>{t.views}</span>
-                                    <span className="db-trend-star">★</span>
-                                </div>
-                                <img src={t.image} alt={t.name} className="db-trend-img" />
-                                <p className="db-trend-name">{t.name}</p>
-                                </div>
-                            ))}
-                            </div>
-                        </section>
-                        {/* 5. EARNING SUMMARY */}
-                        <section className="db-card">
-                          <h3 className="db-section-title">Earning Summary</h3>
-                          <div className="db-earn-list">
-                            {[
-                              { period: 'TODAY',  sub: 'TOTAL EARNING', val: EARNINGS.today  },
-                              { period: 'WEEK',   sub: 'TOTAL EARNING', val: EARNINGS.week   },
-                              { period: 'MONTH',  sub: 'TOTAL EARNING', val: EARNINGS.month  },
-                            ].map(({ period, sub, val }) => (
-                              <div key={period} className="db-earn-item">
-                                <div className="db-earn-left">
-                                  <p className="db-earn-period">{period}</p>
-                                  <p className="db-earn-sublabel">{sub}</p>
-                                </div>
-                                <p className="db-earn-amount">{fmt(val)}</p>
+                            {/* 5. EARNING SUMMARY */}
+                            <section className="db-card">
+                              <h3 className="db-section-title">Earning Summary</h3>
+                              <div className="db-earn-list">
+                                {[
+                                  { period: 'TODAY',  sub: 'TOTAL EARNING', val: EARNINGS.today  },
+                                  { period: 'WEEK',   sub: 'TOTAL EARNING', val: EARNINGS.week   },
+                                  { period: 'MONTH',  sub: 'TOTAL EARNING', val: EARNINGS.month  },
+                                ].map(({ period, sub, val }) => (
+                                  <div key={period} className="db-earn-item">
+                                    <div className="db-earn-left">
+                                      <p className="db-earn-period">{period}</p>
+                                      <p className="db-earn-sublabel">{sub}</p>
+                                    </div>
+                                    <p className="db-earn-amount">{fmt(val)}</p>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        </section>
-
+                            </section>
                         {/* 6. EARNINGS CHART */}
                         <section className="db-card">
                           {/* Chart header */}
@@ -586,13 +587,12 @@ export default function BarberDashboard() {
                             ))}
                           </div>
                         </section>
+                            
 
                       </div>
                   </div>
                   <div style={{ height: 90 }} />
               </div>
-
-
 
       </div>{/* end main */}
 

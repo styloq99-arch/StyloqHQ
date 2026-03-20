@@ -1,6 +1,12 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Database
+*.db
+*.sqlite3
 
 # IDE
 .idea/
@@ -12,6 +18,15 @@ __pycache__/
 # Logs
 *.log
 
-# React (future)
+# Node (if used)
 node_modules/
+<<<<<<< HEAD
 build/
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+=======
+build/
+>>>>>>> parent of d8569d1 (Merge pull request #46 from styloq99-arch/Barber)

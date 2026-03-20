@@ -25,12 +25,11 @@ import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
 import BarberDashboard from "./pages/BarberDahboard.jsx";
 import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
+import AppointmentOverview from "./pages/AppointmentOverview.jsx";
+import BarberDashboard from "./pages/BarberDashboard.jsx";
 
-
-import AppointmentsOverview from "./pages/AppointmentsOverview.jsx";
-import Chatbot from "./pages/Chatbot";
+import Chatbot from "./Components/Chatbot.jsx";
 import BookingPage from "./pages/BookingPage";
-import Messages from "./pages/Messages.jsx";
 
 export default function App() {
   return (
@@ -57,6 +56,11 @@ export default function App() {
           <Route path="/signup-salon" element={<SignUpSalon />} />
 
           <Route path="/barber-home" element={<BarberHomePage />} />
+
+          <Route
+            path="/Appointment-overview"
+            element={<AppointmentOverview />}
+          />
           <Route path="/barber-dashboard" element={<BarberDashboard />} />
           <Route path="/Appointment-overview" element={<AppointmentsOverview />} />
           <Route path="/barber-OwnProfile" element={<BarberOwnProfile />} />
@@ -68,7 +72,6 @@ export default function App() {
           <Route path="/barber-profile-view" element={<BarberProfileView />} />
           <Route path="/customer-profile" element={<CustomerProfile />} />
           <Route path="/favourites" element={<Favourites />} />
-          <Route path="/messages" element={<Messages />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
