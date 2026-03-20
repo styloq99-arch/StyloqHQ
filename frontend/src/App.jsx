@@ -24,6 +24,7 @@ import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
 import BarberDashboard from "./pages/BarberDahboard.jsx";
+import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
 
 
 import AppointmentsOverview from "./pages/AppointmentsOverview.jsx";
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/barber-home" element={<BarberHomePage />} />
           <Route path="/barber-dashboard" element={<BarberDashboard />} />
           <Route path="/Appointment-overview" element={<AppointmentsOverview />} />
+          <Route path="/barber-OwnProfile" element={<BarberOwnProfile />} />
 
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />
