@@ -53,6 +53,9 @@ export default function CustomerHome() {
 
         const rawPosts = Array.isArray(response.data) ? response.data : [];
 
+        // DEBUG: log raw backend data for liked/saved
+        console.log('[DEBUG] Raw feed data:', rawPosts.map(p => ({ id: p.id, likes: p.likes, liked: p.liked, saved: p.saved })));
+
         // Normalize backend snake_case to camelCase
         const newPosts = rawPosts.map((p) => ({
           id: p.id,
