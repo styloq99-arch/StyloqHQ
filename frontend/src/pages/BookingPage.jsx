@@ -171,7 +171,7 @@ export default function BookingPage() {
         {/* Hero Banner */}
         <div className="bp-hero">
           <img
-            src="src/assets/images/booking_pg.jpg"
+            src="src/assests/images/booking_pg.jpg"
             alt="Barbershop"
             className="bp-hero-img"
           />
