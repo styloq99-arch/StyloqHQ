@@ -15,6 +15,9 @@ export default function Signin() {
   const [forgotModal, setForgotModal] = useState(null);
   const [forgotLoading, setForgotLoading] = useState(false);
 
+  // Role Selection modal for bypassing auth temporarily
+  const [roleModal, setRoleModal] = useState(false);
+
   // --- Load persisted email on mount ---
   useEffect(() => {
     const savedEmail = localStorage.getItem("styloq_remember_email");
@@ -62,12 +65,13 @@ export default function Signin() {
     e.preventDefault();
     setError("");
 
-    if (!email) { setError("Please enter your email address."); return; }
-    if (!validateEmail(email)) { setError("Please enter a valid email address."); return; }
-    if (!password) { setError("Please enter your password."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    // if (!email) { setError("Please enter your email address."); return; }
+    // if (!validateEmail(email)) { setError("Please enter a valid email address."); return; }
+    // if (!password) { setError("Please enter your password."); return; }
+    // if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
 
     setLoading(true);
+    // Bypassing real auth API call for now (as requested by user)
     // TODO: replace with real auth API call
     setTimeout(() => {
       setLoading(false);
@@ -76,11 +80,19 @@ export default function Signin() {
       } else {
         localStorage.removeItem("styloq_remember_email");
       }
+
+      /* 
+      // --- ORIGINAL AUTHENTICATED LOGIN BEHAVIOR ---
       console.log("Login Successful:", { email });
       navigate("/customer-home");
       // Uncomment to test error state:
       // setError("Invalid email or password.");
-    }, 1500);
+      */
+
+      // --- TEMPORARY BYPASS BEHAVIOR ---
+      console.log("Login process passed locally:", { email });
+      setRoleModal(true);
+    }, 500 /* Originally 1500 */);
   };
 
   return (
@@ -323,6 +335,32 @@ export default function Signin() {
             >
               BACK TO SIGN IN
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════
+          ROLE SELECTION MODAL (TEMP BYPASS)
+      ══════════════════════════════════════ */}
+      {roleModal && (
+        <div style={overlayStyle} onClick={() => setRoleModal(false)}>
+          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+            <button style={closeBtnStyle} onClick={() => setRoleModal(false)} aria-label="Close">✕</button>
+            <h2 style={{ ...modalTitleStyle, marginTop: 16 }}>Continue As</h2>
+            <p style={modalSubtitleStyle}>
+              Authentication bypassed. Please select your role to proceed to your homepage.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+              <button className="btn-submit" style={{ marginTop: 0 }} onClick={() => navigate("/customer-home")}>
+                Customer
+              </button>
+              <button className="btn-submit" style={{ marginTop: 0, backgroundColor: "#333", color: "#fff", border: "none" }} onClick={() => navigate("/barber-home")}>
+                Barber
+              </button>
+              <button className="btn-submit" style={{ marginTop: 0, backgroundColor: "#555", color: "#fff", border: "none" }} onClick={() => navigate("/salon-home")}>
+                Salon
+              </button>
+            </div>
           </div>
         </div>
       )}
