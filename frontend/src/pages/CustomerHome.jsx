@@ -540,6 +540,47 @@ const handleLike = async (postId) => {
         <div className="page-body">
           <section>
             <div className="feed-container">
+              {/* AI Recommendation Promotion Banner */}
+              <div style={{
+                background: "linear-gradient(135deg, var(--color-accent) 0%, #ff8a65 100%)",
+                borderRadius: "16px",
+                padding: "1.5rem 2rem",
+                color: "white",
+                marginBottom: "2rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                boxShadow: "0 4px 15px rgba(255, 87, 34, 0.3)"
+              }}>
+                <div>
+                  <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1.4rem", fontWeight: 700, color: "white" }}>
+                    <i className="fas fa-magic" style={{ marginRight: "0.5rem" }}></i>
+                    Try the New AI Hairstylist
+                  </h3>
+                  <p style={{ margin: 0, opacity: 0.9, fontSize: "1rem" }}>
+                    Upload your photo and let our AI recommend the perfect haircut for your face shape!
+                  </p>
+                </div>
+                <Link 
+                  to="/ai-recommendation" 
+                  style={{
+                    background: "white",
+                    color: "var(--color-accent)",
+                    padding: "0.8rem 1.5rem",
+                    borderRadius: "30px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    transition: "transform 0.2s"
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                  onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+                >
+                  Try Now
+                </Link>
+              </div>
+
               {/* Error Message */}
               {error && (
                 <div
