@@ -1,7 +1,9 @@
 /**
  * Reusable API helper for making authenticated requests
- * Automatically attaches Authorization header if token exists
+ * Automatically attaches Authorization header from Supabase session
  */
+
+import { supabase } from "../supabaseClient";
 
 // In development, use empty string so Vite proxy handles API routing (avoids CORS)
 // In production, set VITE_API_BASE_URL in .env to your backend URL
@@ -11,12 +13,13 @@ const API_BASE_URL = import.meta.env.PROD
 
 console.log("API Base URL:", API_BASE_URL || "(using Vite proxy)");
 
-function getAuthToken() {
-  return localStorage.getItem("token");
+async function getAuthToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token || null;
 }
 
-export function getAuthHeaders() {
-  const token = getAuthToken();
+export async function getAuthHeaders() {
+  const token = await getAuthToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -43,9 +46,10 @@ export async function checkHealth() {
 export async function apiRequest(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
+    const authHeaders = await getAuthHeaders();
     const headers = {
       "Content-Type": "application/json",
-      ...getAuthHeaders(),
+      ...authHeaders,
       ...options.headers,
     };
 
@@ -72,9 +76,8 @@ export async function apiRequest(endpoint, options = {}) {
     console.log(`API Response: ${response.status}`, data);
 
     if (!response.ok) {
-      // Handle 401 - token expired or invalid
+      // Handle 401 - session expired or invalid
       if (response.status === 401) {
-        localStorage.removeItem("token");
         window.dispatchEvent(new Event("logout"));
       }
       return {
