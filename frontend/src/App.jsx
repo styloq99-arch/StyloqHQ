@@ -26,6 +26,8 @@ import BarberHomePage from "./pages/BarberHomePage.jsx";
 import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
+import PostingPhotos from "./pages/PostingPhots.jsx";
+import SharePost from "./pages/SharePost.jsx";
 import SalonHomePage from "./pages/SalonHomePage.jsx";
 import SalonHirePage from "./pages/SalonHirePage.jsx";
 import SalonProfilePage from "./pages/SalonProfilePage.jsx";
@@ -65,7 +67,8 @@ export default function App() {
           />
           <Route path="/barber-dashboard" element={<BarberDashboard />} />
           <Route path="/barber-OwnProfile" element={<BarberOwnProfile />} />
-
+          <Route path="/postingPhotos" element={<PostingPhotos />}/>
+          <Route path="/share-post"    element={<SharePost />} />
           <Route path="/customer-home" element={<CustomerHome />} />
           <Route path="/customer-search" element={<CustomerSearch />} />
           <Route path="/booking" element={<BookingPage />} />

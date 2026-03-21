@@ -385,8 +385,8 @@ export default function BarberDashboard() {
               <Link to="/barber-OwnProfile" className="sidebar-link">
                 <i className="fas fa-user"></i> <span>Profile</span>
               </Link>
-              <Link to="/postingPhotos" className="sidebar-link">
-                <i className="fa fa-plus"></i>
+              <Link to="/postingPhotos"     className="sidebar-link">
+                <i className="fas fa-plus-square"></i> <span>New Post</span>
               </Link>
             </nav>
           </aside>
@@ -597,28 +597,14 @@ export default function BarberDashboard() {
       </div>{/* end main */}
 
       
-      {/* --- MOBILE BOTTOM NAV --- */}
-            <nav className="bottom-nav">
-              <Link to="/barber-home" className="nav-item">
-                <i className="fas fa-home"></i>
-                <span>Home</span>
-              </Link>
-              <Link to="/barber-dashboard" className="nav-item active">
-                <i className="fas fa-calendar-alt"></i>
-                <span>DashBoard</span>
-              </Link>
-              <Link to="/addphoto" className="nav-item add-circle-btn">
-                <i className="fas fa-plus"></i>
-              </Link>
-              <Link to="/message" className="nav-item">
-                <i className="fas fa-comments"></i>
-                <span>Message</span>
-              </Link>
-              <Link to="/barber-OwnProfile" className="nav-item">
-                <i className="fas fa-user"></i>
-                <span>Profile</span>
-              </Link>                  
-            </nav>
+      {/* Mobile bottom nav */}
+      <nav className="bottom-nav">
+        <Link to="/barber-home"       className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/barber-dashboard"  className="nav-item active"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+        <Link to="/postingPhotos"     className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
+        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+      </nav>
 
     </div>
   );
