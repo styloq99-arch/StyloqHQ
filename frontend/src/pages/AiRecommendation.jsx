@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function AiRecommendation() {
   const { token, user } = useAuth();
+  const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

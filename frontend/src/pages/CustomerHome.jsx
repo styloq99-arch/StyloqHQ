@@ -481,6 +481,9 @@ const handleLike = async (postId) => {
           <Link to="/home" className="sidebar-link active">
             <i className="fas fa-home"></i> <span>Home</span>
           </Link>
+          <Link to="/ai-recommendation" className="sidebar-link">
+            <i className="fas fa-magic"></i> <span>AI Stylist</span>
+          </Link>
           <Link to="/customer-search" className="sidebar-link">
             <i className="fas fa-search"></i> <span>Search</span>
           </Link>
