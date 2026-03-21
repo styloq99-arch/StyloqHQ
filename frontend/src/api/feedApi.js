@@ -22,7 +22,7 @@ function getToken() {
  */
 async function authenticatedRequest(endpoint, options = {}) {
   const token = getToken();
-  
+
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,

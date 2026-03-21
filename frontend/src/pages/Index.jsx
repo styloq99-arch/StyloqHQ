@@ -31,7 +31,8 @@ export default function Index() {
 
         {/* Buttons */}
         <div className="buttons-wrapper mobile-btn-wrapper">
-          <Link to="/barber-home" className="btn btn-primary">SIGN IN</Link>
+          <Link to="/signin" className="btn btn-primary">SIGN IN</Link>
+          {/* <Link to="/barber-home" className="btn btn-primary">SIGN IN</Link> */}
           <Link to="/signup-customer" className="btn btn-secondary">SIGN UP AS A CUSTOMER</Link>
           <Link to="/signup-barber" className="btn btn-secondary">SIGN UP AS A BARBER</Link>
           <Link to="/signup-salon" className="btn btn-secondary">SIGN UP AS A SALON</Link>
