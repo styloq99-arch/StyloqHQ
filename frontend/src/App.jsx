@@ -29,6 +29,9 @@ import BarberHomePage from "./pages/BarberHomePage.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
 import SalonDashboard from "./pages/SalonDashboard.jsx";
+import PostingPhotos from "./pages/PostingPhots.jsx";
+import SharePost from "./pages/SharePost.jsx";
+import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
 
 import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Chatbot from "./Components/Chatbot.jsx";
@@ -189,12 +192,40 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/barber-OwnProfile"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberOwnProfile />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Public Routes */}
               <Route path="/customer-search" element={<CustomerSearch />} />
+              <Route
+                path="/postingPhotos"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <PostingPhotos />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/share-post"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <SharePost />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/add-review" element={<AddReviewPage />} />
               <Route
-                path="/barber-profile-view/:barberId?"
+                path="/barber-profile-view"
+                element={<BarberProfileView />}
+              />
+              <Route
+                path="/barber-profile-view/:barberId"
                 element={<BarberProfileView />}
               />
 
