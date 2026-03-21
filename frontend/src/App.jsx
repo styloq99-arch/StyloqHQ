@@ -38,6 +38,8 @@ import SalonHomePage from "./pages/SalonHomePage.jsx";
 import SalonHirePage from "./pages/SalonHirePage.jsx";
 import SalonProfilePage from "./pages/SalonProfilePage.jsx";
 import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
+import AiRecommendation from "./pages/AiRecommendation.jsx";
+import Messages from "./pages/Messages.jsx";
 
 import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Chatbot from "./Components/Chatbot.jsx";
@@ -158,12 +160,32 @@ export default function App() {
                 }
               />
 
+              {/* AI Hairstyle Recommendation */}
+              <Route
+                path="/ai-recommendation"
+                element={
+                  <ProtectedRoute allowedRoles={["client", "barber"]}>
+                    <AiRecommendation />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Profile - authenticated clients */}
               <Route
                 path="/profile"
                 element={
                   <ProtectedRoute allowedRoles={["client"]}>
                     <CustomerProfile />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Secure messaging route */}
+              <Route
+                path="/message"
+                element={
+                  <ProtectedRoute allowedRoles={["client", "barber", "salon"]}>
+                    <Messages />
                   </ProtectedRoute>
                 }
               />
