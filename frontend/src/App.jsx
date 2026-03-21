@@ -29,6 +29,7 @@ import BarberHomePage from "./pages/BarberHomePage.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
 import SalonDashboard from "./pages/SalonDashboard.jsx";
+import SelectRole from "./pages/SelectRole.jsx";
 import PostingPhotos from "./pages/PostingPhots.jsx";
 import SharePost from "./pages/SharePost.jsx";
 import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
@@ -39,10 +40,14 @@ import BookingPage from "./pages/BookingPage";
 
 // Component to protect public routes from authenticated users
 function PublicRoute({ children }) {
-  const { isAuthenticated, getRoleRedirect, user } = useAuth();
+  const { isAuthenticated, getRoleRedirect, user, needsRoleSelection } = useAuth();
+
+  // OAuth user who hasn't picked a role yet → send to role selection
+  if (needsRoleSelection) {
+    return <Navigate to="/select-role" replace />;
+  }
 
   if (isAuthenticated) {
-    // Redirect authenticated users to their dashboard
     const correctPath = getRoleRedirect(user?.role);
     return <Navigate to={correctPath} replace />;
   }
@@ -76,6 +81,7 @@ export default function App() {
                 element={<SignUpCustomerFinal />}
               />
               <Route path="/signup-salon" element={<SignUpSalon />} />
+              <Route path="/select-role" element={<SelectRole />} />
 
               {/* Verification Routes */}
               <Route
