@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { getBarberProfile, getBarberPosts, getBarberPortfolio } from '../api/barberApi';
 
 // --- DATA ---
 
@@ -69,6 +70,59 @@ const BASE_REVIEWS = [
 
 export default function BarberProfile() {
   const navigate = useNavigate();
+  const { barberId } = useParams();
+
+  // API-fetched profile state
+  const [profileData, setProfileData] = useState(null);
+  const [postsData, setPostsData] = useState([]);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState(null);
+
+  // Fetch barber profile from backend
+  useEffect(() => {
+    if (!barberId) return;
+
+    const fetchProfile = async () => {
+      setProfileLoading(true);
+      setProfileError(null);
+      try {
+        const [profileRes, postsRes] = await Promise.all([
+          getBarberProfile(barberId),
+          getBarberPosts(barberId),
+        ]);
+
+        if (profileRes.success) {
+          setProfileData(profileRes.data);
+        } else {
+          setProfileError(profileRes.message || 'Failed to load barber profile');
+        }
+
+        if (postsRes.success && Array.isArray(postsRes.data)) {
+          setPostsData(postsRes.data);
+        }
+      } catch (err) {
+        setProfileError('Unable to connect to server.');
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [barberId]);
+
+  // Merge API data with fallback hardcoded data
+  const barber = {
+    name: profileData?.name || BARBER_DATA.name,
+    experience: profileData?.years_experience
+      ? `${profileData.years_experience} years of experience`
+      : BARBER_DATA.experience,
+    bio: profileData?.bio || 'Fresh fades \u2022 Clean shaves \u2022 Good vibes. Crafting confidence one cut at a time',
+    avatar: profileData?.avatar || BARBER_DATA.avatar,
+    coverImage: profileData?.cover_image || BARBER_DATA.coverImage,
+    email: profileData?.email || '',
+    phone: profileData?.phone || '',
+    address: profileData?.address || '',
+  };
 
   const [allReviews, setAllReviews] = useState(() => {
     try {
@@ -110,10 +164,11 @@ export default function BarberProfile() {
           <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/customer-home"   className="sidebar-link active"><i className="fas fa-home"></i>   <span>Home</span></Link>
+          <Link to="/home"   className="sidebar-link active"><i className="fas fa-home"></i>   <span>Home</span></Link>
           <Link to="/customer-search" className="sidebar-link"><i className="fas fa-search"></i> <span>Search</span></Link>
           <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>  <span>Favourites</span></Link>
-          <Link to="/profile"         className="sidebar-link"><i className="fas fa-user"></i>   <span>Profile</span></Link>
+          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
+          <Link to="/customer-profile"         className="sidebar-link"><i className="fas fa-user"></i>   <span>Profile</span></Link>
         </nav>
         <div className="sidebar-user">
           <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" className="user-avatar" />
@@ -128,12 +183,22 @@ export default function BarberProfile() {
       <div className="main-content">
         <div className="bp-page-body">
 
+          {/* Loading / Error states */}
+          {profileLoading && (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>Loading barber profile...</div>
+          )}
+          {profileError && (
+            <div style={{ textAlign: 'center', padding: '20px', color: '#FF5722', background: 'rgba(255,87,34,0.1)', borderRadius: '8px', margin: '20px' }}>
+              {profileError}
+            </div>
+          )}
+
           {/* ── HEADER ── */}
           <div className="bp-header">
 
             {/* Cover Image */}
             <div className="bp-cover-wrap">
-              <img src={BARBER_DATA.coverImage} alt="Cover" className="bp-cover-img" />
+              <img src={barber.coverImage} alt="Cover" className="bp-cover-img" />
               <div className="bp-cover-gradient"></div>
 
               {/* Back button */}
@@ -143,7 +208,7 @@ export default function BarberProfile() {
 
               {/* Avatar */}
               <div className="bp-avatar-container">
-                <img src={BARBER_DATA.avatar} alt={BARBER_DATA.name} className="bp-avatar-img" />
+                <img src={barber.avatar} alt={barber.name} className="bp-avatar-img" />
               </div>
             </div>
 
@@ -153,10 +218,10 @@ export default function BarberProfile() {
               {/* Name + Follow */}
               <div className="bp-info-row">
                 <div className="bp-info-text">
-                  <h2 className="bp-barber-name">{BARBER_DATA.name}</h2>
-                  <p className="bp-barber-exp">{BARBER_DATA.experience}</p>
+                  <h2 className="bp-barber-name">{barber.name}</h2>
+                  <p className="bp-barber-exp">{barber.experience}</p>
                   <p className="bp-barber-bio">
-                    Fresh fades • Clean shaves • Good vibes. Crafting confidence one cut at a time
+                    {barber.bio}
                   </p>
                 </div>
 
@@ -380,10 +445,11 @@ export default function BarberProfile() {
 
       {/* ── MOBILE BOTTOM NAV ── */}
       <nav className="bottom-nav">
-        <Link to="/customer-home"   className="nav-item"><i className="fas fa-home"></i>   <span>Home</span></Link>
+        <Link to="/home"   className="nav-item"><i className="fas fa-home"></i>   <span>Home</span></Link>
         <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
         <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i>  <span>Favourites</span></Link>
-        <Link to="/profile"         className="nav-item"><i className="fas fa-user"></i>   <span>Profile</span></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/customer-profile"  className="nav-item"><i className="fas fa-user"></i>   <span>Profile</span></Link>
       </nav>
 
     </div>

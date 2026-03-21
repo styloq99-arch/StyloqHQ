@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // ─── Static Data ─────────────────────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ const formatDate = (dateStr) =>
 
 export default function CustomerProfile() {
   const navigate     = useNavigate();
+  const { logout }   = useAuth();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState(() => {
@@ -149,10 +151,11 @@ export default function CustomerProfile() {
           <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/customer-home"   className="sidebar-link"><i className="fas fa-home"></i>   <span>Home</span></Link>
+          <Link to="/home"   className="sidebar-link"><i className="fas fa-home"></i>   <span>Home</span></Link>
           <Link to="/customer-search" className="sidebar-link"><i className="fas fa-search"></i> <span>Search</span></Link>
           <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>  <span>Favourites</span></Link>
-          <Link to="/profile"         className="sidebar-link active"><i className="fas fa-user"></i> <span>Profile</span></Link>
+          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
+          <Link to="/customer-profile"  className="sidebar-link active"><i className="fas fa-user"></i> <span>Profile</span></Link>
         </nav>
         <div className="sidebar-user">
           <img src={profile.avatar} alt="User" className="user-avatar" />
@@ -309,7 +312,7 @@ export default function CustomerProfile() {
               <div className="cp-danger-title">
                 <i className="fas fa-exclamation-triangle"></i> Account
               </div>
-              <button className="cp-logout-btn" onClick={() => navigate('/')}>
+              <button className="cp-logout-btn" onClick={() => { logout(); navigate('/signin'); }}>
                 <i className="fas fa-sign-out-alt"></i> Log Out
               </button>
             </div>
@@ -418,10 +421,11 @@ export default function CustomerProfile() {
 
       {/* ── Bottom Nav ── */}
       <nav className="bottom-nav">
-        <Link to="/customer-home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
         <Link to="/customer-search" className="nav-item"><i className="fas fa-search"></i><span>Search</span></Link>
         <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
-        <Link to="/profile"         className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/customer-profile"  className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 
       {/* ── Cancel Modal ── */}

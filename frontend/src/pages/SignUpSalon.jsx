@@ -49,7 +49,18 @@ export default function SignupSalon() {
   // FIX: Next button validates before navigating
   const handleNext = () => {
     if (validate()) {
-      navigate("/signup-salon-step2", { state: { step1: formData } });
+      navigate("/create-password", {
+        state: {
+          name: formData.salonName,
+          email: formData.salonEmail,
+          phone: formData.salonPhone,
+          role: "salon",
+          address: formData.salonAddress,
+          city: formData.city,
+          district: formData.district,
+          postalCode: formData.postalCode,
+        },
+      });
     }
   };
 

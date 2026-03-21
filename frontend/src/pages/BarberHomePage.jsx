@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function BarberHomePage() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => { logout(); navigate('/signin'); };
   const appointments = [
     {
       id: 1,

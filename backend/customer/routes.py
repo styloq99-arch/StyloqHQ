@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from backend.auth.utils import login_required, get_current_user_from_token
+from backend.auth.utils import login_required, get_current_user_from_token, verify_token
 from backend.customer import services
 
 customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
@@ -337,11 +337,15 @@ def get_feed():
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 10))
     
-    # Get user_id if authenticated
+    # Extract user_id directly from JWT (no DB session needed)
     user_id = None
-    current_user = get_current_user_from_token()
-    if current_user:
-        user_id = current_user.id
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            payload = verify_token(auth_header[7:])
+            user_id = payload.get("user_id")
+        except (ValueError, Exception):
+            pass
     
     posts = services.get_feed_posts(page, limit, user_id)
     return _ok(posts)
@@ -351,9 +355,13 @@ def get_feed():
 def get_post(post_id):
     """GET /feed/{post_id} - Get a single post."""
     user_id = None
-    current_user = get_current_user_from_token()
-    if current_user:
-        user_id = current_user.id
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            payload = verify_token(auth_header[7:])
+            user_id = payload.get("user_id")
+        except (ValueError, Exception):
+            pass
     
     post, reason, error = services.get_single_post(post_id, user_id)
     
