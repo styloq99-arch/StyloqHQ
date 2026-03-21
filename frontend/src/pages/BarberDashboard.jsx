@@ -57,6 +57,12 @@ const MONTHLY_DATA = [
   { label: '31', value: 7600 },
 ];
 
+const VACANCIES = [
+  { id:1, title:'Senior Barber',             salon:'Liyo Salons (pvt) Ltd',  location:'Colombo 05', type:'Full Time', salary:'RS. 60,000 – 80,000', deadline:'15 Jan', skills:['Fade','Beard Design','Color'],     photo:'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=80' },
+  { id:2, title:'Junior Barber',             salon:'Salon Next (pvt) Ltd',   location:'Peliyagoda', type:'Part Time', salary:'RS. 30,000 – 45,000', deadline:'30 Jan', skills:['Classic Cut','Shave'],             photo:null },
+  { id:3, title:'Master Stylist',            salon:"The Gentleman's Cut",    location:'Colombo 07', type:'Full Time', salary:'RS. 75,000 – 95,000', deadline:'10 Feb', skills:['Color','Perms','Texture'],         photo:'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80' },
+];
+
 const fmt = (n) => 'RS. ' + n.toLocaleString('en-US');
 
 
@@ -591,6 +597,47 @@ export default function BarberDashboard() {
 
                       </div>
                   </div>
+          {/* ═══ JOB VACANCIES FULL-WIDTH ROW ═══ */}
+          <section className="db-vacancies-section">
+            <div className="db-vacancies-header">
+              <div className="db-vacancies-title-group">
+                <i className="fas fa-briefcase"></i>
+                <h3 className="db-section-title" style={{margin:0}}>Job Vacancies</h3>
+                <span className="db-vacancies-badge">{VACANCIES.length} new</span>
+              </div>
+              <Link to="/barber-vacancies" className="db-view-more-btn">
+                View All <i className="fas fa-chevron-right"></i>
+              </Link>
+            </div>
+            <div className="db-vacancies-scroll">
+              {VACANCIES.map(v=>(
+                <div key={v.id} className="db-vacancy-card">
+                  {v.photo
+                    ? <img src={v.photo} alt={v.title} className="db-vacancy-card-img"/>
+                    : <div className="db-vacancy-card-img-placeholder"><i className="fas fa-store"></i></div>
+                  }
+                  <div className="db-vacancy-card-body">
+                    <div className="db-vacancy-card-top">
+                      <div style={{flex:1,minWidth:0}}>
+                        <p className="db-vacancy-role">{v.title}</p>
+                        <p className="db-vacancy-salon"><i className="fas fa-store"></i> {v.salon}</p>
+                        <p className="db-vacancy-location"><i className="fas fa-map-marker-alt"></i> {v.location}</p>
+                      </div>
+                      <span className={`db-vacancy-type-badge ${v.type==='Full Time'?'full':'part'}`}>{v.type}</span>
+                    </div>
+                    <p className="db-vacancy-salary"><i className="fas fa-money-bill-wave"></i> {v.salary}</p>
+                    <div className="db-vacancy-skills">
+                      {v.skills.map(s=><span key={s} className="db-vacancy-skill">{s}</span>)}
+                    </div>
+                    <div className="db-vacancy-footer">
+                      <span className="db-vacancy-deadline"><i className="fas fa-calendar-alt"></i> Closes {v.deadline}</span>
+                      <Link to="/barber-vacancies" className="db-apply-btn">Apply Now</Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
                   <div style={{ height: 90 }} />
               </div>
 

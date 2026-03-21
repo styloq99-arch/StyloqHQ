@@ -5311,6 +5311,161 @@ html, body {
   overflow: visible;
 }
 
+.db-vacancies-section {
+  margin: 8px 16px 16px;
+  background: #1c1c1c;
+  border: 1px solid #252525;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.db-vacancies-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.db-vacancies-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.db-vacancies-title-group > i { color: #FF5722; font-size: 16px; }
+
+.db-vacancies-badge {
+  background: rgba(255,87,34,0.15);
+  border: 1px solid rgba(255,87,34,0.35);
+  color: #FF5722;
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.db-view-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #FF5722;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,87,34,0.3);
+  background: rgba(255,87,34,0.06);
+  transition: all 0.2s;
+}
+.db-view-more-btn:hover { background: rgba(255,87,34,0.15); border-color: #FF5722; }
+.db-view-more-btn i { font-size: 10px; }
+
+/* Mobile: horizontal scroll row */
+.db-vacancies-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.db-vacancies-scroll::-webkit-scrollbar { display: none; }
+
+.db-vacancy-card {
+  flex-shrink: 0;
+  width: 260px;
+  background: #252525;
+  border: 1px solid #2e2e2e;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.db-vacancy-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+
+.db-vacancy-card-img {
+  width: 100%; height: 110px;
+  object-fit: cover; display: block;
+}
+.db-vacancy-card-img-placeholder {
+  width: 100%; height: 110px;
+  background: #1a1a1a;
+  display: flex; align-items: center; justify-content: center;
+  color: #2e2e2e; font-size: 28px;
+}
+.db-vacancy-card-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+
+.db-vacancy-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+
+.db-vacancy-role { font-family: 'Viga', sans-serif; font-size: 14px; color: #f0f0f0; margin: 0 0 3px; }
+
+.db-vacancy-salon {
+  font-family: 'Poppins', sans-serif; font-size: 11px; color: #888; margin: 0 0 2px;
+  display: flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.db-vacancy-salon i { color: #FF5722; font-size: 10px; flex-shrink: 0; }
+
+.db-vacancy-location {
+  font-family: 'Poppins', sans-serif; font-size: 11px; color: #666; margin: 0;
+  display: flex; align-items: center; gap: 4px;
+}
+.db-vacancy-location i { color: #555; font-size: 10px; }
+
+.db-vacancy-type-badge {
+  font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;
+}
+.db-vacancy-type-badge.full { background: rgba(76,175,80,0.12); color: #4CAF50; border: 1px solid rgba(76,175,80,0.3); }
+.db-vacancy-type-badge.part { background: rgba(255,193,7,0.12);  color: #FFC107; border: 1px solid rgba(255,193,7,0.3);  }
+
+.db-vacancy-salary {
+  font-family: 'Poppins', sans-serif; font-size: 12px; color: #ccc; margin: 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.db-vacancy-salary i { color: #FF5722; font-size: 10px; }
+
+.db-vacancy-skills { display: flex; flex-wrap: wrap; gap: 4px; }
+.db-vacancy-skill {
+  font-family: 'Poppins', sans-serif; font-size: 10px; padding: 2px 7px;
+  border-radius: 20px; background: rgba(255,87,34,0.1); color: #FF5722;
+  border: 1px solid rgba(255,87,34,0.2);
+}
+
+.db-vacancy-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 8px; border-top: 1px solid #2e2e2e; margin-top: 4px;
+}
+.db-vacancy-deadline {
+  font-family: 'Poppins', sans-serif; font-size: 10px; color: #666;
+  display: flex; align-items: center; gap: 4px;
+}
+.db-vacancy-deadline i { color: #555; }
+
+.db-apply-btn {
+  background: #FF5722; color: #fff;
+  font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700;
+  padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer;
+  text-decoration: none; display: inline-flex; align-items: center;
+  box-shadow: 0 2px 8px rgba(255,87,34,0.3);
+  transition: background 0.2s, transform 0.15s;
+}
+.db-apply-btn:hover { background: #ff7043; transform: translateY(-1px); }
+
+/* Desktop: expand cards to 3-col grid */
+@media (min-width: 768px) {
+  .db-vacancies-section { margin: 8px 26px 20px; }
+  .db-vacancies-scroll {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: unset;
+    gap: 16px;
+  }
+  .db-vacancy-card { width: 100%; }
+}
+
+
+
 
 
 
