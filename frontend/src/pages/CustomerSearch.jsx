@@ -88,7 +88,8 @@ export default function CustomerSearch() {
           <Link to="/favourites" className="sidebar-link">
             <i className="fas fa-heart"></i> <span>Favourites</span>
           </Link>
-          <Link to="/profile" className="sidebar-link">
+          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
+          <Link to="/customer-profile" className="sidebar-link">
             <i className="fas fa-user"></i> <span>Profile</span>
           </Link>
         </nav>
@@ -217,7 +218,8 @@ export default function CustomerSearch() {
           <i className="fas fa-heart"></i>
           <span>Favourites</span>
         </Link>
-        <Link to="/profile" className="nav-item">
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/customer-profile" className="nav-item">
           <i className="fas fa-user"></i>
           <span>Profile</span>
         </Link>

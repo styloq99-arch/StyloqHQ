@@ -26,9 +26,14 @@ import BarberProfileView from "./pages/BarberProfileView.jsx";
 import CustomerProfile from "./pages/CustomerProfile.jsx";
 import Favourites from "./pages/Favourites.jsx";
 import BarberHomePage from "./pages/BarberHomePage.jsx";
+import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
-import SalonDashboard from "./pages/SalonDashboard.jsx";
+import PostingPhotos from "./pages/PostingPhots.jsx";
+import SharePost from "./pages/SharePost.jsx";
+import SalonHomePage from "./pages/SalonHomePage.jsx";
+import SalonHirePage from "./pages/SalonHirePage.jsx";
+import SalonProfilePage from "./pages/SalonProfilePage.jsx";
 
 import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Chatbot from "./Components/Chatbot.jsx";
@@ -121,6 +126,30 @@ export default function App() {
               } 
             />
 
+          <Route
+            path="/Appointment-overview"
+            element={<AppointmentOverview />}
+          />
+          <Route path="/barber-dashboard" element={<BarberDashboard />} />
+          <Route path="/barber-OwnProfile" element={<BarberOwnProfile />} />
+          <Route path="/postingPhotos" element={<PostingPhotos />}/>
+          <Route path="/share-post"    element={<SharePost />} />
+          <Route path="/customer-home" element={<CustomerHome />} />
+          <Route path="/customer-search" element={<CustomerSearch />} />
+          <Route path="/booking" element={<BookingPage />} />
+          <Route path="/add-review" element={<AddReviewPage />} />
+          <Route path="/barber-profile-view" element={<BarberProfileView />} />
+          <Route path="/customer-profile" element={<CustomerProfile />} />
+          <Route path="/favourites" element={<Favourites />} />
+
+          <Route path="/salon-home" element={<SalonHomePage />} />
+          <Route path="/salon-hire" element={<SalonHirePage />} />
+          <Route path="/salon-profile" element={<SalonProfilePage />} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Chatbot />
+      </FavouritesProvider>
             {/* Profile - authenticated clients */}
             <Route path="/profile" element={
               <ProtectedRoute allowedRoles={['client']}>
