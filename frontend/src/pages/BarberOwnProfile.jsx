@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import BarberSidebar from '../Components/BarberSidebar';
 
 // ─── Mock Barber Data (from signup flow) ─────────────────────────────────────
 
@@ -15,29 +16,29 @@ const INITIAL_PROFILE = {
   avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
   coverImage: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80',
   workingHours: {
-    Mon: { active: true,  start: '09:00 AM', end: '06:00 PM' },
-    Tue: { active: true,  start: '09:00 AM', end: '06:00 PM' },
-    Wed: { active: true,  start: '09:00 AM', end: '06:00 PM' },
-    Thu: { active: true,  start: '09:00 AM', end: '06:00 PM' },
-    Fri: { active: true,  start: '09:00 AM', end: '07:00 PM' },
-    Sat: { active: true,  start: '10:00 AM', end: '05:00 PM' },
-    Sun: { active: false, start: 'Closed',   end: 'Closed'   },
+    Mon: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Tue: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Wed: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Thu: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Fri: { active: true, start: '09:00 AM', end: '07:00 PM' },
+    Sat: { active: true, start: '10:00 AM', end: '05:00 PM' },
+    Sun: { active: false, start: 'Closed', end: 'Closed' },
   },
   services: [
-    { id: 1, name: 'Side Part',     price: '1500', desc: 'Classic side part cut with clean finish' },
-    { id: 2, name: 'Fade Haircut',  price: '1800', desc: 'Skin fade or taper fade, expertly blended' },
-    { id: 3, name: 'Beard Trim',    price: '800',  desc: 'Shape and define your beard' },
+    { id: 1, name: 'Side Part', price: '1500', desc: 'Classic side part cut with clean finish' },
+    { id: 2, name: 'Fade Haircut', price: '1800', desc: 'Skin fade or taper fade, expertly blended' },
+    { id: 3, name: 'Beard Trim', price: '800', desc: 'Shape and define your beard' },
     { id: 4, name: 'Classic Shave', price: '1200', desc: 'Hot towel straight-razor shave' },
-    { id: 5, name: 'Under Cut',     price: '2000', desc: 'Bold undercut for a modern look' },
+    { id: 5, name: 'Under Cut', price: '2000', desc: 'Bold undercut for a modern look' },
   ],
   locations: [
-    { id: 1, salonName: 'Liyo Salons (pvt) Ltd', address: 'No. 06, Pagoda Road, Nugegoda',      district: 'Colombo', postalCode: '10250' },
-    { id: 2, salonName: 'Salon Next (pvt) Ltd',  address: 'No. 7D, Vihara Mawatha, Peliyagoda', district: 'Colombo', postalCode: '11600' },
+    { id: 1, salonName: 'Liyo Salons (pvt) Ltd', address: 'No. 06, Pagoda Road, Nugegoda', district: 'Colombo', postalCode: '10250' },
+    { id: 2, salonName: 'Salon Next (pvt) Ltd', address: 'No. 7D, Vihara Mawatha, Peliyagoda', district: 'Colombo', postalCode: '11600' },
   ],
   certifications: [
-    { title: 'Hair / Barber Diploma',      institute: 'Institute of Hairdressers & Beauticians (IHB)', date: '2010-05-15', desc: 'Basic hair-cutting, styling, salon hygiene and barbering skills.' },
-    { title: 'Advanced Color Specialist',  institute: "L'Oréal Professional Academy",                  date: '2015-08-20', desc: 'Mastery in hair coloring, balayage, ombre, and color correction.' },
-    { title: "Men's Grooming Masterclass", institute: 'British Barbers Association',                   date: '2019-11-10', desc: 'Advanced straight razor shaving, beard sculpting, and classic fades.' },
+    { title: 'Hair / Barber Diploma', institute: 'Institute of Hairdressers & Beauticians (IHB)', date: '2010-05-15', desc: 'Basic hair-cutting, styling, salon hygiene and barbering skills.' },
+    { title: 'Advanced Color Specialist', institute: "L'Oréal Professional Academy", date: '2015-08-20', desc: 'Mastery in hair coloring, balayage, ombre, and color correction.' },
+    { title: "Men's Grooming Masterclass", institute: 'British Barbers Association', date: '2019-11-10', desc: 'Advanced straight razor shaving, beard sculpting, and classic fades.' },
   ],
 };
 
@@ -55,17 +56,17 @@ const WORK_PHOTOS = [
 ];
 
 const STATS = [
-  { label: 'Posts',     value: '42'   },
+  { label: 'Posts', value: '42' },
   { label: 'Followers', value: '1.2K' },
-  { label: 'Rating',    value: '4.9'  },
-  { label: 'Bookings',  value: '380'  },
+  { label: 'Rating', value: '4.9' },
+  { label: 'Bookings', value: '380' },
 ];
 
 const TIME_SLOTS = [
-  '08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM','10:30 AM',
-  '11:00 AM','11:30 AM','12:00 PM','12:30 PM','01:00 PM','01:30 PM',
-  '02:00 PM','02:30 PM','03:00 PM','03:30 PM','04:00 PM','04:30 PM',
-  '05:00 PM','05:30 PM','06:00 PM','06:30 PM','07:00 PM',
+  '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
+  '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+  '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+  '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM',
 ];
 
 
@@ -74,9 +75,9 @@ const TIME_SLOTS = [
 function EditModal({ section, profile, onSave, onClose }) {
   const [data, setData] = useState(() => JSON.parse(JSON.stringify(profile)));
   const avatarRef = useRef(null);
-  const coverRef  = useRef(null);
+  const coverRef = useRef(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [coverPreview,  setCoverPreview]  = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
 
   // specialty tag input
   const [newSpecialty, setNewSpecialty] = useState('');
@@ -115,7 +116,7 @@ function EditModal({ section, profile, onSave, onClose }) {
           ...prev.workingHours[day],
           active: !prev.workingHours[day].active,
           start: !prev.workingHours[day].active ? '09:00 AM' : 'Closed',
-          end:   !prev.workingHours[day].active ? '06:00 PM' : 'Closed',
+          end: !prev.workingHours[day].active ? '06:00 PM' : 'Closed',
         },
       },
     }));
@@ -172,7 +173,7 @@ function EditModal({ section, profile, onSave, onClose }) {
   const handleSave = () => {
     const saved = { ...data };
     if (avatarPreview) saved.avatar = avatarPreview;
-    if (coverPreview)  saved.coverImage = coverPreview;
+    if (coverPreview) saved.coverImage = coverPreview;
     onSave(saved);
   };
 
@@ -183,8 +184,8 @@ function EditModal({ section, profile, onSave, onClose }) {
       case 'photo':
         return (
           <div className="bop-modal-photo-section">
-            <input type="file" ref={avatarRef} accept="image/*" style={{ display:'none' }} onChange={handleAvatarChange} />
-            <input type="file" ref={coverRef}  accept="image/*" style={{ display:'none' }} onChange={handleCoverChange}  />
+            <input type="file" ref={avatarRef} accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+            <input type="file" ref={coverRef} accept="image/*" style={{ display: 'none' }} onChange={handleCoverChange} />
             <div className="bop-photo-row">
               <div className="bop-photo-block">
                 <p className="bop-photo-label">Profile Photo</p>
@@ -209,10 +210,10 @@ function EditModal({ section, profile, onSave, onClose }) {
         return (
           <div className="bop-modal-fields">
             {[
-              { label: 'Full Name',          key: 'name',       type: 'text'   },
-              { label: 'Email Address',       key: 'email',      type: 'email'  },
-              { label: 'Phone Number',        key: 'phone',      type: 'tel'    },
-              { label: 'City',               key: 'city',       type: 'text'   },
+              { label: 'Full Name', key: 'name', type: 'text' },
+              { label: 'Email Address', key: 'email', type: 'email' },
+              { label: 'Phone Number', key: 'phone', type: 'tel' },
+              { label: 'City', key: 'city', type: 'text' },
               { label: 'Years of Experience', key: 'experience', type: 'number' },
             ].map(f => (
               <div key={f.key} className="bop-field-group">
@@ -368,10 +369,10 @@ function EditModal({ section, profile, onSave, onClose }) {
                   )}
                 </div>
                 {[
-                  { label: 'Salon Name',  key: 'salonName',  placeholder: "e.g. The Gentleman's Cut" },
-                  { label: 'Address',     key: 'address',    placeholder: 'Street address'            },
-                  { label: 'District',    key: 'district',   placeholder: 'e.g. Colombo 05'           },
-                  { label: 'Postal Code', key: 'postalCode', placeholder: 'e.g. 00100'                },
+                  { label: 'Salon Name', key: 'salonName', placeholder: "e.g. The Gentleman's Cut" },
+                  { label: 'Address', key: 'address', placeholder: 'Street address' },
+                  { label: 'District', key: 'district', placeholder: 'e.g. Colombo 05' },
+                  { label: 'Postal Code', key: 'postalCode', placeholder: 'e.g. 00100' },
                 ].map(f => (
                   <div key={f.key} className="bop-field-group">
                     <label className="bop-field-label">{f.label}</label>
@@ -399,10 +400,10 @@ function EditModal({ section, profile, onSave, onClose }) {
                   </button>
                 </div>
                 {[
-                  { label: 'Certificate Title', key: 'title',     type: 'text', placeholder: 'e.g. Master Barber Diploma'    },
-                  { label: 'Issuing Institute',  key: 'institute', type: 'text', placeholder: 'e.g. IHB Academy'             },
-                  { label: 'Issue Date',         key: 'date',      type: 'date', placeholder: ''                             },
-                  { label: 'Description',        key: 'desc',      type: 'text', placeholder: 'Brief summary of the cert...' },
+                  { label: 'Certificate Title', key: 'title', type: 'text', placeholder: 'e.g. Master Barber Diploma' },
+                  { label: 'Issuing Institute', key: 'institute', type: 'text', placeholder: 'e.g. IHB Academy' },
+                  { label: 'Issue Date', key: 'date', type: 'date', placeholder: '' },
+                  { label: 'Description', key: 'desc', type: 'text', placeholder: 'Brief summary of the cert...' },
                 ].map(f => (
                   <div key={f.key} className="bop-field-group">
                     <label className="bop-field-label">{f.label}</label>
@@ -428,12 +429,12 @@ function EditModal({ section, profile, onSave, onClose }) {
   };
 
   const TITLES = {
-    photo:          'Edit Photos',
-    personal:       'Edit Profile Info',
-    specialties:    'Edit Specialties',
-    hours:          'Edit Working Hours',
-    services:       'Edit Services',
-    locations:      'Edit Locations',
+    photo: 'Edit Photos',
+    personal: 'Edit Profile Info',
+    specialties: 'Edit Specialties',
+    hours: 'Edit Working Hours',
+    services: 'Edit Services',
+    locations: 'Edit Locations',
     certifications: 'Edit Certifications',
   };
 
@@ -478,7 +479,7 @@ function PhotoUploadModal({ onClose, onUpload }) {
           <button className="bop-modal-close" onClick={onClose}><i className="fas fa-times"></i></button>
         </div>
         <div className="bop-modal-body">
-          <input type="file" ref={fileRef} accept="image/*" style={{ display:'none' }} onChange={handleFile} />
+          <input type="file" ref={fileRef} accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
           {preview ? (
             <div className="bop-photo-preview-wrap">
               <img src={preview} alt="preview" className="bop-photo-preview" />
@@ -517,12 +518,12 @@ function PhotoUploadModal({ onClose, onUpload }) {
 export default function BarberOwnProfile() {
   const navigate = useNavigate();
 
-    const [profile, setProfile]         = useState(INITIAL_PROFILE);
-  const [workPhotos, setWorkPhotos]   = useState(WORK_PHOTOS);
+  const [profile, setProfile] = useState(INITIAL_PROFILE);
+  const [workPhotos, setWorkPhotos] = useState(WORK_PHOTOS);
   const [editSection, setEditSection] = useState(null);
-  const [photoModal, setPhotoModal]   = useState(false);
-  const [toast, setToast]             = useState('');
-  const [activeTab, setActiveTab]     = useState('posts');
+  const [photoModal, setPhotoModal] = useState(false);
+  const [toast, setToast] = useState('');
+  const [activeTab, setActiveTab] = useState('posts');
   const [photoViewer, setPhotoViewer] = useState(null);
 
   const showToast = (msg) => {
@@ -543,7 +544,7 @@ export default function BarberOwnProfile() {
 
   return (
     <div className="app-layout">
-              {toast && (
+      {toast && (
         <div className="bop-toast">
           <i className="fas fa-check-circle"></i> {toast}
         </div>
@@ -591,23 +592,12 @@ export default function BarberOwnProfile() {
       )}
 
       {/* ── Desktop Sidebar ── */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/barber-home"       className="sidebar-link"><i className="fas fa-home"></i> <span>Home</span></Link>
-          <Link to="/barber-dashboard"  className="sidebar-link"><i className="fas fa-calendar-alt"></i> <span>DashBoard</span></Link>
-          <Link to="/message"           className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
-          <Link to="/barber-OwnProfile" className="sidebar-link active"><i className="fas fa-user"></i> <span>Profile</span></Link>
-          <Link to="/postingPhotos"     className="sidebar-link"><i className="fas fa-plus-square"></i> <span>New Post</span></Link>
-        </nav>
-      </aside>
+      <BarberSidebar activePage="Profile" />
 
       {/* ── Main Content ── */}
       <div className="main-content">
         <div className="bop-page">
-            {/* ─── COVER + AVATAR ─── */}
+          {/* ─── COVER + AVATAR ─── */}
           <div className="bop-hero">
 
             {/* Cover — camera button removed, avatar camera handles both */}
@@ -667,19 +657,19 @@ export default function BarberOwnProfile() {
                 ))}
               </div>
 
-            
+
             </div>
 
           </div>
           {/* ─── TAB NAV ─── */}
           <div className="bop-tabs">
-            <button className={`bop-tab ${activeTab === 'posts'    ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+            <button className={`bop-tab ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
               <i className="fas fa-th"></i> <span>Posts</span>
             </button>
             <button className={`bop-tab ${activeTab === 'services' ? 'active' : ''}`} onClick={() => setActiveTab('services')}>
               <i className="fas fa-cut"></i> <span>Services</span>
             </button>
-            <button className={`bop-tab ${activeTab === 'info'     ? 'active' : ''}`} onClick={() => setActiveTab('info')}>
+            <button className={`bop-tab ${activeTab === 'info' ? 'active' : ''}`} onClick={() => setActiveTab('info')}>
               <i className="fas fa-info-circle"></i> <span>Info</span>
             </button>
           </div>
@@ -763,12 +753,12 @@ export default function BarberOwnProfile() {
                   </button>
                 </div>
                 {[
-                  { icon: 'fa-user',          label: 'Full Name',  value: profile.name                  },
-                  { icon: 'fa-envelope',       label: 'Email',      value: profile.email                 },
-                  { icon: 'fa-phone',          label: 'Phone',      value: profile.phone                 },
-                  { icon: 'fa-id-card',        label: 'ID Number',  value: profile.idNumber              },
-                  { icon: 'fa-map-marker-alt', label: 'City',       value: profile.city                  },
-                  { icon: 'fa-briefcase',      label: 'Experience', value: `${profile.experience} years` },
+                  { icon: 'fa-user', label: 'Full Name', value: profile.name },
+                  { icon: 'fa-envelope', label: 'Email', value: profile.email },
+                  { icon: 'fa-phone', label: 'Phone', value: profile.phone },
+                  { icon: 'fa-id-card', label: 'ID Number', value: profile.idNumber },
+                  { icon: 'fa-map-marker-alt', label: 'City', value: profile.city },
+                  { icon: 'fa-briefcase', label: 'Experience', value: `${profile.experience} years` },
                 ].map((f, idx) => (
                   <div key={idx} className="bop-info-row">
                     <div className="bop-info-icon"><i className={`fas ${f.icon}`}></i></div>
@@ -834,15 +824,15 @@ export default function BarberOwnProfile() {
 
         </div>
 
-        
+
       </div>
 
       {/* Mobile bottom nav */}
       <nav className="bottom-nav">
-        <Link to="/barber-home"       className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
-        <Link to="/barber-dashboard"  className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
-        <Link to="/postingPhotos"     className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
-        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/barber-home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+        <Link to="/postingPhotos" className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
         <Link to="/barber-OwnProfile" className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import CustomerSidebar from '../Components/CustomerSidebar';
 
 // Mock Data for Search Results
 const BARBERS = [
@@ -58,55 +59,27 @@ export default function CustomerSearch() {
 
   // Filter Logic
   const filteredBarbers = BARBERS.filter(barber => {
-    const matchesSearch = barber.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          barber.salon.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = barber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      barber.salon.toLowerCase().includes(searchTerm.toLowerCase());
+
     // Basic category filtering logic
     const matchesCategory = activeCategory === "All" ? true :
-                           activeCategory === "Top Rated" ? barber.rating >= 4.8 :
-                           true; // Simplified for demo
-    
+      activeCategory === "Top Rated" ? barber.rating >= 4.8 :
+        true; // Simplified for demo
+
     return matchesSearch && matchesCategory;
   });
 
   return (
     <div className="app-layout">
-      
-      {/* --- 1. DESKTOP SIDEBAR --- */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <Link to="/home" className="sidebar-link">
-            <i className="fas fa-home"></i> <span>Home</span>
-          </Link>
-          <Link to="/customer-search" className="sidebar-link active">
-            <i className="fas fa-search"></i> <span>Search</span>
-          </Link>
-          <Link to="/favourites" className="sidebar-link">
-            <i className="fas fa-heart"></i> <span>Favourites</span>
-          </Link>
-          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
-          <Link to="/customer-profile" className="sidebar-link">
-            <i className="fas fa-user"></i> <span>Profile</span>
-          </Link>
-        </nav>
 
-        <div className="sidebar-user">
-          <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" className="user-avatar" />
-          <div className="user-info">
-            <p className="user-name">John Doe</p>
-            <p className="user-status">Customer</p>
-          </div>
-        </div>
-      </aside>
+      {/* --- 1. DESKTOP SIDEBAR --- */}
+      <CustomerSidebar activePage="Search" />
 
 
       {/* --- 2. MAIN CONTENT AREA --- */}
       <div className="main-content">
-        
+
         {/* --- Header (Identical to Home) --- */}
         <header className="customer-barber-header">
           <div className="header-top">
@@ -122,14 +95,14 @@ export default function CustomerSearch() {
 
         {/* --- Scrollable Page Content --- */}
         <div className="page-body">
-          
+
           {/* Search Bar Section */}
           <section className="search-section">
             <div className="search-bar-wrapper">
               <i className="fas fa-search search-icon"></i>
-              <input 
-                type="text" 
-                className="search-input-field" 
+              <input
+                type="text"
+                className="search-input-field"
                 placeholder="Search barbers, salons, or styles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -141,8 +114,8 @@ export default function CustomerSearch() {
           <section className="categories-section">
             <div className="categories-scroll">
               {CATEGORIES.map((cat) => (
-                <button 
-                  key={cat} 
+                <button
+                  key={cat}
                   className={`category-pill ${activeCategory === cat ? 'active' : ''}`}
                   onClick={() => setActiveCategory(cat)}
                 >
@@ -155,12 +128,12 @@ export default function CustomerSearch() {
           {/* Results List */}
           <section className="results-section">
             <h3 className="section-heading">Available Barbers</h3>
-            
+
             {filteredBarbers.length > 0 ? (
               <div className="barber-list">
                 {filteredBarbers.map((barber) => (
                   <div key={barber.id} className="barber-result-card">
-                    
+
                     {/* Left: Image & Basic Info */}
                     <div className="card-left">
                       <img src={barber.image} alt={barber.name} className="barber-preview-img" />
@@ -181,11 +154,11 @@ export default function CustomerSearch() {
                         <span className="price-value">{barber.price}</span>
                       </div>
                       <div className="action-buttons">
-                        
-                        <Link to="/barber-profile-view" className="btn btn-secondary" style={{width: '100%',height: '40px', marginTop: '2rem', borderRadius: '20px'}}>
-                            View Profile
+
+                        <Link to="/barber-profile-view" className="btn btn-secondary" style={{ width: '100%', height: '40px', marginTop: '2rem', borderRadius: '20px' }}>
+                          View Profile
                         </Link>
-                       
+
                       </div>
                     </div>
 

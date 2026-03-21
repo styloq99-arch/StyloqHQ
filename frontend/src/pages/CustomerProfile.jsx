@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import CustomerSidebar from '../Components/CustomerSidebar';
 
 // ─── Static Data ─────────────────────────────────────────────────────────────
 
@@ -15,27 +16,27 @@ const INITIAL_PROFILE = {
 };
 
 const INITIAL_APPOINTMENTS = [
-  { id: 'APT001', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'SIDE PART',  serviceType: 'Hair Services',  date: '2025-07-28', time: '10.00 AM', location: 'Liyo Salon (pvt) Ltd',          price: 'Rs.1,500.00', payment: 'Pay On Visit', status: 'upcoming'  },
-  { id: 'APT002', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'FULL BEARD', serviceType: 'Beard Services', date: '2025-07-15', time: '2.00 PM',  location: 'Salon Next (pvt) Ltd',           price: 'Rs.800.00',   payment: 'Pay Online',   status: 'completed' },
-  { id: 'APT003', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'UNDER CUT',  serviceType: 'Hair Services',  date: '2025-07-02', time: '11.00 AM', location: 'Colombo City Center Branch',      price: 'Rs.2,000.00', payment: 'Pay On Visit', status: 'cancelled' },
-  { id: 'APT004', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'HOT SHAVE',  serviceType: 'Beard Services', date: '2025-06-20', time: '9.00 AM',  location: 'Liyo Salon (pvt) Ltd',          price: 'Rs.1,000.00', payment: 'Pay On Visit', status: 'completed' },
+  { id: 'APT001', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'SIDE PART', serviceType: 'Hair Services', date: '2025-07-28', time: '10.00 AM', location: 'Liyo Salon (pvt) Ltd', price: 'Rs.1,500.00', payment: 'Pay On Visit', status: 'upcoming' },
+  { id: 'APT002', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'FULL BEARD', serviceType: 'Beard Services', date: '2025-07-15', time: '2.00 PM', location: 'Salon Next (pvt) Ltd', price: 'Rs.800.00', payment: 'Pay Online', status: 'completed' },
+  { id: 'APT003', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'UNDER CUT', serviceType: 'Hair Services', date: '2025-07-02', time: '11.00 AM', location: 'Colombo City Center Branch', price: 'Rs.2,000.00', payment: 'Pay On Visit', status: 'cancelled' },
+  { id: 'APT004', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'HOT SHAVE', serviceType: 'Beard Services', date: '2025-06-20', time: '9.00 AM', location: 'Liyo Salon (pvt) Ltd', price: 'Rs.1,000.00', payment: 'Pay On Visit', status: 'completed' },
 ];
 
 const PROFILE_FIELDS = [
-  { icon: 'fa-user',           label: 'Full Name',     key: 'name'     },
-  { icon: 'fa-envelope',       label: 'Email Address', key: 'email'    },
-  { icon: 'fa-phone',          label: 'Phone Number',  key: 'phone'    },
-  { icon: 'fa-id-card',        label: 'ID Number',     key: 'idNumber' },
-  { icon: 'fa-at',             label: 'Username',      key: 'username', prefix: '@' },
-  { icon: 'fa-map-marker-alt', label: 'City',          key: 'city'     },
+  { icon: 'fa-user', label: 'Full Name', key: 'name' },
+  { icon: 'fa-envelope', label: 'Email Address', key: 'email' },
+  { icon: 'fa-phone', label: 'Phone Number', key: 'phone' },
+  { icon: 'fa-id-card', label: 'ID Number', key: 'idNumber' },
+  { icon: 'fa-at', label: 'Username', key: 'username', prefix: '@' },
+  { icon: 'fa-map-marker-alt', label: 'City', key: 'city' },
 ];
 
 const APPT_DETAIL_ROWS = [
-  { icon: 'fa-cut',            label: 'Service',  key: 'service'  },
-  { icon: 'fa-calendar',       label: 'Date',     key: 'date'     },
-  { icon: 'fa-clock',          label: 'Time',     key: 'time'     },
+  { icon: 'fa-cut', label: 'Service', key: 'service' },
+  { icon: 'fa-calendar', label: 'Date', key: 'date' },
+  { icon: 'fa-clock', label: 'Time', key: 'time' },
   { icon: 'fa-map-marker-alt', label: 'Location', key: 'location' },
-  { icon: 'fa-credit-card',    label: 'Payment',  key: 'payment'  },
+  { icon: 'fa-credit-card', label: 'Payment', key: 'payment' },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -48,8 +49,8 @@ const formatDate = (dateStr) =>
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function CustomerProfile() {
-  const navigate     = useNavigate();
-  const { logout }   = useAuth();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState(() => {
@@ -59,20 +60,20 @@ export default function CustomerProfile() {
     } catch { return INITIAL_PROFILE; }
   });
 
-  const [appointments, setAppointments]         = useState(INITIAL_APPOINTMENTS);
-  const [activeTab, setActiveTab]               = useState('profile');
+  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
+  const [activeTab, setActiveTab] = useState('profile');
   const [appointmentFilter, setAppointmentFilter] = useState('all');
-  const [isEditing, setIsEditing]               = useState(false);
-  const [editData, setEditData]                 = useState({ ...INITIAL_PROFILE });
-  const [editErrors, setEditErrors]             = useState({});
-  const [avatarPreview, setAvatarPreview]       = useState(null);
-  const [saveSuccess, setSaveSuccess]           = useState(false);
-  const [cancelModal, setCancelModal]           = useState(null);
-  const [detailModal, setDetailModal]           = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ ...INITIAL_PROFILE });
+  const [editErrors, setEditErrors] = useState({});
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [cancelModal, setCancelModal] = useState(null);
+  const [detailModal, setDetailModal] = useState(null);
 
   // Sync to localStorage whenever profile changes
   React.useEffect(() => {
-    try { localStorage.setItem('styloq_profile', JSON.stringify(profile)); } catch (_) {}
+    try { localStorage.setItem('styloq_profile', JSON.stringify(profile)); } catch (_) { }
   }, [profile]);
 
   // ── Edit handlers ──
@@ -108,11 +109,11 @@ export default function CustomerProfile() {
   const validateEdit = () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!editData.name.trim())  errors.name  = 'Name is required';
+    if (!editData.name.trim()) errors.name = 'Name is required';
     if (!editData.email.trim()) errors.email = 'Email is required';
     else if (!emailRegex.test(editData.email)) errors.email = 'Invalid email format';
     if (!editData.phone.trim()) errors.phone = 'Phone is required';
-    if (!editData.city.trim())  errors.city  = 'City is required';
+    if (!editData.city.trim()) errors.city = 'City is required';
     setEditErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -120,7 +121,7 @@ export default function CustomerProfile() {
   const handleSave = () => {
     if (!validateEdit()) return;
     const updatedProfile = { ...editData, avatar: avatarPreview || editData.avatar };
-    try { localStorage.setItem('styloq_profile', JSON.stringify(updatedProfile)); } catch (_) {}
+    try { localStorage.setItem('styloq_profile', JSON.stringify(updatedProfile)); } catch (_) { }
     setProfile(updatedProfile);
     setIsEditing(false);
     setSaveSuccess(true);
@@ -146,25 +147,7 @@ export default function CustomerProfile() {
     <div className="app-layout">
 
       {/* ── Desktop Sidebar ── */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/home"   className="sidebar-link"><i className="fas fa-home"></i>   <span>Home</span></Link>
-          <Link to="/customer-search" className="sidebar-link"><i className="fas fa-search"></i> <span>Search</span></Link>
-          <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>  <span>Favourites</span></Link>
-          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
-          <Link to="/customer-profile"  className="sidebar-link active"><i className="fas fa-user"></i> <span>Profile</span></Link>
-        </nav>
-        <div className="sidebar-user">
-          <img src={profile.avatar} alt="User" className="user-avatar" />
-          <div className="user-info">
-            <p className="user-name">{profile.name.split(' ')[0]}</p>
-            <p className="user-status">Customer</p>
-          </div>
-        </div>
-      </aside>
+      <CustomerSidebar activePage="Profile" />
 
       {/* ── Main Content ── */}
       <div className="main-content cp-page">
@@ -421,11 +404,11 @@ export default function CustomerProfile() {
 
       {/* ── Bottom Nav ── */}
       <nav className="bottom-nav">
-        <Link to="/home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
         <Link to="/customer-search" className="nav-item"><i className="fas fa-search"></i><span>Search</span></Link>
-        <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
+        <Link to="/favourites" className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
         <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
-        <Link to="/customer-profile"  className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
+        <Link to="/customer-profile" className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 
       {/* ── Cancel Modal ── */}
@@ -436,7 +419,7 @@ export default function CustomerProfile() {
             <h3>Cancel Appointment?</h3>
             <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
             <div className="cp-modal-actions">
-              <button className="cp-modal-keep"   onClick={() => setCancelModal(null)}>Keep It</button>
+              <button className="cp-modal-keep" onClick={() => setCancelModal(null)}>Keep It</button>
               <button className="cp-modal-cancel" onClick={handleCancelConfirm}>Yes, Cancel</button>
             </div>
           </div>
@@ -462,12 +445,12 @@ export default function CustomerProfile() {
             <div className="cp-detail-modal-body">
               <div className="cp-booking-id">Booking ID: #{detailModal.id}</div>
               {[
-                ['Service',  detailModal.service],
-                ['Date',     formatDate(detailModal.date)],
-                ['Time',     detailModal.time],
+                ['Service', detailModal.service],
+                ['Date', formatDate(detailModal.date)],
+                ['Time', detailModal.time],
                 ['Location', detailModal.location],
-                ['Payment',  detailModal.payment],
-                ['Status',   detailModal.status.charAt(0).toUpperCase() + detailModal.status.slice(1)],
+                ['Payment', detailModal.payment],
+                ['Status', detailModal.status.charAt(0).toUpperCase() + detailModal.status.slice(1)],
               ].map(([k, v]) => (
                 <div className="cp-detail-row" key={k}>
                   <span className="cp-detail-key">{k}</span>
