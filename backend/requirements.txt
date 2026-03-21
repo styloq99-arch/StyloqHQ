@@ -1,2 +1,8 @@
 # Add CORS support to Flask backend
-from flask_cors import CORS
+# from flask_cors import CORS
+
+flask
+flask-cors
+sqlalchemy
+python-dotenv
+PyJWT
