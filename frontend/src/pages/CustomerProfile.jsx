@@ -152,6 +152,7 @@ export default function CustomerProfile() {
           <Link to="/customer-home"   className="sidebar-link"><i className="fas fa-home"></i>   <span>Home</span></Link>
           <Link to="/customer-search" className="sidebar-link"><i className="fas fa-search"></i> <span>Search</span></Link>
           <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>  <span>Favourites</span></Link>
+          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
           <Link to="/customer-profile"  className="sidebar-link active"><i className="fas fa-user"></i> <span>Profile</span></Link>
         </nav>
         <div className="sidebar-user">
@@ -421,6 +422,7 @@ export default function CustomerProfile() {
         <Link to="/customer-home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
         <Link to="/customer-search" className="nav-item"><i className="fas fa-search"></i><span>Search</span></Link>
         <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
         <Link to="/customer-profile"  className="nav-item active"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 
