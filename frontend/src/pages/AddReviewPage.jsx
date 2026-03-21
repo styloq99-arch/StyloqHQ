@@ -69,7 +69,7 @@ export default function AddReviewPage() {
             <h1 className="brand-title">StyloQ</h1>
           </div>
           <nav className="sidebar-nav">
-            <Link to="/customer-home"   className="sidebar-link"><i className="fas fa-home"></i>         <span>Home</span></Link>
+            <Link to="/home"   className="sidebar-link"><i className="fas fa-home"></i>         <span>Home</span></Link>
             <Link to="/customer-search" className="sidebar-link active"><i className="fas fa-search"></i> <span>Search</span></Link>
             <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>        <span>Favourites</span></Link>
             <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
@@ -108,7 +108,7 @@ export default function AddReviewPage() {
               <button className="ar-back-btn" onClick={() => navigate('/barber-profile')}>
                 <i className="fas fa-arrow-left"></i> Back to Profile
               </button>
-              <Link to="/customer-home" className="ar-home-btn">
+              <Link to="/home" className="ar-home-btn">
                 <i className="fas fa-home"></i> Go Home
               </Link>
             </div>
@@ -117,7 +117,7 @@ export default function AddReviewPage() {
         </div>
 
         <nav className="bottom-nav">
-          <Link to="/customer-home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+          <Link to="/home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
           <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
           <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
           <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
@@ -138,7 +138,7 @@ export default function AddReviewPage() {
         </div>
         
         <nav className="sidebar-nav">
-        <Link to="/customer-home" className="sidebar-link active">
+        <Link to="/home" className="sidebar-link active">
             <i className="fas fa-home"></i> <span>Home</span>
         </Link>
         <Link to="/customer-search" className="sidebar-link">
@@ -306,7 +306,7 @@ export default function AddReviewPage() {
 
       {/* Mobile Bottom Nav */}
       <nav className="bottom-nav">
-        <Link to="/customer-home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
         <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
         <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
         <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
