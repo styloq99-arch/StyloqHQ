@@ -5,13 +5,9 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
-import {
-  login as apiLogin,
-  register as apiRegister,
-  getCurrentUser,
-} from "../api/authApi";
-import { getUserByEmail } from "../api/supabaseDb";
+import { getUserByUid, createUserWithRole } from "../api/supabaseDb";
 
 const AuthContext = createContext();
 
@@ -25,112 +21,104 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [needsRoleSelection, setNeedsRoleSelection] = useState(false);
-  const [supabaseSession, setSupabaseSession] = useState(null);
 
-  // Fully authenticated = user object exists AND has a role
-  const isAuthenticated = !!user && !!user.role;
+  // Prevent onAuthStateChange from double-resolving during login/register
+  const handlingAuthRef = useRef(false);
 
-  // ─── Resolve an OAuth session against the DB ──────────────────────────────
-  async function resolveOAuthUser(session) {
-    const email = session.user.email;
-    const uid = session.user.id;
-    const meta = session.user.user_metadata || {};
+  // Fully authenticated = Supabase session + DB user with role
+  const isAuthenticated = !!session && !!user && !!user.role;
 
-    const { user: dbUser, error } = await getUserByEmail(email);
+  // ─── Resolve Supabase session → DB user lookup / auto-creation ────────────
+  async function resolveUser(authSession) {
+    const uid = authSession.user.id;
+    const email = authSession.user.email;
+    const meta = authSession.user.user_metadata || {};
 
-    if (error) {
-      console.error("[AuthContext] DB lookup failed:", error.message);
-    }
+    // 1. Check if user record already exists in our DB
+    const { user: dbUser } = await getUserByUid(uid);
 
     if (dbUser && dbUser.role) {
-      // Existing user with a role → fully authenticated
       setUser({
         id: dbUser.id,
         email: dbUser.email,
         full_name: dbUser.full_name,
         role: dbUser.role,
-        supabase_uid: uid,
       });
       setNeedsRoleSelection(false);
-    } else {
-      // New OAuth user → needs to pick a role
-      setUser({
-        email,
-        supabase_uid: uid,
-        full_name: meta.full_name || meta.name || "",
-      });
-      setNeedsRoleSelection(true);
+      return;
     }
+
+    // 2. No DB record — check user_metadata for role (set during email/password signup)
+    const metaRole = meta.role;
+    if (metaRole && ["client", "barber", "salon"].includes(metaRole)) {
+      const { user: newUser } = await createUserWithRole({
+        supabaseUid: uid,
+        email,
+        fullName: meta.full_name || meta.name || "",
+        role: metaRole,
+        phone: meta.phone || null,
+      });
+
+      if (newUser) {
+        setUser({
+          id: newUser.id,
+          email: newUser.email,
+          full_name: newUser.full_name,
+          role: newUser.role,
+        });
+        setNeedsRoleSelection(false);
+        return;
+      }
+    }
+
+    // 3. No role info (Google OAuth new user) → role selection page
+    setUser({
+      email,
+      supabase_uid: uid,
+      full_name: meta.full_name || meta.name || "",
+    });
+    setNeedsRoleSelection(true);
   }
 
-  // ─── Initialize auth on app load ──────────────────────────────────────────
+  // ─── Initialize auth + listen for session changes ─────────────────────────
   useEffect(() => {
     let mounted = true;
     let initialized = false;
 
-    async function initAuth() {
-      // 1. Try JWT auth first (email/password users)
-      const savedToken = localStorage.getItem("token");
-      if (savedToken) {
-        try {
-          const res = await getCurrentUser();
-          if (mounted) {
-            if (res.success && res.data) {
-              setUser(res.data);
-              setToken(savedToken);
-            } else {
-              localStorage.removeItem("token");
-              setToken(null);
-            }
-          }
-        } catch (e) {
-          console.error("[AuthContext] JWT init error:", e);
-          if (mounted) {
-            localStorage.removeItem("token");
-            setToken(null);
-          }
-        }
-        if (mounted) setLoading(false);
-        initialized = true;
-        return;
-      }
-
-      // 2. No JWT token → try Supabase OAuth session
+    async function init() {
       try {
         const { data } = await supabase.auth.getSession();
         if (data.session && mounted) {
-          setSupabaseSession(data.session);
-          await resolveOAuthUser(data.session);
+          setSession(data.session);
+          await resolveUser(data.session);
         }
       } catch (e) {
-        console.error("[AuthContext] Supabase session error:", e);
+        console.error("[AuthContext] Init error:", e);
       }
-
       if (mounted) setLoading(false);
       initialized = true;
     }
 
-    initAuth();
+    init();
 
-    // Listen for future Supabase auth events (OAuth redirect callback, sign-out)
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        // Skip events that fire during initialization
-        if (!initialized) return;
-        // Skip if JWT auth is active
-        if (localStorage.getItem("token")) return;
+      async (event, authSession) => {
+        if (!mounted || !initialized) return;
+        // Skip if login/register is actively handling auth
+        if (handlingAuthRef.current) return;
 
-        if (event === "SIGNED_IN" && session) {
-          setSupabaseSession(session);
+        if (event === "SIGNED_IN" && authSession) {
+          setSession(authSession);
           setLoading(true);
-          await resolveOAuthUser(session);
+          await resolveUser(authSession);
           if (mounted) setLoading(false);
+        } else if (event === "TOKEN_REFRESHED" && authSession) {
+          setSession(authSession);
         } else if (event === "SIGNED_OUT") {
-          setSupabaseSession(null);
+          setSession(null);
           setUser(null);
           setNeedsRoleSelection(false);
         }
@@ -143,14 +131,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Listen for logout events dispatched by api.js on 401
-  useEffect(() => {
-    const handle = () => logout();
-    window.addEventListener("logout", handle);
-    return () => window.removeEventListener("logout", handle);
-  }, []);
-
-  // ─── Email/password login (existing Flask backend — unchanged) ────────────
+  // ─── Email/password login via Supabase ────────────────────────────────────
   async function login(email, password) {
     if (!email?.trim()) {
       return { success: false, message: "Email is required" };
@@ -165,26 +146,40 @@ export function AuthProvider({ children }) {
       };
     }
 
-    const res = await apiLogin(email, password);
+    handlingAuthRef.current = true;
 
-    if (res.success && res.data?.token) {
-      localStorage.setItem("token", res.data.token);
-      setToken(res.data.token);
-      setUser(res.data.user);
-      return { success: true, user: res.data.user };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        const msg =
+          error.message === "Invalid login credentials"
+            ? "Invalid email or password"
+            : error.message;
+        return { success: false, message: msg };
+      }
+
+      if (data.session) {
+        setSession(data.session);
+        await resolveUser(data.session);
+        return { success: true };
+      }
+
+      return { success: false, message: "Login failed. Please try again." };
+    } catch (err) {
+      return {
+        success: false,
+        message: "An unexpected error occurred. Please try again.",
+      };
+    } finally {
+      handlingAuthRef.current = false;
     }
-
-    let message = res.message || "Login failed";
-    if (res.reason === "invalid_credentials" || res.status === 401) {
-      message = "Invalid email or password";
-    } else if (res.reason === "network_error") {
-      message = "Unable to connect to server. Please try again.";
-    }
-
-    return { success: false, message, reason: res.reason };
   }
 
-  // ─── Register (existing Flask backend — unchanged) ────────────────────────
+  // ─── Email/password register via Supabase ─────────────────────────────────
   async function register(userData) {
     const name = userData.name || userData.full_name || "";
     const email = userData.email || "";
@@ -192,93 +187,111 @@ export function AuthProvider({ children }) {
     const phone = userData.phone || userData.phone_number || "";
     const role = userData.role || "";
 
+    // Validation
     if (!name?.trim()) {
-      return {
-        success: false,
-        reason: "validation_error",
-        message: "Full name is required",
-      };
+      return { success: false, message: "Full name is required" };
     }
     if (!email?.trim()) {
-      return {
-        success: false,
-        reason: "validation_error",
-        message: "Email is required",
-      };
+      return { success: false, message: "Email is required" };
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return {
-        success: false,
-        reason: "validation_error",
-        message: "Please enter a valid email address",
-      };
+      return { success: false, message: "Please enter a valid email address" };
     }
-
     if (!password) {
-      return {
-        success: false,
-        reason: "validation_error",
-        message: "Password is required",
-      };
+      return { success: false, message: "Password is required" };
     }
     if (password.length < 6) {
       return {
         success: false,
-        reason: "validation_error",
         message: "Password must be at least 6 characters",
       };
     }
     if (!role || !["client", "barber", "salon"].includes(role)) {
-      return {
-        success: false,
-        reason: "validation_error",
-        message: "Invalid role selected",
-      };
+      return { success: false, message: "Invalid role selected" };
     }
 
-    const registrationData = {
-      email: email.trim(),
-      password: password,
-      full_name: name.trim(),
-      phone_number: phone.trim() || null,
-      role: role,
-    };
+    handlingAuthRef.current = true;
 
     try {
-      const res = await apiRegister(registrationData);
+      // 1. Create Supabase Auth user with metadata
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: name.trim(),
+            role,
+            phone: phone.trim() || null,
+          },
+        },
+      });
 
-      if (res.success && res.data?.token) {
-        localStorage.setItem("token", res.data.token);
-        setToken(res.data.token);
-        setUser(res.data.user);
-        return { success: true, user: res.data.user };
+      if (error) {
+        if (error.message.toLowerCase().includes("already")) {
+          return {
+            success: false,
+            message: "Account already exists. Please sign in.",
+            redirect: "/signin",
+          };
+        }
+        return { success: false, message: error.message };
       }
 
-      const reason = res.reason || "registration_failed";
-      let message = res.message || "Registration failed";
-      let redirect = null;
+      // 2. Auto-confirm ON → session available → create DB record immediately
+      if (data.session) {
+        setSession(data.session);
 
-      if (reason === "conflict" || message.toLowerCase().includes("already")) {
-        message = "Account already exists. Please sign in.";
-        redirect = "/signin";
-      } else if (reason === "network_error") {
-        message = "Unable to connect to server. Please try again.";
-      } else if (reason === "bad_request" || reason === "validation_error") {
-        message =
-          res.message || "Invalid input. Please check your information.";
-      } else if (reason === "db_error" || reason === "server_error") {
-        message = "Server error. Please try again later.";
+        const { user: dbUser, error: dbError } = await createUserWithRole({
+          supabaseUid: data.user.id,
+          email: email.trim(),
+          fullName: name.trim(),
+          role,
+          phone: phone.trim() || null,
+        });
+
+        if (dbUser) {
+          setUser({
+            id: dbUser.id,
+            email: dbUser.email,
+            full_name: dbUser.full_name,
+            role: dbUser.role,
+          });
+          setNeedsRoleSelection(false);
+          return { success: true, user: dbUser };
+        }
+
+        if (dbError) {
+          console.error(
+            "[AuthContext] DB insert after signup failed:",
+            dbError.message,
+          );
+          // Fallback: resolveUser will attempt auto-creation from metadata
+          await resolveUser(data.session);
+          return { success: true };
+        }
       }
 
-      return { success: false, reason, message, redirect };
+      // 3. Email confirmation required
+      if (data.user && !data.session) {
+        return {
+          success: true,
+          needsConfirmation: true,
+          message: "Please check your email to confirm your account.",
+        };
+      }
+
+      return {
+        success: false,
+        message: "Registration failed. Please try again.",
+      };
     } catch (err) {
       return {
         success: false,
-        reason: "unknown_error",
         message: "An unexpected error occurred. Please try again.",
       };
+    } finally {
+      handlingAuthRef.current = false;
     }
   }
 
@@ -289,18 +302,15 @@ export function AuthProvider({ children }) {
       email: dbUser.email,
       full_name: dbUser.full_name,
       role: dbUser.role,
-      supabase_uid: dbUser.supabase_uid,
     });
     setNeedsRoleSelection(false);
   }
 
-  // ─── Logout (handles both JWT and OAuth) ──────────────────────────────────
+  // ─── Logout ───────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
-    localStorage.removeItem("token");
-    setToken(null);
     setUser(null);
+    setSession(null);
     setNeedsRoleSelection(false);
-    setSupabaseSession(null);
     try {
       await supabase.auth.signOut();
     } catch (e) {
@@ -320,11 +330,10 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
-    token,
+    session,
     isAuthenticated,
     loading,
     needsRoleSelection,
-    supabaseSession,
     login,
     register,
     logout,

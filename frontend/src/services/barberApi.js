@@ -4,6 +4,8 @@
  * Base URL: /barber
  */
 
+import { supabase } from "../supabaseClient";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 const BARBER_ENDPOINT = `${API_BASE_URL}/barber`;
 
@@ -12,19 +14,21 @@ const BARBER_ENDPOINT = `${API_BASE_URL}/barber`;
 // -------------------------------------------------
 
 /**
- * Get JWT token from localStorage
- * @returns {string|null} JWT token or null if not found
+ * Get access token from Supabase session
+ * @returns {Promise<string|null>} Access token or null
  */
-function getToken() {
-  return localStorage.getItem("token");
+async function getToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token || null;
 }
 
 /**
- * Check if user is authenticated and has barber role
- * @returns {boolean} True if user is authenticated
+ * Check if user has an active Supabase session
+ * @returns {Promise<boolean>} True if user is authenticated
  */
-function isAuthenticated() {
-  return !!getToken();
+async function isAuthenticated() {
+  const token = await getToken();
+  return !!token;
 }
 
 /**
@@ -34,7 +38,7 @@ function isAuthenticated() {
  * @returns {Promise<{success: boolean, data: any, reason?: string, message?: string}>}
  */
 async function apiRequest(endpoint, options = {}) {
-  const token = getToken();
+  const token = await getToken();
   
   const headers = {
     "Content-Type": "application/json",
@@ -56,8 +60,7 @@ async function apiRequest(endpoint, options = {}) {
 
     // Handle 401 Unauthorized - auto logout
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/signin"; // Redirect to login
+      window.dispatchEvent(new Event("logout"));
       throw new Error("Session expired. Please login again.");
     }
 
@@ -177,7 +180,7 @@ export async function getBarberPosts(barberId) {
  */
 export async function updateProfile(barberId, profileData) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(`${BARBER_ENDPOINT}/${barberId}/profile`, {
@@ -199,7 +202,7 @@ export async function updateProfile(barberId, profileData) {
  */
 export async function updateLocation(barberId, locationData) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(`${BARBER_ENDPOINT}/${barberId}/location`, {
@@ -221,7 +224,7 @@ export async function updateLocation(barberId, locationData) {
  */
 export async function updateAvailability(barberId, availabilityData) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(`${BARBER_ENDPOINT}/${barberId}/availability`, {
@@ -243,11 +246,11 @@ export async function updateAvailability(barberId, availabilityData) {
  */
 export async function addPortfolioItem(barberId, portfolioData) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     
-    const token = getToken();
+    const token = await getToken();
     const response = await fetch(`${BARBER_ENDPOINT}/${barberId}/portfolio`, {
       method: "POST",
       headers: {
@@ -257,8 +260,7 @@ export async function addPortfolioItem(barberId, portfolioData) {
     });
 
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/signin";
+      window.dispatchEvent(new Event("logout"));
       throw new Error("Session expired");
     }
 
@@ -286,7 +288,7 @@ export async function addPortfolioItem(barberId, portfolioData) {
  */
 export async function deletePortfolioItem(barberId, portfolioId) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(
@@ -310,11 +312,11 @@ export async function deletePortfolioItem(barberId, portfolioId) {
  */
 export async function createPost(barberId, postData) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
 
-    const token = getToken();
+    const token = await getToken();
     const response = await fetch(`${BARBER_ENDPOINT}/${barberId}/posts`, {
       method: "POST",
       headers: {
@@ -324,8 +326,7 @@ export async function createPost(barberId, postData) {
     });
 
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/signin";
+      window.dispatchEvent(new Event("logout"));
       throw new Error("Session expired");
     }
 
@@ -352,7 +353,7 @@ export async function createPost(barberId, postData) {
  */
 export async function getAppointments(barberId) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(`${BARBER_ENDPOINT}/${barberId}/appointments`, {
@@ -372,7 +373,7 @@ export async function getAppointments(barberId) {
  */
 export async function acceptAppointment(appointmentId) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(
@@ -397,7 +398,7 @@ export async function acceptAppointment(appointmentId) {
  */
 export async function rejectAppointment(appointmentId, rejectData = {}) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(
@@ -422,7 +423,7 @@ export async function rejectAppointment(appointmentId, rejectData = {}) {
  */
 export async function rescheduleAppointment(appointmentId, rescheduleData) {
   try {
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       throw new Error("Authentication required");
     }
     const response = await apiRequest(

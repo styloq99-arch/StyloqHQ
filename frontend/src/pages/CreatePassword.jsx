@@ -76,7 +76,14 @@ export default function CreatePassword() {
     const res = await registerUser(registrationData);
 
     if (res.success) {
+      if (res.needsConfirmation) {
+        setLoading(false);
+        setError(res.message || "Please check your email to confirm your account.");
+        return;
+      }
       // Navigation handled by useEffect above when auth state updates
+      // Keep loading=true until redirect happens
+      return;
     } else {
       setLoading(false);
       setError(res.message || "Registration failed");
