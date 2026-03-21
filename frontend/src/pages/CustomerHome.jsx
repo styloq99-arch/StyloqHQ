@@ -484,6 +484,9 @@ const handleLike = async (postId) => {
           <Link to="/favourites" className="sidebar-link">
             <i className="fas fa-heart"></i> <span>Favourites</span>
           </Link>
+          <Link to="/message" className="sidebar-link">
+            <i className="fas fa-comments"></i> <span>Message</span>
+          </Link>
           <Link to="/profile" className="sidebar-link">
             <i className="fas fa-user"></i> <span>Profile</span>
           </Link>
@@ -949,6 +952,10 @@ const handleLike = async (postId) => {
         <Link to="/favourites" className="nav-item">
           <i className="fas fa-heart"></i>
           <span>Favourites</span>
+        </Link>
+        <Link to="/message" className="nav-item">
+          <i className="fas fa-comments"></i>
+          <span>Message</span>
         </Link>
         <Link to="/profile" className="nav-item">
           <i className="fas fa-user"></i>
