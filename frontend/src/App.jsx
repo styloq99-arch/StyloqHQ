@@ -63,51 +63,6 @@ function PublicRoute({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      {/* FavouritesProvider wraps all routes so CustomerHome and
-          Favourites share the same bookmarked state */}
-      <FavouritesProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/signin" element={<SignIn />} />
-
-          <Route path="/signup-barber" element={<SignUpBarber />} />
-          <Route path="/signup-barber-step4" element={<SignUpBarberStep4 />} />
-          <Route path="/signup-barber-step5" element={<SignUpBarberStep5 />} />
-          <Route path="/signup-barber-step6" element={<SignUpBarberStep6 />} />
-          <Route path="/signup-barber-step7" element={<SignUpBarberStep7 />} />
-          <Route path="/signup-barber-step8" element={<SignUpBarberStep8 />} />
-
-          <Route path="/signup-customer" element={<SignUpCustomer />} />
-          <Route path="/verification-step1" element={<VerificationStep1 />} />
-          <Route path="/verification-step2" element={<VerificationStep2 />} />
-          <Route path="/create-password" element={<CreatePassword />} />
-
-          <Route path="/signup-salon" element={<SignUpSalon />} />
-
-          <Route path="/barber-home" element={<BarberHomePage />} />
-          <Route path="/Appointment-overview"element={<AppointmentOverview />}/>
-          <Route path="/barber-dashboard" element={<BarberDashboard />} />
-          <Route path="/barber-OwnProfile" element={<BarberOwnProfile />} />
-          <Route path="/postingPhotos" element={<PostingPhotos />}/>
-          <Route path="/share-post"    element={<SharePost />} />
-          <Route path="/barber-vacancies"    element={<BarberVacanciesPage />} />
-          <Route path="/barber-applications" element={<BarberApplicationsPage />} />
-          <Route path="/customer-home" element={<CustomerHome />} />
-          <Route path="/customer-search" element={<CustomerSearch />} />
-          <Route path="/booking" element={<BookingPage />} />
-          <Route path="/add-review" element={<AddReviewPage />} />
-          <Route path="/barber-profile-view" element={<BarberProfileView />} />
-          <Route path="/customer-profile" element={<CustomerProfile />} />
-          <Route path="/favourites" element={<Favourites />} />
-
-          <Route path="/salon-home" element={<SalonHomePage />} />
-          <Route path="/salon-hire" element={<SalonHirePage />} />
-          <Route path="/salon-profile" element={<SalonProfilePage />} />
-
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Chatbot />
-      </FavouritesProvider>
       <AuthProvider>
         <ErrorBoundary>
           <FavouritesProvider>
@@ -283,6 +238,50 @@ export default function App() {
               <Route
                 path="/barber-profile-view/:barberId"
                 element={<BarberProfileView />}
+              />
+
+              {/* Barber vacancy/application routes */}
+              <Route
+                path="/barber-vacancies"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberVacanciesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/barber-applications"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberApplicationsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Salon routes */}
+              <Route
+                path="/salon-home"
+                element={
+                  <ProtectedRoute allowedRoles={["salon"]}>
+                    <SalonHomePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/salon-hire"
+                element={
+                  <ProtectedRoute allowedRoles={["salon"]}>
+                    <SalonHirePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/salon-profile"
+                element={
+                  <ProtectedRoute allowedRoles={["salon"]}>
+                    <SalonProfilePage />
+                  </ProtectedRoute>
+                }
               />
 
               <Route path="*" element={<NotFound />} />
