@@ -58,9 +58,18 @@ const MONTHLY_DATA = [
 ];
 
 const VACANCIES = [
-  { id:1, title:'Senior Barber',             salon:'Liyo Salons (pvt) Ltd',  location:'Colombo 05', type:'Full Time', salary:'RS. 60,000 – 80,000', deadline:'15 Jan', skills:['Fade','Beard Design','Color'],     photo:'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=80' },
-  { id:2, title:'Junior Barber',             salon:'Salon Next (pvt) Ltd',   location:'Peliyagoda', type:'Part Time', salary:'RS. 30,000 – 45,000', deadline:'30 Jan', skills:['Classic Cut','Shave'],             photo:null },
-  { id:3, title:'Master Stylist',            salon:"The Gentleman's Cut",    location:'Colombo 07', type:'Full Time', salary:'RS. 75,000 – 95,000', deadline:'10 Feb', skills:['Color','Perms','Texture'],         photo:'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80' },
+  { id:1, title:'Senior Barber',             
+    salon:'Liyo Salons (pvt) Ltd',  
+    location:'Colombo 05', 
+    type:'Full Time', salary:'RS. 60,000 – 80,000', deadline:'15 Jan', skills:['Fade','Beard Design','Color'],     photo:'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=80' },
+  { id:2, title:'Junior Barber',             
+    salon:'Salon Next (pvt) Ltd',   
+    location:'Peliyagoda', 
+    type:'Part Time', salary:'RS. 30,000 – 45,000', deadline:'30 Jan', skills:['Classic Cut','Shave'],             photo:null },
+  { id:3, title:'Master Stylist',            
+    salon:"The Gentleman's Cut",    
+    location:'Colombo 07', 
+    type:'Full Time', salary:'RS. 75,000 – 95,000', deadline:'10 Feb', skills:['Color','Perms','Texture'],         photo:'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80' },
 ];
 
 const fmt = (n) => 'RS. ' + n.toLocaleString('en-US');
