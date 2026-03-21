@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from '../supabaseClient'
 
 export default function Signin() {
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google'
+    })
+
+    if (error) {
+      console.error(error)
+      alert('Google login failed')
+    }
+  }
   const navigate = useNavigate();
   const { login, user, isAuthenticated, getRoleRedirect } = useAuth();
 
@@ -72,7 +83,7 @@ export default function Signin() {
     setLoading(true);
     const res = await login(email, password);
     setLoading(false);
-    
+
     if (!res.success) {
       setError(res.message || "Invalid email or password");
     }
@@ -247,7 +258,11 @@ export default function Signin() {
 
           <div className="divider">Or continue with</div>
           <div className="social-buttons">
-            <button className="btn-social" disabled={loading}>
+            <button
+              className="btn-social"
+              disabled={loading}
+              onClick={handleGoogleLogin}
+            >
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   fill="#EA4335"

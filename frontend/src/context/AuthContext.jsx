@@ -1,3 +1,4 @@
+import { supabase } from "../supabaseClient";
 import React, {
   createContext,
   useContext,
@@ -54,6 +55,39 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("logout", handleLogout);
   }, []);
 
+  useEffect(() => {
+    const handleSession = async () => {
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session) {
+        console.log("Supabase user:", data.session.user);
+
+        // TEMP: just store user (we’ll improve this next)
+        setUser({
+          email: data.session.user.email,
+        });
+      }
+    };
+
+    handleSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          console.log("Auth changed:", session.user);
+
+          setUser({
+            email: session.user.email,
+          });
+        }
+      },
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
   /**
    * Login user with email and password
    */
@@ -107,25 +141,49 @@ export function AuthProvider({ children }) {
 
     // Frontend validation
     if (!name?.trim()) {
-      return { success: false, reason: "validation_error", message: "Full name is required" };
+      return {
+        success: false,
+        reason: "validation_error",
+        message: "Full name is required",
+      };
     }
     if (!email?.trim()) {
-      return { success: false, reason: "validation_error", message: "Email is required" };
+      return {
+        success: false,
+        reason: "validation_error",
+        message: "Email is required",
+      };
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return { success: false, reason: "validation_error", message: "Please enter a valid email address" };
+      return {
+        success: false,
+        reason: "validation_error",
+        message: "Please enter a valid email address",
+      };
     }
 
     if (!password) {
-      return { success: false, reason: "validation_error", message: "Password is required" };
+      return {
+        success: false,
+        reason: "validation_error",
+        message: "Password is required",
+      };
     }
     if (password.length < 6) {
-      return { success: false, reason: "validation_error", message: "Password must be at least 6 characters" };
+      return {
+        success: false,
+        reason: "validation_error",
+        message: "Password must be at least 6 characters",
+      };
     }
     if (!role || !["client", "barber", "salon"].includes(role)) {
-      return { success: false, reason: "validation_error", message: "Invalid role selected" };
+      return {
+        success: false,
+        reason: "validation_error",
+        message: "Invalid role selected",
+      };
     }
 
     // Map frontend field names to backend API format
@@ -158,14 +216,19 @@ export function AuthProvider({ children }) {
       } else if (reason === "network_error") {
         message = "Unable to connect to server. Please try again.";
       } else if (reason === "bad_request" || reason === "validation_error") {
-        message = res.message || "Invalid input. Please check your information.";
+        message =
+          res.message || "Invalid input. Please check your information.";
       } else if (reason === "db_error" || reason === "server_error") {
         message = "Server error. Please try again later.";
       }
 
       return { success: false, reason, message, redirect };
     } catch (err) {
-      return { success: false, reason: "unknown_error", message: "An unexpected error occurred. Please try again." };
+      return {
+        success: false,
+        reason: "unknown_error",
+        message: "An unexpected error occurred. Please try again.",
+      };
     }
   }
 
