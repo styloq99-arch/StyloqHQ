@@ -3197,6 +3197,51 @@ html, body {
   font-size: 10px;
 }
 
+
+/* ─────────────────────────────────────────────----------------------------------------------------
+   SalonHirePage.css
+   ───────────────────────────────────────────── */
+
+/* ── Page-toggle bar ── */
+.page-toggle-bar {
+  display: flex;
+  gap: 0;
+  margin-top: 14px;
+  background: var(--bg-surface);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.page-toggle-btn {
+  flex: 1;
+  height: 38px;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: transparent;
+  color: var(--text-faint);
+  transition: all 0.2s;
+  box-shadow: none;
+}
+.page-toggle-btn.active {
+  background: var(--color-accent);
+  color: #000;
+  box-shadow: 0 2px 8px var(--color-accent-glow);
+}
+
+/* ── HIRE header text ── */
+.hire-title-large { font-size: 25px; }
+
+
+
+
 /* ========================================================================================================================================
    BARBER HOME - EXACT MOBILE DESIGN
    ======================================================================================================================================== */
