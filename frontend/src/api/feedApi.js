@@ -21,56 +21,8 @@ function getToken() {
  * Make authenticated API request
  */
 async function authenticatedRequest(endpoint, options = {}) {
-  // --- TEMPORARY MOCK BYPASS (Backend not ready) ---
-  if (endpoint.includes("/feed")) {
-    console.log("Mocking API call to:", endpoint, options.method);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (endpoint.includes("page=") && (options.method === "GET" || !options.method)) {
-          resolve({
-            success: true,
-            data: [
-              {
-                id: Math.random(),
-                barberName: "Fade Master Jack",
-                barber_id: "barber_1",
-                avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-                rating: 5,
-                imageUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&auto=format&fit=crop&q=60",
-                caption: "Fresh fade for the weekend! ✂️🔥",
-                liked: false,
-                likes: 124,
-                commentsCount: 12,
-                saved: false,
-                createdAt: new Date().toISOString()
-              },
-              {
-                id: Math.random(),
-                barberName: "Sarah Styles",
-                barber_id: "barber_2",
-                avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-                rating: 4,
-                imageUrl: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=60",
-                caption: "Classic styling today. We are packed! 🔥",
-                liked: true,
-                likes: 89,
-                commentsCount: 5,
-                saved: true,
-                createdAt: new Date(Date.now() - 86400000).toISOString()
-              }
-            ]
-          });
-        } else {
-          // Mock success state for likes, comments, deletes, etc.
-          resolve({ success: true, data: {} });
-        }
-      }, 400);
-    });
-  }
-  // -------------------------------------------------
-
   const token = getToken();
-  
+
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,
