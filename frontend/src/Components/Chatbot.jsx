@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const chatbotData = {
   booking: {
@@ -23,21 +23,37 @@ const chatbotData = {
       },
     ],
   },
-  salon: {
-    label: "🏪 Salons",
-    questions: [
-      {
-        q: "How do salons recruit barbers?",
-        a: "Salons can view verified barbers and send recruitment requests.",
-      },
-    ],
-  },
 };
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [messages, setMessages] = useState([]);
+
+  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [dragging, setDragging] = useState(false);
+
+  const handleMouseDown = () => setDragging(true);
+  const handleMouseUp = () => setDragging(false);
+
+  const handleMouseMove = (e) => {
+    if (!dragging) return;
+
+    setPosition({
+      x: window.innerWidth - e.clientX - 30,
+      y: window.innerHeight - e.clientY - 30,
+    });
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging]);
 
   const handleQuestionClick = (q) => {
     setMessages((prev) => [
@@ -49,12 +65,22 @@ export default function Chatbot() {
 
   return (
     <>
+      {/* Floating Button */}
       {!open && (
-        <button className="chatbot-fab" onClick={() => setOpen(true)}>
+        <button
+          className="chatbot-fab"
+          onMouseDown={handleMouseDown}
+          onClick={() => !dragging && setOpen(true)}
+          style={{
+            bottom: position.y,
+            right: position.x,
+          }}
+        >
           💬
         </button>
       )}
 
+      {/* Chat Window */}
       {open && (
         <div className="chatbot-container">
           <div className="chatbot-header">
