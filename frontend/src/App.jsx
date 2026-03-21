@@ -39,6 +39,7 @@ import SalonHirePage from "./pages/SalonHirePage.jsx";
 import SalonProfilePage from "./pages/SalonProfilePage.jsx";
 import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
 import AiRecommendation from "./pages/AiRecommendation.jsx";
+import Messages from "./pages/Messages.jsx";
 
 import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Chatbot from "./Components/Chatbot.jsx";
@@ -175,6 +176,16 @@ export default function App() {
                 element={
                   <ProtectedRoute allowedRoles={["client"]}>
                     <CustomerProfile />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Secure messaging route */}
+              <Route
+                path="/message"
+                element={
+                  <ProtectedRoute allowedRoles={["client", "barber", "salon"]}>
+                    <Messages />
                   </ProtectedRoute>
                 }
               />
