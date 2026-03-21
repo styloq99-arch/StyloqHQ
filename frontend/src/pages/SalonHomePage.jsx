@@ -1,0 +1,322 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useFavourites } from './FavouritesContext';
+
+// Mock Data
+const INITIAL_POSTS = [
+  {
+    id: 1,
+    name: "S.S.K. Perera",
+    rating: 5,
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    caption: "Another transformation in the chair 2 days ago",
+    image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    likes: 124,
+    comments: 15
+  },
+  {
+    id: 2,
+    name: "D.H.Pathirana",
+    rating: 4.5,
+    avatar: "https://randomuser.me/api/portraits/men/44.jpg",
+    caption: "Classic fade for the weekend. 1 day ago",
+    image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    likes: 89,
+    comments: 8
+  }
+];
+
+export default function SalonHome() {
+  const { toggleFavourite, isFavourite } = useFavourites();
+
+  const [postStates, setPostStates] = useState(
+    Object.fromEntries(
+      INITIAL_POSTS.map(post => [
+        post.id,
+        {
+          liked: false,
+          likes: post.likes,
+          comments: post.comments,
+          showComments: false,
+          commentText: '',
+          commentList: [],
+        }
+      ])
+    )
+  );
+
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(3);
+  const [shareToast, setShareToast] = useState(null);
+
+  const NOTIFICATIONS = [
+    { id: 1, text: "S.S.K. Perera posted a new style", time: "2m ago" },
+    { id: 2, text: "Your appointment is confirmed for tomorrow", time: "1h ago" },
+    { id: 3, text: "D.H.Pathirana liked your comment", time: "3h ago" },
+  ];
+
+  const handleLike = (postId) => {
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: {
+        ...prev[postId],
+        liked: !prev[postId].liked,
+        likes: prev[postId].liked ? prev[postId].likes - 1 : prev[postId].likes + 1,
+      }
+    }));
+  };
+
+  const handleToggleComments = (postId) => {
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: { ...prev[postId], showComments: !prev[postId].showComments }
+    }));
+  };
+
+  const handleCommentChange = (postId, value) => {
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: { ...prev[postId], commentText: value }
+    }));
+  };
+
+  const handleCommentSubmit = (postId) => {
+    const text = postStates[postId].commentText.trim();
+    if (!text) return;
+    setPostStates(prev => ({
+      ...prev,
+      [postId]: {
+        ...prev[postId],
+        commentText: '',
+        comments: prev[postId].comments + 1,
+        commentList: [...prev[postId].commentList, { id: Date.now(), author: 'You', text }],
+      }
+    }));
+  };
+
+  const handleShare = (postId, postName) => {
+    const url = `${window.location.origin}/post/${postId}`;
+    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+    setShareToast(`Link to ${postName}'s post copied!`);
+    setTimeout(() => setShareToast(null), 2500);
+  };
+
+  const handleNotifOpen = () => {
+    setNotifOpen(prev => !prev);
+    if (!notifOpen) setNotifCount(0);
+  };
+
+  return (
+    <div className="app-layout">
+
+      {/* Toasts */}
+      {shareToast && (
+        <div className="cp-toast" style={{ bottom: '80px', zIndex: 9999 }}>
+          <i className="fas fa-check-circle"></i> {shareToast}
+        </div>
+      )}
+
+      {/* Notification Dropdown */}
+      {notifOpen && (
+        <div onClick={() => setNotifOpen(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 150
+        }} />
+      )}
+      {notifOpen && (
+        <div style={{
+          position: 'fixed', top: '70px', right: '16px', zIndex: 200,
+          background: 'var(--bg-elevated)', border: '1px solid var(--border-faint)',
+          borderRadius: '16px', width: '300px', boxShadow: 'var(--shadow-modal)', overflow: 'hidden',
+        }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-deep)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '15px' }}>Notifications</span>
+            <button onClick={() => setNotifOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', cursor: 'pointer', fontSize: '16px' }}>
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          {NOTIFICATIONS.map(n => (
+            <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-deep)' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>{n.text}</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '11px', margin: '4px 0 0' }}>{n.time}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className="desktop-sidebar">
+        <div className="sidebar-logo">
+          <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
+        </div>
+        <nav className="sidebar-nav">
+          <Link to="/salon-home"    className="sidebar-link active"><i className="fas fa-home" />       <span>Home</span></Link>
+          <Link to="/salon-hire"    className="sidebar-link">       <i className="fas fa-users" />       <span>Hire Barbers</span></Link>
+          <Link to="/salon-profile" className="sidebar-link">       <i className="fas fa-user-circle" /> <span>Profile</span></Link>
+        </nav>
+        <div className="sidebar-user">
+          <img src="https://i.pravatar.cc/150?img=32" alt="Salon" className="user-avatar" />
+          <div className="user-info">
+            <p className="user-name">Liyo Salon</p>
+            <p className="user-status">Colombo 07</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="main-content">
+        <header className="customer-barber-header" style={{ paddingBottom: '5px' }}>
+          <div className="header-top">
+            <div className="mobile-brandContent">
+              <h1 className="mobile-brand">StyloQ</h1>
+            </div>
+            <button
+              className="notification-bell"
+              onClick={handleNotifOpen}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              aria-label="Notifications"
+            >
+              <i className="far fa-bell"></i>
+              {notifCount > 0 && <span className="badge">{notifCount}</span>}
+            </button>
+          </div>
+        </header>
+
+        <div className="page-body">
+          <section>
+            <div className="feed-container">
+              {INITIAL_POSTS.map((post) => {
+                const state = postStates[post.id];
+                const bookmarked = isFavourite(post.id);
+                return (
+                  <div key={post.id} className="feed-card">
+
+                    {/* Card Header */}
+                    <div className="card-header">
+                      <div className="header-left">
+                        <img src={post.avatar} alt="Avatar" className="profile-avatar" />
+                        <div className="header-text">
+                          <h4 className="barber-name">{post.name}</h4>
+                          <div className="stars-container">
+                            {[...Array(5)].map((_, i) => (
+                              <i key={i} className={`fas fa-star ${i < post.rating ? 'filled' : 'empty'}`}></i>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <Link to="/barber-profile-view" className="btn btn-secondary"
+                        style={{ width: '40%', height: '45px', marginTop: '2rem', borderRadius: '20px' }}>
+                        View Profile
+                      </Link>
+                    </div>
+
+                    {/* Image */}
+                    <div className="image-container">
+                      <img src={post.image} alt="Haircut" className="feed-image" />
+                    </div>
+
+                    {/* Like count */}
+                    {state.likes > 0 && (
+                      <div style={{ padding: '8px 16px 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                        {state.likes} {state.likes === 1 ? 'like' : 'likes'}
+                      </div>
+                    )}
+
+                    {/* Caption */}
+                    <div className="card-content">
+                      <p className="caption-text">{post.caption}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="card-actions">
+                      <div className="action-left">
+
+                        {/* Like */}
+                        <button onClick={() => handleLike(post.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label={state.liked ? 'Unlike' : 'Like'}>
+                          <i className={`${state.liked ? 'fas' : 'far'} fa-heart action-icon`}
+                            style={{ color: state.liked ? 'var(--color-accent)' : undefined }}></i>
+                        </button>
+
+                        {/* Comment */}
+                        <button onClick={() => handleToggleComments(post.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label="Toggle comments">
+                          <i className={`${state.showComments ? 'fas' : 'far'} fa-comment action-icon`}
+                            style={{ color: state.showComments ? 'var(--color-accent)' : undefined }}></i>
+                        </button>
+
+                        {/* Share */}
+                        <button onClick={() => handleShare(post.id, post.name)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          aria-label="Share">
+                          <i className="far fa-paper-plane action-icon"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Comments Section */}
+                    {state.showComments && (
+                      <div style={{ padding: '12px 16px 4px', borderTop: '1px solid var(--border-deep)' }}>
+                        {state.commentList.length > 0 && (
+                          <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {state.commentList.map(c => (
+                              <div key={c.id} style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                <span style={{ fontWeight: 700, color: 'var(--text-primary)', marginRight: '6px' }}>{c.author}</span>
+                                {c.text}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {state.commentList.length === 0 && (
+                          <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                            {state.comments} comment{state.comments !== 1 ? 's' : ''} — be the first to reply
+                          </p>
+                        )}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            placeholder="Add a comment…"
+                            value={state.commentText}
+                            onChange={e => handleCommentChange(post.id, e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleCommentSubmit(post.id)}
+                            style={{
+                              flex: 1, background: 'var(--fill-glass-mid)', border: '1px solid var(--border-default)',
+                              borderRadius: '20px', padding: '8px 14px', color: 'var(--text-primary)',
+                              fontSize: '13px', outline: 'none', fontFamily: 'Poppins, sans-serif',
+                            }}
+                          />
+                          <button
+                            onClick={() => handleCommentSubmit(post.id)}
+                            disabled={!state.commentText.trim()}
+                            style={{
+                              background: state.commentText.trim() ? 'var(--color-accent)' : 'var(--border-subtle)',
+                              border: 'none', borderRadius: '50%', width: '34px', height: '34px',
+                              color: '#fff', cursor: state.commentText.trim() ? 'pointer' : 'default',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              transition: 'background 0.2s', flexShrink: 0,
+                            }}>
+                            <i className="fas fa-paper-plane" style={{ fontSize: '13px' }}></i>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="bottom-nav">
+        <Link to="/salon-home"    className="nav-item active"><i className="fas fa-home" />       <span>Home</span></Link>
+        <Link to="/salon-hire"    className="nav-item">       <i className="fas fa-users" />       <span>Hire</span></Link>
+        <Link to="/salon-profile" className="nav-item">       <i className="fas fa-user-circle" /> <span>Profile</span></Link>
+      </nav>
+
+    </div>
+  );
+}
