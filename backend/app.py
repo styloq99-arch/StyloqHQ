@@ -10,6 +10,9 @@ from backend.salon.routes import salon_bp
 
 from flask_cors import CORS
 
+# Import Messaging routes
+from backend.message.routes import message_bp
+
 # Import AI routes
 from backend.ai.routes import ai_bp
 
@@ -46,6 +49,7 @@ def create_app():
         app.register_blueprint(barber_bp)
         
     app.register_blueprint(ai_bp)
+    app.register_blueprint(message_bp)
 
     @app.route("/health")
     def health():
