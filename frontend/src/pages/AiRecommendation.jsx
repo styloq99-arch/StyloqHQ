@@ -3,9 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function AiRecommendation() {
-  const { getToken, user } = useAuth();
-  
-  const [selectedFile, setSelectedFile] = useState(null);
+  const { token, user } = useAuth();
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -36,7 +34,6 @@ export default function AiRecommendation() {
     formData.append("image", selectedFile);
 
     try {
-      const token = getToken();
       const response = await fetch("http://localhost:5000/ai/hairstyle", {
         method: "POST",
         headers: {
