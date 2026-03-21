@@ -29,8 +29,14 @@ import BarberHomePage from "./pages/BarberHomePage.jsx";
 import AppointmentOverview from "./pages/AppointmentOverview.jsx";
 import BarberDashboard from "./pages/BarberDashboard.jsx";
 import SalonDashboard from "./pages/SalonDashboard.jsx";
+import SelectRole from "./pages/SelectRole.jsx";
 import PostingPhotos from "./pages/PostingPhots.jsx";
 import SharePost from "./pages/SharePost.jsx";
+import BarberVacanciesPage from "./pages/BarberVacanciesPage.jsx";
+import BarberApplicationsPage from "./pages/BarberApplicationsPage.jsx";
+import SalonHomePage from "./pages/SalonHomePage.jsx";
+import SalonHirePage from "./pages/SalonHirePage.jsx";
+import SalonProfilePage from "./pages/SalonProfilePage.jsx";
 import BarberOwnProfile from "./pages/BarberOwnProfile.jsx";
 import AiRecommendation from "./pages/AiRecommendation.jsx";
 
@@ -40,10 +46,14 @@ import BookingPage from "./pages/BookingPage";
 
 // Component to protect public routes from authenticated users
 function PublicRoute({ children }) {
-  const { isAuthenticated, getRoleRedirect, user } = useAuth();
+  const { isAuthenticated, getRoleRedirect, user, needsRoleSelection } = useAuth();
+
+  // OAuth user who hasn't picked a role yet → send to role selection
+  if (needsRoleSelection) {
+    return <Navigate to="/select-role" replace />;
+  }
 
   if (isAuthenticated) {
-    // Redirect authenticated users to their dashboard
     const correctPath = getRoleRedirect(user?.role);
     return <Navigate to={correctPath} replace />;
   }
@@ -77,6 +87,7 @@ export default function App() {
                 element={<SignUpCustomerFinal />}
               />
               <Route path="/signup-salon" element={<SignUpSalon />} />
+              <Route path="/select-role" element={<SelectRole />} />
 
               {/* Verification Routes */}
               <Route
@@ -238,6 +249,50 @@ export default function App() {
               <Route
                 path="/barber-profile-view/:barberId"
                 element={<BarberProfileView />}
+              />
+
+              {/* Barber vacancy/application routes */}
+              <Route
+                path="/barber-vacancies"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberVacanciesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/barber-applications"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberApplicationsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Salon routes */}
+              <Route
+                path="/salon-home"
+                element={
+                  <ProtectedRoute allowedRoles={["salon"]}>
+                    <SalonHomePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/salon-hire"
+                element={
+                  <ProtectedRoute allowedRoles={["salon"]}>
+                    <SalonHirePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/salon-profile"
+                element={
+                  <ProtectedRoute allowedRoles={["salon"]}>
+                    <SalonProfilePage />
+                  </ProtectedRoute>
+                }
               />
 
               <Route path="*" element={<NotFound />} />

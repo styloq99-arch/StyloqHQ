@@ -65,7 +65,14 @@ export default function SignUpCustomerFinal() {
       const res = await register(userData);
 
       if (res.success) {
+        if (res.needsConfirmation) {
+          setLoading(false);
+          setError(res.message || "Please check your email to confirm your account.");
+          return;
+        }
         // Navigation handled by useEffect above when auth state updates
+        // Keep loading=true until redirect happens
+        return;
       } else {
         setError(res.message || "Registration failed");
         // Redirect to signin if account already exists
@@ -75,9 +82,8 @@ export default function SignUpCustomerFinal() {
       }
     } catch (err) {
       setError("An error occurred during registration");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleBack = () => {

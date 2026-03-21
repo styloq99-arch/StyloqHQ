@@ -15,7 +15,7 @@ export default function Signin() {
     }
   }
   const navigate = useNavigate();
-  const { login, user, isAuthenticated, getRoleRedirect } = useAuth();
+  const { login, user, isAuthenticated, getRoleRedirect, needsRoleSelection } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +31,13 @@ export default function Signin() {
       navigate(correctPath, { replace: true });
     }
   }, [isAuthenticated, user, navigate, getRoleRedirect]);
+
+  // Redirect OAuth users who need to pick a role
+  useEffect(() => {
+    if (needsRoleSelection) {
+      navigate("/select-role", { replace: true });
+    }
+  }, [needsRoleSelection, navigate]);
 
   // Load persisted email on mount
   useEffect(() => {
