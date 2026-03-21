@@ -8,6 +8,11 @@ const APPLICATIONS = [
   { id: 4, name: 'Amila Fernando',    avatar: 'https://i.pravatar.cc/150?img=52', role: 'Junior Barber', exp: '2 yrs', skills: ['Classic Cut'],                status: 'Rejected'    },
 ];
 
+const INITIAL_LISTINGS = [
+  { id: 1, title: 'Senior Barber', type: 'Full Time', salary: 'RS. 60,000 – 80,000', deadline: '2026-01-15', experience: '3+ years', skills: ['Fade', 'Beard Design', 'Color'], applicants: 4, photo: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=300&fit=crop' },
+  { id: 2, title: 'Junior Barber', type: 'Part Time', salary: 'RS. 30,000 – 45,000', deadline: '2026-01-30', experience: '0-2 years', skills: ['Classic Cut', 'Shave'],          applicants: 2, photo: null },
+];
+
 const FILTERS    = ['All', 'Pending', 'Shortlisted', 'Hired', 'Rejected'];
 const EMPTY_FORM = { title: '', type: 'Full Time', salary: '', deadline: '', skills: '', experience: '', photo: null };
 
@@ -18,7 +23,7 @@ const statusBadgeClass = status => {
 
 export default function SalonHirePage() {
   const [page, setPage]           = useState('listings');
-  const [listings, setListings]   = useState([]);
+  const [listings, setListings]   = useState(INITIAL_LISTINGS);
   const [apps, setApps]           = useState(APPLICATIONS);
   const [filter, setFilter]       = useState('All');
   const [confirm, setConfirm]     = useState(null);
@@ -102,7 +107,6 @@ export default function SalonHirePage() {
             )}
           </div>
 
-          {/* Page toggle */}
           <div className="page-toggle-bar">
             {[
               { key: 'listings',     label: 'Job Listings', icon: 'fas fa-briefcase' },
@@ -121,29 +125,77 @@ export default function SalonHirePage() {
 
         <div className="page-body barber-home-body">
 
+          {/* ══ JOB LISTINGS ══ */}
+          {page === 'listings' && (
+            listings.length === 0 ? (
+              <div className="empty-state">
+                <i className="fas fa-briefcase empty-state__icon" />
+                <p className="empty-state__text">No vacancies posted yet.</p>
+                <button onClick={() => setPostModal(true)} className="btn btn-primary" style={{ borderRadius: 22, padding: '10px 24px' }}>
+                  Post First Vacancy
+                </button>
+              </div>
+            ) : (
+              <div className="listings-grid">
+                {listings.map(l => (
+                  <div key={l.id} className="listing-card">
+                    {l.photo && <img src={l.photo} alt={l.title} className="listing-card__photo" />}
+                    <div className="listing-card__body">
+                      <div className="listing-card__header-row">
+                        <div className="listing-card__icon-wrap">
+                          <i className="fas fa-briefcase listing-card__icon" />
+                        </div>
+                        <div className="listing-card__title-group">
+                          <div className="listing-card__title-salary">
+                            <p className="listing-card__title">{l.title}</p>
+                            <p className="listing-card__salary">{l.salary}</p>
+                          </div>
+                          <p className="listing-card__role-meta">
+                            {l.type}{l.experience ? ` · ${l.experience} exp` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <hr className="listing-card__divider" />
+                      <div className="listing-card__skills">
+                        {l.skills.map(sk => (
+                          <span key={sk} className="listing-card__skill-tag">{sk}</span>
+                        ))}
+                      </div>
+                      <div className="listing-card__footer">
+                        <span className="listing-card__meta-item">
+                          <i className="fas fa-users" /> {l.applicants} applicants
+                        </span>
+                        <span className="listing-card__meta-item">
+                          <i className="fas fa-calendar" />
+                          {new Date(l.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </span>
+                        <button onClick={() => setListings(p => p.filter(x => x.id !== l.id))} className="listing-card__delete-btn">
+                          <i className="fas fa-trash listing-card__delete-icon" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+
           {/* ══ APPLICATIONS ══ */}
           {page === 'applications' && (<>
             <div className="filter-pills">
               {FILTERS.map(f => {
                 const count = f === 'All' ? apps.length : apps.filter(a => a.status === f).length;
                 return (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`filter-pill${filter === f ? ' active' : ''}`}
-                  >
+                  <button key={f} onClick={() => setFilter(f)} className={`filter-pill${filter === f ? ' active' : ''}`}>
                     {f} <span className="filter-pill__count">({count})</span>
                   </button>
                 );
               })}
             </div>
-
             {visible.length === 0 ? (
               <div className="empty-state">
                 <i className="fas fa-inbox empty-state__icon" />
-                <p className="empty-state__text">
-                  No {filter !== 'All' ? filter.toLowerCase() : ''} applications yet.
-                </p>
+                <p className="empty-state__text">No {filter !== 'All' ? filter.toLowerCase() : ''} applications yet.</p>
               </div>
             ) : (
               <div className="appointments-list apps-scroll">
@@ -159,13 +211,9 @@ export default function SalonHirePage() {
                       </div>
                       <span className={statusBadgeClass(app.status)}>{app.status}</span>
                     </div>
-
                     <div className="app-card__skills">
-                      {app.skills.map(sk => (
-                        <span key={sk} className="app-card__skill-tag">{sk}</span>
-                      ))}
+                      {app.skills.map(sk => <span key={sk} className="app-card__skill-tag">{sk}</span>)}
                     </div>
-
                     <div className="barber-card-actions">
                       {app.status === 'Pending' && (<>
                         <button onClick={() => setConfirm({ id: app.id, action: 'shortlist' })} className="action-btn--shortlist">Shortlist</button>
@@ -216,9 +264,7 @@ export default function SalonHirePage() {
                 <div className="input-group">
                   <label>Type</label>
                   <select className="input-field" value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
-                    <option>Full Time</option>
-                    <option>Part Time</option>
-                    <option>Contract</option>
+                    <option>Full Time</option><option>Part Time</option><option>Contract</option>
                   </select>
                 </div>
                 <div className="input-group">
@@ -297,4 +343,3 @@ export default function SalonHirePage() {
     </div>
   );
 }
-
