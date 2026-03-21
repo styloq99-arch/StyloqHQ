@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Signin() {
   const navigate = useNavigate();
+  const { login, user, isAuthenticated, getRoleRedirect } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,11 +13,15 @@ export default function Signin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Forgot Password modal: null | "confirm" | "sent"
-  const [forgotModal, setForgotModal] = useState(null);
-  const [forgotLoading, setForgotLoading] = useState(false);
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const correctPath = getRoleRedirect(user.role);
+      navigate(correctPath, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate, getRoleRedirect]);
 
-  // --- Load persisted email on mount ---
+  // Load persisted email on mount
   useEffect(() => {
     const savedEmail = localStorage.getItem("styloq_remember_email");
     if (savedEmail) {
@@ -28,27 +34,29 @@ export default function Signin() {
     String(val)
       .toLowerCase()
       .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       );
 
-  // --- Forgot Password: uses email already in the sign-in field ---
+  // Forgot Password modal: null | "confirm" | "sent"
+  const [forgotModal, setForgotModal] = useState(null);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
   const handleForgotClick = (e) => {
     e.preventDefault();
     setError("");
 
-    // If no valid email typed yet, prompt them to enter it first
     if (!email.trim() || !validateEmail(email)) {
-      setError("Please enter your email address above first, then click Forgot Password.");
+      setError(
+        "Please enter your email address above first, then click Forgot Password.",
+      );
       return;
     }
 
-    // Email is valid — show confirmation modal
     setForgotModal("confirm");
   };
 
   const handleForgotConfirm = () => {
     setForgotLoading(true);
-    // TODO: replace with real API → api.post('/forgot-password', { email })
     setTimeout(() => {
       setForgotLoading(false);
       setForgotModal("sent");
@@ -57,41 +65,25 @@ export default function Signin() {
 
   const closeForgotModal = () => setForgotModal(null);
 
-  // --- Main Sign In ---
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!email) { setError("Please enter your email address."); return; }
-    if (!validateEmail(email)) { setError("Please enter a valid email address."); return; }
-    if (!password) { setError("Please enter your password."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
-
     setLoading(true);
-    // TODO: replace with real auth API call
-    setTimeout(() => {
-      setLoading(false);
-      if (rememberMe) {
-        localStorage.setItem("styloq_remember_email", email);
-      } else {
-        localStorage.removeItem("styloq_remember_email");
-      }
-      console.log("Login Successful:", { email });
-      navigate("/customer-home");
-      // Uncomment to test error state:
-      // setError("Invalid email or password.");
-    }, 1500);
+    const res = await login(email, password);
+    setLoading(false);
+    
+    if (!res.success) {
+      setError(res.message || "Invalid email or password");
+    }
+    // Success navigation handled by useEffect above
   };
 
   return (
     <div className="app-layout">
-
-      {/* --- LEFT SIDE (IMAGE) --- */}
+      {/* LEFT SIDE (IMAGE) */}
       <div className="visual-side">
-        <img
-          src="src/assets/images/login-bg.png"
-          alt="StyloQ Background"
-        />
+        <img src="src/assets/images/login-bg.png" alt="StyloQ Background" />
         <div className="visual-overlay"></div>
         <div className="gradient-mask"></div>
 
@@ -101,26 +93,29 @@ export default function Signin() {
         </div>
       </div>
 
-      {/* --- RIGHT SIDE (CONTENT) --- */}
-      <div className="content-side" style={{ justifyContent: "flex-start", paddingTop: "10vh" }}>
-
+      {/* RIGHT SIDE (CONTENT) */}
+      <div
+        className="content-side"
+        style={{ justifyContent: "flex-start", paddingTop: "10vh" }}
+      >
         <div className="brand-content">
           <h1 className="brand-title">StyloQ</h1>
         </div>
 
         <div className="form-container">
-
           {/* Error Message */}
           {error && (
-            <div style={{
-              color: "#FF5722",
-              backgroundColor: "rgba(255, 87, 34, 0.1)",
-              padding: "10px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              marginBottom: "10px",
-              textAlign: "center"
-            }}>
+            <div
+              style={{
+                color: "#FF5722",
+                backgroundColor: "rgba(255, 87, 34, 0.1)",
+                padding: "10px",
+                borderRadius: "8px",
+                fontSize: "13px",
+                marginBottom: "10px",
+                textAlign: "center",
+              }}
+            >
               {error}
             </div>
           )}
@@ -131,7 +126,6 @@ export default function Signin() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-
             {/* Email */}
             <div className="input-group">
               <label>Email Address</label>
@@ -140,10 +134,14 @@ export default function Signin() {
                 className="input-field"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError("");
+                }}
                 disabled={loading}
               />
-            </div><br />
+            </div>
+            <br />
 
             {/* Password with show/hide toggle */}
             <div className="input-group">
@@ -154,7 +152,10 @@ export default function Signin() {
                   className="input-field"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); if (error) setError(""); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError("");
+                  }}
                   disabled={loading}
                   style={{ paddingRight: 42 }}
                 />
@@ -178,20 +179,39 @@ export default function Signin() {
                   }}
                 >
                   {showPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
                       <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
                       <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
               </div>
-            </div><br />
+            </div>
+            <br />
 
             {/* Remember Me + Forgot Password */}
             <div className="form-options-row">
@@ -208,7 +228,12 @@ export default function Signin() {
               <div className="forgot-password">
                 <span
                   onClick={handleForgotClick}
-                  style={{ color: "#FF5722", fontWeight: 500, fontSize: 14, cursor: "pointer" }}
+                  style={{
+                    color: "#FF5722",
+                    fontWeight: 500,
+                    fontSize: 14,
+                    cursor: "pointer",
+                  }}
                 >
                   Forgot Password?
                 </span>
@@ -224,10 +249,22 @@ export default function Signin() {
           <div className="social-buttons">
             <button className="btn-social" disabled={loading}>
               <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M5.26 9.76A7.08 7.08 0 0 1 12 4.93c1.68 0 3.22.6 4.42 1.58l3.3-3.3A11.92 11.92 0 0 0 12 0 12 12 0 0 0 1.24 6.65l4.02 3.11z" />
-                <path fill="#34A853" d="M16.04 18.01A7.02 7.02 0 0 1 12 19.07a7.08 7.08 0 0 1-6.75-4.86L1.2 17.3A12 12 0 0 0 12 24c3.2 0 6.1-1.23 8.27-3.23l-4.23-2.76z" />
-                <path fill="#4A90E2" d="M20.27 20.77A11.88 11.88 0 0 0 24 12c0-.79-.08-1.57-.22-2.32H12v4.64h6.76c-.29 1.48-1.14 2.73-2.32 3.56l3.83 2.89z" />
-                <path fill="#FBBC05" d="M5.25 14.21a7.1 7.1 0 0 1 0-4.42L1.2 6.66A11.95 11.95 0 0 0 0 12c0 1.92.45 3.74 1.24 5.34l4.01-3.13z" />
+                <path
+                  fill="#EA4335"
+                  d="M5.26 9.76A7.08 7.08 0 0 1 12 4.93c1.68 0 3.22.6 4.42 1.58l3.3-3.3A11.92 11.92 0 0 0 12 0 12 12 0 0 0 1.24 6.65l4.02 3.11z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M16.04 18.01A7.02 7.02 0 0 1 12 19.07a7.08 7.08 0 0 1-6.75-4.86L1.2 17.3A12 12 0 0 0 12 24c3.2 0 6.1-1.23 8.27-3.23l-4.23-2.76z"
+                />
+                <path
+                  fill="#4A90E2"
+                  d="M20.27 20.77A11.88 11.88 0 0 0 24 12c0-.79-.08-1.57-.22-2.32H12v4.64h6.76c-.29 1.48-1.14 2.73-2.32 3.56l3.83 2.89z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.25 14.21a7.1 7.1 0 0 1 0-4.42L1.2 6.66A11.95 11.95 0 0 0 0 12c0 1.92.45 3.74 1.24 5.34l4.01-3.13z"
+                />
               </svg>
             </button>
             <button className="btn-social" disabled={loading}>
@@ -243,29 +280,49 @@ export default function Signin() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════
-          FORGOT PASSWORD — CONFIRM MODAL
-          (No email entry — uses what's typed above)
-      ══════════════════════════════════════ */}
+      {/* FORGOT PASSWORD — CONFIRM MODAL */}
       {forgotModal === "confirm" && (
         <div style={overlayStyle} onClick={closeForgotModal}>
           <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+            <button
+              style={closeBtnStyle}
+              onClick={closeForgotModal}
+              aria-label="Close"
+            >
+              ✕
+            </button>
 
-            <button style={closeBtnStyle} onClick={closeForgotModal} aria-label="Close">✕</button>
-
-            {/* Lock icon */}
             <div style={iconCircleStyle("#FF5722")}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
             </div>
 
-            <h2 style={{ ...modalTitleStyle, marginTop: 16 }}>Reset your password?</h2>
+            <h2 style={{ ...modalTitleStyle, marginTop: 16 }}>
+              Reset your password?
+            </h2>
             <p style={modalSubtitleStyle}>
               We'll send a password reset link to:
             </p>
-            <p style={{ fontWeight: 700, color: "#1A1210", fontSize: 15, marginBottom: 28, textAlign: "center" }}>
+            <p
+              style={{
+                fontWeight: 700,
+                color: "#1A1210",
+                fontSize: 15,
+                marginBottom: 28,
+                textAlign: "center",
+              }}
+            >
               {email}
             </p>
 
@@ -289,27 +346,50 @@ export default function Signin() {
         </div>
       )}
 
-      {/* ══════════════════════════════════════
-          FORGOT PASSWORD — EMAIL SENT MODAL
-      ══════════════════════════════════════ */}
+      {/* FORGOT PASSWORD — EMAIL SENT MODAL */}
       {forgotModal === "sent" && (
         <div style={overlayStyle} onClick={closeForgotModal}>
-          <div style={{ ...modalStyle, textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={{ ...modalStyle, textAlign: "center" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              style={closeBtnStyle}
+              onClick={closeForgotModal}
+              aria-label="Close"
+            >
+              ✕
+            </button>
 
-            <button style={closeBtnStyle} onClick={closeForgotModal} aria-label="Close">✕</button>
-
-            {/* Success icon */}
             <div style={iconCircleStyle("#34A853")}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
 
-            <h2 style={{ ...modalTitleStyle, marginTop: 20 }}>Reset link sent!</h2>
+            <h2 style={{ ...modalTitleStyle, marginTop: 20 }}>
+              Reset link sent!
+            </h2>
             <p style={{ ...modalSubtitleStyle, marginBottom: 6 }}>
               We've sent a password reset link to:
             </p>
-            <p style={{ fontWeight: 700, color: "#1A1210", marginBottom: 8, fontSize: 15 }}>
+            <p
+              style={{
+                fontWeight: 700,
+                color: "#1A1210",
+                marginBottom: 8,
+                fontSize: 15,
+              }}
+            >
               {email}
             </p>
             <p style={{ fontSize: 12, color: "#aaa", marginBottom: 28 }}>
@@ -326,12 +406,11 @@ export default function Signin() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
 
-// ── Shared modal styles ──
+// Shared modal styles
 const overlayStyle = {
   position: "fixed",
   inset: 0,

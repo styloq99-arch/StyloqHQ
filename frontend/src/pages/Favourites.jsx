@@ -78,10 +78,11 @@ export default function Favourites() {
           <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/customer-home" className="sidebar-link"><i className="fas fa-home"></i> <span>Home</span></Link>
+          <Link to="/home" className="sidebar-link"><i className="fas fa-home"></i> <span>Home</span></Link>
           <Link to="/customer-search" className="sidebar-link"><i className="fas fa-search"></i> <span>Search</span></Link>
           <Link to="/favourites" className="sidebar-link active"><i className="fas fa-heart"></i> <span>Favourites</span></Link>
-          <Link to="/profile" className="sidebar-link"><i className="fas fa-user"></i> <span>Profile</span></Link>
+          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
+          <Link to="/customer-profile" className="sidebar-link"><i className="fas fa-user"></i> <span>Profile</span></Link>
         </nav>
         <div className="sidebar-user">
           <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" className="user-avatar" />
@@ -99,7 +100,7 @@ export default function Favourites() {
         <header className="customer-barber-header fav-header">
           <div className="header-top">
             <div className="fav-header__left">
-              <Link to="/customer-home" className="back-btn back-btn--static">
+              <Link to="/home" className="back-btn back-btn--static">
                 <i className="fas fa-arrow-left"></i>
               </Link>
               <div>
@@ -144,7 +145,7 @@ export default function Favourites() {
             <p className="fav-empty__desc">
               Tap the <i className="far fa-bookmark fav-empty__inline-icon"></i> icon on any post to save it here for later.
             </p>
-            <Link to="/customer-home" className="btn btn-primary fav-empty__btn">
+            <Link to="/home" className="btn btn-primary fav-empty__btn">
               <i className="fas fa-home"></i> Browse Feed
             </Link>
           </div>
@@ -192,10 +193,11 @@ export default function Favourites() {
 
       {/* Mobile Bottom Nav */}
       <nav className="bottom-nav">
-        <Link to="/customer-home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
         <Link to="/customer-search" className="nav-item"><i className="fas fa-search"></i><span>Search</span></Link>
         <Link to="/favourites" className="nav-item active"><i className="fas fa-heart"></i><span>Favourites</span></Link>
-        <Link to="/profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/customer-profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 
     </div>

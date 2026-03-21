@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function BarberHomePage() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => { logout(); navigate('/signin'); };
   const appointments = [
     {
       id: 1,
@@ -123,9 +128,10 @@ export default function BarberHomePage() {
           <Link to="/barber-OwnProfile" className="sidebar-link">
             <i className="fas fa-user"></i> <span>Profile</span>
           </Link>
-          <Link to="/postingPhotos" className="sidebar-link">
-            <i className="fa fa-plus"></i>
+          <Link to="/postingPhotos"     className="sidebar-link">
+          <i className="fas fa-plus-square"></i> <span>New Post</span>
           </Link>
+          
         </nav>
       </aside>
 
@@ -262,125 +268,16 @@ export default function BarberHomePage() {
             </div>
           </div>
 
-           {/* Active Filter Chips */}
-          {activeCount > 0 && (
-            <div className="filter-chips-row">
-              {paymentFilters.map(f => (
-                <span key={f} className="filter-chip">
-                  {f}
-                  <span className="filter-chip-remove" onClick={() => togglePayment(f)}>✕</span>
-                </span>
-              ))}
-              {locationFilters.map(f => (
-                <span key={f} className="filter-chip">
-                  {f}
-                  <span className="filter-chip-remove" onClick={() => toggleLocation(f)}>✕</span>
-                </span>
-              ))}
-              {dateFrom && (
-                <span className="filter-chip">
-                  From: {dateFrom}
-                  <span className="filter-chip-remove" onClick={() => setDateFrom('')}>✕</span>
-                </span>
-              )}
-              {dateTo && (
-                <span className="filter-chip">
-                  To: {dateTo}
-                  <span className="filter-chip-remove" onClick={() => setDateTo('')}>✕</span>
-                </span>
-              )}
-            </div>
-          )}
-
-                    {/* Appointments List */}
-          <div className="appointments-list">
-            {filteredAppointments.length === 0 ? (
-              <p className="filter-no-results">No appointments match the selected filters.</p>
-            ) : (
-              filteredAppointments.map((appointment) => (
-                <div key={appointment.id} className="appointment-card">
-                  <div className="barber-card-header">
-                    <div className="customer-info">
-                      <img
-                        src={appointment.customerAvatar}
-                        alt={appointment.customerName}
-                        className="customer-avatar"
-                      />
-                      <span className="customer-name">{appointment.customerName}</span>
-                    </div>
-                    <div className="price-status">
-                      <div className={`price ${appointment.status === 'Paid' ? 'paid' : 'not-paid'}`}>
-                        {appointment.amount}
-                      </div>
-                      <div className={`status-badge ${appointment.status === 'Paid' ? 'paid' : 'not-paid'}`}>
-                        {appointment.status}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="appointment-details">
-                    <div className="detail-row">
-                      <span className="label">Date & Time</span>
-                      <span className="value">: {appointment.date} {appointment.time}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Location</span>
-                      <span className="value">: {appointment.location}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Hair Style</span>
-                      <span className="value">:</span>
-                    </div>
-                  </div>
-
-                  <div className="hairstyle-section">
-                    <img
-                      src={appointment.hairStyleImage}
-                      alt={appointment.hairStyle}
-                      className="hairstyle-image"
-                    />
-                    <p className="service-label">Hair Services : {appointment.service}</p>
-                  </div>
-
-                  <div className="payment-section">
-                    <span className="payment-label">Payment option</span>
-                    <span className="payment-value">: {appointment.paymentOption}</span>
-                  </div>
-
-                  <div className="barber-card-actions">
-                    <button className="barber-btn-cancel">Cancel</button>
-                    <button className="btn-done">Done</button>
-                  </div>            
-
-                </div>
-              ))
-            )}
-          </div>
-
         </div>
       </div>
 
-      {/* --- MOBILE BOTTOM NAV --- */}
+      {/* Mobile bottom nav */}
       <nav className="bottom-nav">
-        <Link to="/barber-home" className="nav-item active">
-          <i className="fas fa-home"></i>
-          <span>Home</span>
-        </Link>
-        <Link to="/barber-dashboard" className="nav-item">
-          <i className="fas fa-calendar-alt"></i>
-          <span>DashBoard</span>
-        </Link>
-        <Link to="/addphoto" className="nav-item add-circle-btn">
-          <i className="fas fa-plus"></i>
-        </Link>
-        <Link to="/message" className="nav-item">
-          <i className="fas fa-comments"></i>
-          <span>Message</span>
-        </Link>
-        <Link to="/barber-OwnProfile" className="nav-item">
-          <i className="fas fa-user"></i>
-          <span>Profile</span>
-        </Link>                  
+        <Link to="/barber-home"       className="nav-item active"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/barber-dashboard"  className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+        <Link to="/postingPhotos"     className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
+        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 
     </div>

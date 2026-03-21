@@ -30,6 +30,7 @@ const PEAK_HOURS_RAW = {
 
 const STATS = { today: 10, total: 45, cancelled: 10, paid: 5 };
 
+
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const buildPeakData = (raw, { start, end }) => {
   const result = [];
@@ -135,6 +136,7 @@ const BarChart = ({ data, animKey, xTitle }) => {
 };
 
 const AppointmentsOverview = () => {
+
   const [filter, setFilter]     = useState('week');
   const [dropOpen, setDropOpen] = useState(false);
   const [animKey, setAnimKey]   = useState(0);
@@ -160,7 +162,6 @@ const AppointmentsOverview = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
   return (
     <div className="overview-page app-layout">
 
@@ -174,12 +175,13 @@ const AppointmentsOverview = () => {
           <Link to="/barber-dashboard" className="sidebar-link"><i className="fas fa-calendar-alt" /><span>DashBoard</span></Link>
           <Link to="/message"          className="sidebar-link"><i className="fas fa-comments" /><span>Message</span></Link>
           <Link to="/barber-OwnProfile"          className="sidebar-link"><i className="fas fa-user" /><span>Profile</span></Link>
-          <Link to="/postingPhotos"    className="sidebar-link"><i className="fa fa-plus" /></Link>
+          <Link to="/postingPhotos"     className="sidebar-link"><i className="fas fa-plus-square"></i> <span>New Post</span></Link>
         </nav>
       </aside>
 
       {/* ── MAIN ────────────────────────────────────────────────── */}
       <div className="overview-main main-content">
+
         {/* Header */}
         <header className="overview-header">
           <img
@@ -205,7 +207,8 @@ const AppointmentsOverview = () => {
 
         {/* Body */}
         <div className="overview-body">
-            {/* ── STATS ───────────────────────────────────────────── */}
+
+          {/* ── STATS ───────────────────────────────────────────── */}
           <div className="stats-grid">
             <div className="stat-card stat-card--orange">
               <span className="stat-label text-orange">TODAY<br />BOOKINGS</span>
@@ -270,8 +273,8 @@ const AppointmentsOverview = () => {
                 xTitle={filter === 'week' ? 'Day' : 'Week'}
               />
             </div>
-            
-                        {/* Peak Hours chart */}
+
+                                    {/* Peak Hours chart */}
             <div className="chart-section">
               <div className="chart-section-header">
                 <div>
@@ -341,17 +344,17 @@ const AppointmentsOverview = () => {
 
 
           </div>{/* end charts-row */}
-
+            
         </div>{/* end overview-body */}
 
-        {/* ── MOBILE BOTTOM NAV ────────────────────────────────── */}
-        <nav className="bottom-nav">
-          <Link to="/barber-home"      className="nav-item"><i className="fas fa-home" /><span>Home</span></Link>
-          <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-calendar-alt" /><span>DashBoard</span></Link>
-          <Link to="/addphoto"         className="nav-item add-circle-btn"><i className="fas fa-plus" /></Link>
-          <Link to="/message"          className="nav-item"><i className="fas fa-comments" /><span>Message</span></Link>
-          <Link to="/barber-OwnProfile"          className="nav-item"><i className="fas fa-user" /><span>Profile</span></Link>
-        </nav>
+      {/* Mobile bottom nav */}
+      <nav className="bottom-nav">
+        <Link to="/barber-home"       className="nav-item active"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/barber-dashboard"  className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+        <Link to="/postingPhotos"     className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
+        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+      </nav>
 
       </div>{/* end overview-main */}
     </div>

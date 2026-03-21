@@ -23,8 +23,6 @@ class Barber(Base):
     posts = relationship("Post", back_populates="barber")
     bookings = relationship("Booking", back_populates="barber")
     favorited_by = relationship("Favorite", back_populates="barber")
-    portfolio          = relationship("BarberPortfolio",        back_populates="barber", cascade="all, delete-orphan")
-    salon_associations = relationship("SalonBarberAssociation", back_populates="barber", cascade="all, delete-orphan")
 
 class Skill(Base):
     __tablename__ = 'skills'

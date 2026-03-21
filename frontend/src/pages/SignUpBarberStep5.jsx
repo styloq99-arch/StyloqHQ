@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 export default function SignUpBarberStep5() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevData = location.state || {};
 
   // State for Certificates List (Added 'file' property for tracking)
   const [certificates, setCertificates] = useState([
@@ -53,10 +55,15 @@ export default function SignUpBarberStep5() {
     setTimeout(() => {
       setLoading(false);
       
-      console.log("Certificates Saved:", certificates);
+      const finalData = {
+        ...prevData,
+        certificates: certificates
+      };
+      
+      console.log("Certificates Saved:", finalData);
 
       // Navigate to Step 6 (Passing data)
-      navigate("/signup-barber-step6", { state: certificates });
+      navigate("/signup-barber-step6", { state: finalData });
     }, 1500);
   };
 

@@ -44,5 +44,3 @@ class Salon(Base):
     address = Column(String(255), nullable=False)
     
     user = relationship("User", back_populates="salon_profile")
-    barber_associations = relationship("SalonBarberAssociation", back_populates="salon", cascade="all, delete-orphan")
-    availability        = relationship("SalonAvailability",       back_populates="salon", cascade="all, delete-orphan")

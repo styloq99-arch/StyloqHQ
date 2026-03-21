@@ -23,3 +23,9 @@ barber_skills = Table(
     Column("barber_id", Integer, ForeignKey("barbers.id"), primary_key=True),
     Column("skill_id", Integer, ForeignKey("skills.id"), primary_key=True)
 )
+
+# IMPORTANT: import models so SQLAlchemy registers them
+import backend.models.user
+import backend.models.barber
+import backend.models.booking
+import backend.models.social

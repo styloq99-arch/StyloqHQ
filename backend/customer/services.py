@@ -428,14 +428,18 @@ def get_feed_posts(page=1, limit=10, user_id=None):
                 liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user_id).first() is not None
                 saved = db.query(SavedPost).filter(SavedPost.post_id == post.id, SavedPost.user_id == user_id).first() is not None
             
+            # Use explicit COUNT queries for reliable counts
+            likes_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
+            comments_count = db.query(Comment).filter(Comment.post_id == post.id).count()
+
             result.append({
                 "id": post.id,
                 "barber_id": post.barber_id,
                 "barber_name": barber_user.full_name if barber_user else "Unknown",
                 "image_url": post.image_url,
                 "caption": post.caption,
-                "likes": len(post.likes),
-                "comments_count": len(post.comments),
+                "likes": likes_count,
+                "comments_count": comments_count,
                 "liked": liked,
                 "saved": saved,
                 "created_at": post.created_at.isoformat()
