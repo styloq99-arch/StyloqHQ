@@ -67,7 +67,7 @@ export default function SignupBarber() {
 
   const handleNext = () => {
     if (validate()) {
-      navigate("/signup-barber-step2", { state: { step1: formData } });
+      navigate("/verification-step1", { state: formData });
     }
   };
 

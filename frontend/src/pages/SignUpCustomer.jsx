@@ -66,7 +66,7 @@ export default function SignupCustomer() {
   //Next button validates before navigating
   const handleNext = () => {
     if (validate()) {
-      navigate("/signup-customer-step2", { state: { step1: formData } });
+      navigate("/signup-customer-final", { state: { step1: formData } });
     }
   };
 

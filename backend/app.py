@@ -8,6 +8,8 @@ from backend.customer.routes import customer_bp, customer_feed_bp
 from backend.auth.routes import auth_bp
 from backend.salon.routes import salon_bp
 
+from flask_cors import CORS
+
 # Import barber blueprint - comment out AI for now to test
 # from backend.ai.routes import ai_bp
 
@@ -22,6 +24,9 @@ from backend.models.base import Base, engine
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)  # ✅ ADD THIS
+
+    app.config["SECRET_KEY"] = "dev"
 
     app.config["SECRET_KEY"] = "dev"
     app.config["JWT_SECRET_KEY"] = "jwt-secret-key-change-in-production"
@@ -31,7 +36,8 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(auth_bp)
-    app.register_blueprint(feed_bp)
+    # feed_bp removed — customer_feed_bp at /feed handles all feed routes
+    # app.register_blueprint(feed_bp)
     app.register_blueprint(customer_bp)
     app.register_blueprint(customer_feed_bp)
     app.register_blueprint(salon_bp)
@@ -50,3 +56,4 @@ if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
 
+    

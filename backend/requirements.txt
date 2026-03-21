@@ -1,0 +1,2 @@
+# Add CORS support to Flask backend
+from flask_cors import CORS

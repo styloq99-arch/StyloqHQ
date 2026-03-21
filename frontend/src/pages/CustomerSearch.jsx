@@ -79,7 +79,7 @@ export default function CustomerSearch() {
         </div>
         
         <nav className="sidebar-nav">
-          <Link to="/customer-home" className="sidebar-link">
+          <Link to="/home" className="sidebar-link">
             <i className="fas fa-home"></i> <span>Home</span>
           </Link>
           <Link to="/customer-search" className="sidebar-link active">
@@ -206,7 +206,7 @@ export default function CustomerSearch() {
 
       {/* --- 3. MOBILE BOTTOM NAV  --- */}
       <nav className="bottom-nav">
-        <Link to="/customer-home" className="nav-item">
+        <Link to="/home" className="nav-item">
           <i className="fas fa-home"></i>
           <span>Home</span>
         </Link>
