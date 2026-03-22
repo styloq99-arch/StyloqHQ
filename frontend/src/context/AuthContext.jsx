@@ -113,8 +113,13 @@ export function AuthProvider({ children }) {
         if (event === "SIGNED_IN" && authSession) {
           setSession(authSession);
           setLoading(true);
-          await resolveUser(authSession);
-          if (mounted) setLoading(false);
+          try {
+            await resolveUser(authSession);
+          } catch (err) {
+            console.error("[AuthContext] resolveUser error in listener:", err);
+          } finally {
+            if (mounted) setLoading(false);
+          }
         } else if (event === "TOKEN_REFRESHED" && authSession) {
           setSession(authSession);
         } else if (event === "SIGNED_OUT") {

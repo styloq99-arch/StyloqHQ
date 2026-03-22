@@ -1,8 +1,11 @@
 import os
 import json
 import base64
+
 import google.genai as genai
 from google.genai import types
+from dotenv import load_dotenv
+load_dotenv()
 
 from sqlalchemy import func
 from models.base import SessionLocal
@@ -13,12 +16,12 @@ from models.booking import Hairstyle
 # GEMINI CONFIG
 # -------------------------------------------------
 
-# Use Gemini 3 Flash Preview model
-MODEL_NAME = "gemini-3-flash-preview"
+# Use Gemini 2.5 Flash model
+MODEL_NAME = "gemini-2.5-flash"
 
 # Get API key from environment variable for security
 # You can also set it directly here for testing, but use env var in production
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyCyFYkJqV-oqKnQcoaz2Oxt3z_qAxvisAc")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 print("API KEY LOADED:", GEMINI_API_KEY is not None)
 
 client = None
@@ -100,7 +103,7 @@ Output: Photorealistic image with professional studio lighting"""
         
         # If no image in response, raise error
         print("RESPONSE TEXT:", response.text if hasattr(response, 'text') else "No text")
-        raise ValueError("No image returned from Gemini 3.0 Flash Preview")
+        raise ValueError("No image returned from Gemini")
         
     except Exception as e:
         print(f"Image generation error: {str(e)}")
@@ -213,6 +216,7 @@ Lowercase ids.
         print("AI ERROR:", str(e))
         import traceback
         traceback.print_exc()
+        fallback["note"] = f"AI Error: {str(e)}"
         return fallback
 
 
