@@ -41,8 +41,6 @@ def get_trending_hairstyles():
 # =============================================================================
 
 @ai_bp.route("/hairstyle", methods=["POST"])
-@login_required
-@role_required(["client", "barber"])
 def get_hairstyle_recommendation():
     """POST /ai/hairstyle - Get hairstyle recommendation (client or barber only)."""
     if "image" not in request.files:
