@@ -59,7 +59,7 @@ export default function CustomerHome() {
            if (p.users) {
                // Support both array (if one-to-many relationship returned) and object formats
                const u = Array.isArray(p.users) ? p.users[0] : p.users;
-               if (u) bName = u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || bName;
+               if (u) bName = u.full_name || bName;
            }
            return {
              id: p.id,

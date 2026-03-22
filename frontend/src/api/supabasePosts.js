@@ -76,13 +76,13 @@ export async function getSupabasePosts() {
     const barberIds = [...new Set(postsData.map(p => p.barber_id))];
     const { data: usersData, error: usersError } = await supabase
       .from('users')
-      .select('id, full_name, first_name, last_name')
+      .select('id, full_name')
       .in('id', barberIds);
 
     const userMap = {};
     if (!usersError && usersData) {
       usersData.forEach(u => {
-        userMap[u.id] = u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim();
+        userMap[u.id] = u.full_name || 'Unknown Barber';
       });
     }
 
