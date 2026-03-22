@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFavourites } from "./FavouritesContext";
+import CustomerSidebar from "../Components/CustomerSidebar";
 import {
   getFeed,
   toggleLike,
@@ -109,41 +110,41 @@ export default function CustomerHome() {
   // HANDLERS FOR INTERACTIONS
   // ─────────────────────────────────────────────────────────────────────────
 
-const handleLike = async (postId) => {
-  try {
-    const currentState = postStates[postId];
-    const isLiked = currentState.liked;
+  const handleLike = async (postId) => {
+    try {
+      const currentState = postStates[postId];
+      const isLiked = currentState.liked;
 
-    // Optimistic update
-    setPostStates(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        liked: !isLiked,
-        likes: isLiked ? prev[postId].likes - 1 : prev[postId].likes + 1,
-      }
-    }));
-
-    const response = await toggleLike(postId);
-    console.log('Like API response:', response);
-    
-    // Revert on error
-    if (!response.success) {
-      console.error('Like failed:', response.message);
+      // Optimistic update
       setPostStates(prev => ({
         ...prev,
         [postId]: {
           ...prev[postId],
-          liked: isLiked,
-          likes: isLiked ? prev[postId].likes + 1 : prev[postId].likes - 1,
+          liked: !isLiked,
+          likes: isLiked ? prev[postId].likes - 1 : prev[postId].likes + 1,
         }
       }));
-    }
 
-  } catch (err) {
-    console.error('Error liking post:', err);
-  }
-};
+      const response = await toggleLike(postId);
+      console.log('Like API response:', response);
+
+      // Revert on error
+      if (!response.success) {
+        console.error('Like failed:', response.message);
+        setPostStates(prev => ({
+          ...prev,
+          [postId]: {
+            ...prev[postId],
+            liked: isLiked,
+            likes: isLiked ? prev[postId].likes + 1 : prev[postId].likes - 1,
+          }
+        }));
+      }
+
+    } catch (err) {
+      console.error('Error liking post:', err);
+    }
+  };
 
   const handleBookmark = async (post) => {
     try {
@@ -295,7 +296,7 @@ const handleLike = async (postId) => {
 
   const handleShare = (postId, postName) => {
     const url = `${window.location.origin}/post/${postId}`;
-    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => { });
     setShareToast(`Link to ${postName}'s post copied!`);
     setTimeout(() => setShareToast(null), 2500);
   };
@@ -471,47 +472,7 @@ const handleLike = async (postId) => {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: "40px" }}>
-            StyloQ
-          </h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/home" className="sidebar-link active">
-            <i className="fas fa-home"></i> <span>Home</span>
-          </Link>
-          <Link to="/ai-recommendation" className="sidebar-link">
-            <i className="fas fa-magic"></i> <span>AI Stylist</span>
-          </Link>
-          <Link to="/customer-search" className="sidebar-link">
-            <i className="fas fa-search"></i> <span>Search</span>
-          </Link>
-          <Link to="/favourites" className="sidebar-link">
-            <i className="fas fa-heart"></i> <span>Favourites</span>
-          </Link>
-          <Link to="/message" className="sidebar-link">
-            <i className="fas fa-comments"></i> <span>Message</span>
-          </Link>
-          <Link to="/profile" className="sidebar-link">
-            <i className="fas fa-user"></i> <span>Profile</span>
-          </Link>
-          <button className="sidebar-link" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF5722', width: '100%', textAlign: 'left', padding: '12px 16px', marginTop: 'auto' }}>
-            <i className="fas fa-sign-out-alt"></i> <span>Logout</span>
-          </button>
-        </nav>
-        <div className="sidebar-user">
-          <img
-            src="https://randomuser.me/api/portraits/men/1.jpg"
-            alt="User"
-            className="user-avatar"
-          />
-          <div className="user-info">
-            <p className="user-name">John Doe</p>
-            <p className="user-status">Customer</p>
-          </div>
-        </div>
-      </aside>
+      <CustomerSidebar activePage="Home" />
 
       {/* Main Content */}
       <div className="main-content">
@@ -564,8 +525,8 @@ const handleLike = async (postId) => {
                     Upload your photo and let our AI recommend the perfect haircut for your face shape!
                   </p>
                 </div>
-                <Link 
-                  to="/ai-recommendation" 
+                <Link
+                  to="/ai-recommendation"
                   style={{
                     background: "white",
                     color: "var(--color-accent)",

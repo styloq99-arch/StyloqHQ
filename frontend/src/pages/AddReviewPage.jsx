@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import CustomerSidebar from '../Components/CustomerSidebar';
 
 const RATING_LABELS = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
 
@@ -7,13 +8,13 @@ const RATING_LABELS = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
 export default function AddReviewPage() {
   const navigate = useNavigate();
 
-  const [rating, setRating]             = useState(0);
-  const [hoverRating, setHoverRating]   = useState(0);
-  const [reviewText, setReviewText]     = useState('');
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
-  const [submitted, setSubmitted]       = useState(false);
-  const [errors, setErrors]             = useState({});
-  const [charCount, setCharCount]       = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [charCount, setCharCount] = useState(0);
 
   // Auto-read customer name from profile saved in localStorage
   const [authorName] = useState(() => {
@@ -55,7 +56,7 @@ export default function AddReviewPage() {
     try {
       const existing = JSON.parse(localStorage.getItem('styloq_reviews') || '[]');
       localStorage.setItem('styloq_reviews', JSON.stringify([newReview, ...existing]));
-    } catch (_) {}
+    } catch (_) { }
 
     setSubmitted(true);
   };
@@ -64,18 +65,7 @@ export default function AddReviewPage() {
   if (submitted) {
     return (
       <div className="app-layout">
-        <aside className="desktop-sidebar">
-          <div className="sidebar-logo">
-            <h1 className="brand-title">StyloQ</h1>
-          </div>
-          <nav className="sidebar-nav">
-            <Link to="/home"   className="sidebar-link"><i className="fas fa-home"></i>         <span>Home</span></Link>
-            <Link to="/customer-search" className="sidebar-link active"><i className="fas fa-search"></i> <span>Search</span></Link>
-            <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i>        <span>Favourites</span></Link>
-            <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
-            <Link to="/customer-profile"         className="sidebar-link"><i className="fas fa-user"></i>         <span>Profile</span></Link>
-          </nav>
-        </aside>
+        <CustomerSidebar activePage="Search" />
 
         <div className="main-content ar-page ar-success-wrap">
           <div className="ar-success-card">
@@ -117,11 +107,11 @@ export default function AddReviewPage() {
         </div>
 
         <nav className="bottom-nav">
-          <Link to="/home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+          <Link to="/home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
           <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
-          <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
+          <Link to="/favourites" className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
           <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
-          <Link to="/customer-profile"  className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+          <Link to="/customer-profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
         </nav>
       </div>
     );
@@ -132,36 +122,8 @@ export default function AddReviewPage() {
     <div className="app-layout">
 
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-        <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
-        </div>
-        
-        <nav className="sidebar-nav">
-        <Link to="/home" className="sidebar-link active">
-            <i className="fas fa-home"></i> <span>Home</span>
-        </Link>
-        <Link to="/customer-search" className="sidebar-link">
-            <i className="fas fa-search"></i> <span>Search</span>
-        </Link>
-        <Link to="/favourites" className="sidebar-link">
-            <i className="fas fa-heart"></i> <span>Favourites</span>
-        </Link>
-        <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i><span>Message</span></Link>
-        <Link to="/customer-profile" className="sidebar-link">
-            <i className="fas fa-user"></i> <span>Profile</span>
-        </Link>
-        </nav>
+      <CustomerSidebar activePage="Search" />
 
-        <div className="sidebar-user">
-        <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" className="user-avatar" />
-        <div className="user-info">
-            <p className="user-name">John Doe</p>
-            <p className="user-status">Customer</p>
-        </div>
-        </div>
-      </aside>
-      
 
       {/* Main Content */}
       <div className="main-content ar-page">
@@ -258,7 +220,7 @@ export default function AddReviewPage() {
             </div>
           </div>
 
-          
+
 
           {/* Step 03 — Write Review */}
           <div className="ar-section">
@@ -301,16 +263,16 @@ export default function AddReviewPage() {
           </p>
 
         </div>
-        
+
       </div>
 
       {/* Mobile Bottom Nav */}
       <nav className="bottom-nav">
-        <Link to="/home"   className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
         <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
-        <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
+        <Link to="/favourites" className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
         <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
-        <Link to="/customer-profile"  className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+        <Link to="/customer-profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
     </div>
   );

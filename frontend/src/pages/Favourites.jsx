@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFavourites } from './FavouritesContext';
+import CustomerSidebar from '../Components/CustomerSidebar';
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First' },
@@ -73,25 +74,7 @@ export default function Favourites() {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/home" className="sidebar-link"><i className="fas fa-home"></i> <span>Home</span></Link>
-          <Link to="/customer-search" className="sidebar-link"><i className="fas fa-search"></i> <span>Search</span></Link>
-          <Link to="/favourites" className="sidebar-link active"><i className="fas fa-heart"></i> <span>Favourites</span></Link>
-          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
-          <Link to="/customer-profile" className="sidebar-link"><i className="fas fa-user"></i> <span>Profile</span></Link>
-        </nav>
-        <div className="sidebar-user">
-          <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" className="user-avatar" />
-          <div className="user-info">
-            <p className="user-name">John Doe</p>
-            <p className="user-status">Customer</p>
-          </div>
-        </div>
-      </aside>
+      <CustomerSidebar activePage="Favourites" />
 
       {/* Main Content */}
       <div className="main-content">

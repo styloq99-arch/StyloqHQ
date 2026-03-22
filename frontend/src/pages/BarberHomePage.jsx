@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import BarberSidebar from '../Components/BarberSidebar';
 
 export default function BarberHomePage() {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export default function BarberHomePage() {
     }
   ];
 
-    // --- FILTER STATE ---
+  // --- FILTER STATE ---
   const [filterOpen, setFilterOpen] = useState(false);
   const [paymentFilters, setPaymentFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
@@ -111,29 +112,7 @@ export default function BarberHomePage() {
     <div className="app-layout barber-home-page">
 
       {/* --- DESKTOP SIDEBAR --- */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{fontSize : '40px'}}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/barber-home" className="sidebar-link active">
-            <i className="fas fa-home"></i> <span>Home</span>
-          </Link>
-          <Link to="/barber-dashboard" className="sidebar-link">
-            <i className="fas fa-calendar-alt"></i> <span>DashBoard</span>
-          </Link>
-          <Link to="/message" className="sidebar-link">
-            <i className="fas fa-comments"></i> <span>Message</span>
-          </Link>
-          <Link to="/barber-OwnProfile" className="sidebar-link">
-            <i className="fas fa-user"></i> <span>Profile</span>
-          </Link>
-          <Link to="/postingPhotos"     className="sidebar-link">
-          <i className="fas fa-plus-square"></i> <span>New Post</span>
-          </Link>
-          
-        </nav>
-      </aside>
+      <BarberSidebar activePage="Home" />
 
       {/* --- MAIN CONTENT --- */}
       <div className="main-content">
@@ -273,10 +252,10 @@ export default function BarberHomePage() {
 
       {/* Mobile bottom nav */}
       <nav className="bottom-nav">
-        <Link to="/barber-home"       className="nav-item active"><i className="fas fa-home"></i><span>Home</span></Link>
-        <Link to="/barber-dashboard"  className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
-        <Link to="/postingPhotos"     className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
-        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/barber-home" className="nav-item active"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+        <Link to="/postingPhotos" className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
         <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import CustomerSidebar from '../Components/CustomerSidebar';
 
 export default function BookingPage() {
   const navigate = useNavigate();
@@ -13,32 +14,32 @@ export default function BookingPage() {
   const SERVICE_CATALOG = {
     Male: {
       "Beard Services": [
-        { id: 4, name: "FULL BEARD", price: "Rs.800.00",  img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300&h=300&fit=crop&crop=top" },
-        { id: 5, name: "BEARD TRIM", price: "Rs.600.00",  img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&h=300&fit=crop&crop=top" },
-        { id: 6, name: "HOT SHAVE",  price: "Rs.1000.00", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&h=300&fit=crop&crop=top" },
+        { id: 4, name: "FULL BEARD", price: "Rs.800.00", img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300&h=300&fit=crop&crop=top" },
+        { id: 5, name: "BEARD TRIM", price: "Rs.600.00", img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&h=300&fit=crop&crop=top" },
+        { id: 6, name: "HOT SHAVE", price: "Rs.1000.00", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&h=300&fit=crop&crop=top" },
       ],
     },
     Female: {
       "Hair Services": [
-        { id: 10, name: "BLOW DRY",  price: "Rs.1800.00", img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&h=300&fit=crop&crop=top" },
+        { id: 10, name: "BLOW DRY", price: "Rs.1800.00", img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&h=300&fit=crop&crop=top" },
         { id: 11, name: "HAIR TRIM", price: "Rs.1200.00", img: "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=300&h=300&fit=crop&crop=top" },
-        { id: 12, name: "UP-DO",     price: "Rs.2500.00", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=300&h=300&fit=crop&crop=top" },
+        { id: 12, name: "UP-DO", price: "Rs.2500.00", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=300&h=300&fit=crop&crop=top" },
       ],
       "Hair Coloring": [
         { id: 13, name: "FULL COLOR", price: "Rs.4500.00", img: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=300&h=300&fit=crop&crop=top" },
         { id: 14, name: "HIGHLIGHTS", price: "Rs.3500.00", img: "https://images.unsplash.com/photo-1522337094846-8a818192de1f?w=300&h=300&fit=crop&crop=top" },
-        { id: 15, name: "BALAYAGE",   price: "Rs.5000.00", img: "https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?w=300&h=300&fit=crop&crop=top" },
+        { id: 15, name: "BALAYAGE", price: "Rs.5000.00", img: "https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?w=300&h=300&fit=crop&crop=top" },
       ],
       "Keratin Treatment": [
-        { id: 16, name: "KERATIN",    price: "Rs.4500.00", img: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&h=300&fit=crop&crop=top" },
-        { id: 17, name: "SMOOTHING",  price: "Rs.3800.00", img: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=300&h=300&fit=crop&crop=top" },
+        { id: 16, name: "KERATIN", price: "Rs.4500.00", img: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&h=300&fit=crop&crop=top" },
+        { id: 17, name: "SMOOTHING", price: "Rs.3800.00", img: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=300&h=300&fit=crop&crop=top" },
         { id: 18, name: "BOTOX HAIR", price: "Rs.5500.00", img: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=300&h=300&fit=crop&crop=top" },
       ],
     },
   };
 
   const SERVICE_TYPES = {
-    Male:   ["Beard Services"],
+    Male: ["Beard Services"],
     Female: ["Hair Services", "Hair Coloring", "Keratin Treatment"],
   };
 
@@ -49,18 +50,18 @@ export default function BookingPage() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const [selectedDate,          setSelectedDate]          = useState(today);
-  const [selectedGender, setSelectedGender]  = useState("Male");
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedGender, setSelectedGender] = useState("Male");
   const [selectedServiceType, setSelectedServiceType] = useState("Beard Services");
-  const [selectedService, setSelectedService]       = useState(null);
-  const [preferences,           setPreferences]           = useState("");
-  const [uploadedPhoto,         setUploadedPhoto]         = useState(null);
-  const [photoPreview,          setPhotoPreview]          = useState(null);
-  const [selectedTime,          setSelectedTime]          = useState(null);
-  const [selectedLocation,      setSelectedLocation]      = useState(LOCATIONS[0]);
-  const [paymentMethod,        setPaymentMethod]        = useState("Pay On Visit");
-  const [isBooking,            setIsBooking]            = useState(false);
-  const [step,                  setStep]                  = useState(1);
+  const [selectedService, setSelectedService] = useState(null);
+  const [preferences, setPreferences] = useState("");
+  const [uploadedPhoto, setUploadedPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+  const [paymentMethod, setPaymentMethod] = useState("Pay On Visit");
+  const [isBooking, setIsBooking] = useState(false);
+  const [step, setStep] = useState(1);
 
   const handleFileUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -74,12 +75,12 @@ export default function BookingPage() {
 
   const handleConfirmBooking = () => {
     if (!selectedService) { alert("Please select a service type."); return; }
-    if (!selectedTime)    { alert("Please select a time slot.");    return; }
-    if (!selectedDate)    { alert("Please select a valid date.");   return; }
+    if (!selectedTime) { alert("Please select a time slot."); return; }
+    if (!selectedDate) { alert("Please select a valid date."); return; }
     setIsBooking(true);
     setTimeout(() => { setIsBooking(false); setStep(2); }, 1500);
   };
-  
+
   const SERVICES = (SERVICE_CATALOG[selectedGender] || {})[selectedServiceType] || [];
 
   const getServiceDetails = () =>
@@ -92,17 +93,7 @@ export default function BookingPage() {
     const service = getServiceDetails();
     return (
       <div className="app-layout">
-        <aside className="desktop-sidebar">
-          <div className="sidebar-logo">
-            <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
-          </div>
-          <nav className="sidebar-nav">
-            <Link to="/home"   className="sidebar-link"><i className="fas fa-home"></i>          <span>Home</span></Link>
-            <Link to="/customer-search" className="sidebar-link active"><i className="fas fa-search"></i> <span>Search</span></Link>
-            <Link to="/favourites"      className="sidebar-link"><i className="fas fa-heart"></i>         <span>Favourites</span></Link>
-            <Link to="/profile"         className="sidebar-link"><i className="fas fa-user"></i>          <span>Profile</span></Link>
-          </nav>
-        </aside>
+        <CustomerSidebar activePage="Search" />
 
         <div className="main-content bp-confirmed-wrapper">
           <div className="bp-confirmed-icon">
@@ -118,8 +109,8 @@ export default function BookingPage() {
             </div>
             {[
               ['Service', service?.name],
-              ['Date',    selectedDate],
-              ['Time',    selectedTime],
+              ['Date', selectedDate],
+              ['Time', selectedTime],
               ['Payment', paymentMethod],
             ].map(([label, val]) => (
               <div key={label} className="bp-confirmed-row">
@@ -145,26 +136,7 @@ export default function BookingPage() {
   return (
     <div className="app-layout">
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/home"   className="sidebar-link"><i className="fas fa-home"></i>  <span>Home</span></Link>
-          <Link to="/customer-search" className="sidebar-link active"><i className="fas fa-search"></i><span>Search</span></Link>
-          <Link to="/favourites"       className="sidebar-link"><i className="fas fa-heart"></i> <span>Favourites</span></Link>
-          <Link to="/message" className="sidebar-link"><i className="fas fa-comments"></i> <span>Message</span></Link>
-          <Link to="/customer-profile"         className="sidebar-link"><i className="fas fa-user"></i>  <span>Profile</span></Link>
-        </nav>
-
-        <div className="sidebar-user">
-          <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" className="user-avatar" />
-          <div className="user-info">
-            <p className="user-name">John Doe</p>
-            <p className="user-status">Customer</p>
-          </div>
-        </div>
-      </aside>
+      <CustomerSidebar activePage="Search" />
 
       {/* Main Content */}
       <div className="main-content booking-page">
@@ -180,7 +152,7 @@ export default function BookingPage() {
           <button className="bp-back-btn" onClick={() => window.history.back()}>
             <i className="fas fa-chevron-left"></i>
           </button>
-          
+
           <div className="bp-hero-title">Booking Appointments</div>
         </div>
 
@@ -225,7 +197,7 @@ export default function BookingPage() {
             ))}
           </div>
         </div>
-        
+
         {/* Service Type - Male */}
         {selectedGender === 'Male' && (
           <div className="bp-haircut-section">
@@ -250,7 +222,7 @@ export default function BookingPage() {
             </div>
           </div>
         )}
-        
+
         {/* Service Type - Female */}
         {selectedGender === 'Female' && (
           <>
@@ -358,8 +330,8 @@ export default function BookingPage() {
           <label className="bp-sched-label">Payment Options</label>
           <div className="bp-pay-row">
             {[
-              { key: 'Pay On Visit', icon: 'fa-wallet'      },
-              { key: 'Pay Online',   icon: 'fa-credit-card' },
+              { key: 'Pay On Visit', icon: 'fa-wallet' },
+              { key: 'Pay Online', icon: 'fa-credit-card' },
             ].map(({ key, icon }) => (
               <div
                 key={key}
@@ -391,11 +363,11 @@ export default function BookingPage() {
 
       {/* Mobile Bottom Nav */}
       <nav className="bottom-nav">
-        <Link to="/home"   className="nav-item"><i className="fas fa-home"></i>  <span>Home</span></Link>
+        <Link to="/home" className="nav-item"><i className="fas fa-home"></i>  <span>Home</span></Link>
         <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
-        <Link to="/favourites"       className="nav-item"><i className="fas fa-heart"></i> <span>Favourites</span></Link>
+        <Link to="/favourites" className="nav-item"><i className="fas fa-heart"></i> <span>Favourites</span></Link>
         <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
-        <Link to="/customer-profile"         className="nav-item"><i className="fas fa-user"></i>  <span>Profile</span></Link>
+        <Link to="/customer-profile" className="nav-item"><i className="fas fa-user"></i>  <span>Profile</span></Link>
       </nav>
     </div>
   );
