@@ -221,7 +221,7 @@ export default function BarberProfile() {
 
               {/* Book Now */}
               <div className="bp-book-row">
-                <Link to="/booking" className="bp-book-btn bp-book-now-btn">
+                <Link to={`/booking/${barberId || ''}`} className="bp-book-btn bp-book-now-btn">
                   <i className="fas fa-calendar-check"></i>
                   Book Now
                 </Link>

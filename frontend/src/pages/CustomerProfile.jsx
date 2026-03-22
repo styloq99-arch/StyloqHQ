@@ -58,7 +58,7 @@ export default function CustomerProfile() {
   const [activeTab, setActiveTab] = useState('profile');
   const [appointmentFilter, setAppointmentFilter] = useState('all');
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ ...INITIAL_PROFILE });
+  const [editData, setEditData] = useState({ ...FALLBACK_PROFILE });
   const [editErrors, setEditErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);

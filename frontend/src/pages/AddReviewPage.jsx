@@ -95,7 +95,7 @@ export default function AddReviewPage() {
             </div>
 
             <div className="ar-success-actions">
-              <button className="ar-back-btn" onClick={() => navigate('/barber-profile')}>
+              <button className="ar-back-btn" onClick={() => navigate(-1)}>
                 <i className="fas fa-arrow-left"></i> Back to Profile
               </button>
               <Link to="/home" className="ar-home-btn">

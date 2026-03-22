@@ -55,14 +55,61 @@ def _get_barber_id_from_user():
     # Get barber profile from user
     session = None
     try:
-        from backend.models.base import SessionLocal
+        from models.base import SessionLocal
         session = SessionLocal()
-        from backend.models.barber import Barber
+        from models.barber import Barber
         barber = session.query(Barber).filter(Barber.user_id == current_user.id).first()
         return barber.id if barber else None
     finally:
         if session:
             session.close()
+
+
+# =============================================================================
+# "ME" CONVENIENCE ROUTES (auto-resolve barber_id from token)
+# =============================================================================
+
+@barber_bp.get("/me/profile")
+@login_required
+@role_required(["barber"])
+def get_my_profile():
+    """GET /barber/me/profile - Get current barber's own profile."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    data, reason, error = services.get_barber_profile(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
+@barber_bp.put("/me/profile")
+@login_required
+@role_required(["barber"])
+def update_my_profile():
+    """PUT /barber/me/profile - Update current barber's own profile."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    body = request.get_json(silent=True) or {}
+    data, reason, error = services.update_barber_profile(barber_id, body)
+    if error:
+        return _err(reason, error)
+    return _ok(data, "Profile updated successfully.")
+
+
+@barber_bp.get("/me/appointments")
+@login_required
+@role_required(["barber"])
+def get_my_appointments():
+    """GET /barber/me/appointments - Get current barber's appointments."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    data, reason, error = services.view_barber_appointments(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
 
 
 # =============================================================================

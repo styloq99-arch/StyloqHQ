@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function SalonSidebar({ activePage }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -12,11 +12,11 @@ export default function SalonSidebar({ activePage }) {
   };
 
   const links = [
-    { to: "/salon-home",      icon: "fas fa-home",        label: "Home" },
+    { to: "/salon-home", icon: "fas fa-home", label: "Home" },
     { to: "/salon-dashboard", icon: "fas fa-tachometer-alt", label: "Dashboard" },
-    { to: "/salon-hire",      icon: "fas fa-users",       label: "Hire Barbers" },
-    { to: "/message",         icon: "fas fa-comments",    label: "Message" },
-    { to: "/salon-profile",   icon: "fas fa-user-circle", label: "Profile" },
+    { to: "/salon-hire", icon: "fas fa-users", label: "Hire Barbers" },
+    { to: "/message", icon: "fas fa-comments", label: "Message" },
+    { to: "/salon-profile", icon: "fas fa-user-circle", label: "Profile" },
   ];
 
   return (
@@ -53,12 +53,12 @@ export default function SalonSidebar({ activePage }) {
       </nav>
       <div className="sidebar-user">
         <img
-          src="https://i.pravatar.cc/150?img=32"
+          src={user?.avatar || "https://i.pravatar.cc/150?img=32"}
           alt="Salon"
           className="user-avatar"
         />
         <div className="user-info">
-          <p className="user-name">Salon Owner</p>
+          <p className="user-name">{user?.full_name || "Salon Owner"}</p>
           <p className="user-status">Salon</p>
         </div>
       </div>

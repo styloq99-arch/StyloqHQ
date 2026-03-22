@@ -1,41 +1,43 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const INITIAL_PROFILE = {
-  salonName:   'Liyo Salon',
-  ownerName:   'Ravindra Perera',
-  email:       'liyo.salon@gmail.com',
-  phone:       '011 234 5678',
-  address:     'No. 45, Galle Road, Colombo 07',
-  city:        'Colombo 07',
+  salonName: 'Liyo Salon',
+  ownerName: 'Ravindra Perera',
+  email: 'liyo.salon@gmail.com',
+  phone: '011 234 5678',
+  address: 'No. 45, Galle Road, Colombo 07',
+  city: 'Colombo 07',
   description: 'Premium unisex salon offering haircuts, styling, coloring, and beard grooming. Serving Colombo since 2019.',
-  avatar:      'https://i.pravatar.cc/150?img=32',
-  cover:       'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&h=300&fit=crop',
+  avatar: 'https://i.pravatar.cc/150?img=32',
+  cover: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&h=300&fit=crop',
 };
 
 const FIELDS = [
-  { icon: 'fa-store',          label: 'Salon Name',  key: 'salonName'  },
-  { icon: 'fa-user-tie',       label: 'Owner',       key: 'ownerName'  },
-  { icon: 'fa-envelope',       label: 'Email',       key: 'email'      },
-  { icon: 'fa-phone',          label: 'Phone',       key: 'phone'      },
-  { icon: 'fa-map-marker-alt', label: 'Address',     key: 'address'    },
-  { icon: 'fa-city',           label: 'City',        key: 'city'       },
+  { icon: 'fa-store', label: 'Salon Name', key: 'salonName' },
+  { icon: 'fa-user-tie', label: 'Owner', key: 'ownerName' },
+  { icon: 'fa-envelope', label: 'Email', key: 'email' },
+  { icon: 'fa-phone', label: 'Phone', key: 'phone' },
+  { icon: 'fa-map-marker-alt', label: 'Address', key: 'address' },
+  { icon: 'fa-city', label: 'City', key: 'city' },
 ];
 
 export default function SalonProfilePage() {
-  const navigate        = useNavigate();
-  const fileInputRef    = useRef(null);
-  const coverInputRef   = useRef(null);
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
+  const fileInputRef = useRef(null);
+  const coverInputRef = useRef(null);
 
-  const [profile,   setProfile]   = useState(INITIAL_PROFILE);
+  const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData,  setEditData]  = useState({ ...INITIAL_PROFILE });
-  const [errors,    setErrors]    = useState({});
-  const [preview,   setPreview]   = useState(null);
+  const [editData, setEditData] = useState({ ...INITIAL_PROFILE });
+  const [errors, setErrors] = useState({});
+  const [preview, setPreview] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
-  const [toast,     setToast]     = useState(false);
+  const [toast, setToast] = useState(false);
 
-  const startEdit  = () => {
+  const startEdit = () => {
     setEditData({ ...profile });
     setPreview(null);
     setCoverPreview(null);
@@ -69,8 +71,8 @@ export default function SalonProfilePage() {
   const validate = () => {
     const e = {};
     if (!editData.salonName.trim()) e.salonName = 'Required';
-    if (!editData.email.trim())     e.email     = 'Required';
-    if (!editData.phone.trim())     e.phone     = 'Required';
+    if (!editData.email.trim()) e.email = 'Required';
+    if (!editData.phone.trim()) e.phone = 'Required';
     setErrors(e);
     return !Object.keys(e).length;
   };
@@ -79,8 +81,8 @@ export default function SalonProfilePage() {
     if (!validate()) return;
     setProfile({
       ...editData,
-      avatar: preview      || editData.avatar,
-      cover:  coverPreview || editData.cover,
+      avatar: preview || editData.avatar,
+      cover: coverPreview || editData.cover,
     });
     setIsEditing(false);
     setToast(true);
@@ -103,8 +105,8 @@ export default function SalonProfilePage() {
           <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/salon-home"    className="sidebar-link">       <i className="fas fa-home" />       <span>Home</span></Link>
-          <Link to="/salon-hire"    className="sidebar-link">       <i className="fas fa-users" />      <span>Hire Barbers</span></Link>
+          <Link to="/salon-home" className="sidebar-link">       <i className="fas fa-home" />       <span>Home</span></Link>
+          <Link to="/salon-hire" className="sidebar-link">       <i className="fas fa-users" />      <span>Hire Barbers</span></Link>
           <Link to="/salon-profile" className="sidebar-link active"><i className="fas fa-user-circle" /><span>Profile</span></Link>
         </nav>
         <div className="sidebar-user">
@@ -327,7 +329,7 @@ export default function SalonProfilePage() {
           {!isEditing && (
             <div className="cp-danger-zone">
               <div className="cp-danger-title"><i className="fas fa-exclamation-triangle" /> Account</div>
-              <button className="cp-logout-btn" onClick={() => navigate('/')}>
+              <button className="cp-logout-btn" onClick={() => { logout(); navigate('/signin'); }}>
                 <i className="fas fa-sign-out-alt" /> Log Out
               </button>
             </div>
@@ -339,8 +341,8 @@ export default function SalonProfilePage() {
 
       {/* Mobile Bottom Nav */}
       <nav className="bottom-nav">
-        <Link to="/salon-home"    className="nav-item">       <i className="fas fa-home" />       <span>Home</span></Link>
-        <Link to="/salon-hire"    className="nav-item">       <i className="fas fa-users" />       <span>Hire</span></Link>
+        <Link to="/salon-home" className="nav-item">       <i className="fas fa-home" />       <span>Home</span></Link>
+        <Link to="/salon-hire" className="nav-item">       <i className="fas fa-users" />       <span>Hire</span></Link>
         <Link to="/salon-profile" className="nav-item active"><i className="fas fa-user-circle" /> <span>Profile</span></Link>
       </nav>
 

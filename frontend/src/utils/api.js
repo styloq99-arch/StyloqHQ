@@ -141,6 +141,17 @@ export async function apiPut(endpoint, body, options = {}) {
 }
 
 /**
+ * PATCH request
+ */
+export async function apiPatch(endpoint, body, options = {}) {
+  return apiRequest(endpoint, {
+    method: "PATCH",
+    body: body ? JSON.stringify(body) : undefined,
+    ...options,
+  });
+}
+
+/**
  * DELETE request
  */
 export async function apiDelete(endpoint, options = {}) {

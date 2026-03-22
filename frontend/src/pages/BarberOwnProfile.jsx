@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
+import { apiGet, apiPut } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 // ─── Mock Barber Data (from signup flow) ─────────────────────────────────────
 
@@ -68,7 +70,6 @@ const TIME_SLOTS = [
   '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
   '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM',
 ];
-
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 
@@ -508,15 +509,11 @@ function PhotoUploadModal({ onClose, onUpload }) {
   );
 }
 
-
-
-
-
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function BarberOwnProfile() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [workPhotos, setWorkPhotos] = useState(WORK_PHOTOS);
@@ -526,15 +523,58 @@ export default function BarberOwnProfile() {
   const [activeTab, setActiveTab] = useState('posts');
   const [photoViewer, setPhotoViewer] = useState(null);
 
+  // Fetch barber profile from backend on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await apiGet('/barber/me/profile');
+        if (res.success && res.data) {
+          const d = res.data;
+          setProfile(prev => ({
+            ...prev,
+            name: d.full_name || d.name || prev.name,
+            email: d.email || prev.email,
+            phone: d.phone_number || d.phone || prev.phone,
+            city: d.city || prev.city,
+            experience: d.experience_years ? String(d.experience_years) : prev.experience,
+            bio: d.bio || prev.bio,
+            specialties: d.specialties || prev.specialties,
+            avatar: d.avatar || d.profile_image || prev.avatar,
+            coverImage: d.cover_image || prev.coverImage,
+            services: Array.isArray(d.services) && d.services.length > 0
+              ? d.services.map(s => ({ id: s.id, name: s.name, price: String(s.price || ''), desc: s.description || '' }))
+              : prev.services,
+            locations: Array.isArray(d.locations) && d.locations.length > 0
+              ? d.locations.map(l => ({ id: l.id, salonName: l.salon_name || l.name || '', address: l.address || '', district: l.district || '', postalCode: l.postal_code || '' }))
+              : prev.locations,
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch barber profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
   };
 
-  const handleSave = (updated) => {
+  const handleSave = async (updated) => {
     setProfile(updated);
     setEditSection(null);
     showToast('Profile updated successfully!');
+    try {
+      await apiPut('/barber/me/profile', {
+        full_name: updated.name,
+        phone_number: updated.phone,
+        city: updated.city,
+        bio: updated.bio,
+        experience_years: parseInt(updated.experience) || 0,
+        specialties: updated.specialties,
+      });
+    } catch (_) { /* saved locally */ }
   };
 
   const handlePhotoUpload = (src) => {

@@ -32,7 +32,7 @@ export default function Messages() {
   // Fetch contacts
   const fetchContacts = async () => {
     if (!token) return;
-    const res = await getConversations(token);
+    const res = await getConversations();
     if (res.success) {
       setContacts(res.data);
       // Auto-select first contact if none selected and we didn't navigate with state
@@ -59,7 +59,7 @@ export default function Messages() {
     if (!token || !selectedContact) return;
     if (forceLoad) setLoadingMessages(true);
 
-    const res = await getChatHistory(token, selectedContact.id);
+    const res = await getChatHistory(null, selectedContact.id);
     if (res.success) {
       setMessages(res.data);
     }
@@ -95,7 +95,7 @@ export default function Messages() {
     setMessages((prev) => [...prev, tempMsg]);
     setInputText("");
 
-    const res = await sendMessage(token, selectedContact.id, tempMsg.content);
+    const res = await sendMessage(null, selectedContact.id, tempMsg.content);
     if (res.success) {
       // Re-fetch strictly to get accurate DB ID
       fetchMessages(false);
