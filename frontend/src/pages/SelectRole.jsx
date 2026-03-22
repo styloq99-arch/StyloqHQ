@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { createUserWithRole } from "../api/supabaseDb";
@@ -168,7 +169,7 @@ export default function SelectRole() {
           </div>
         )}
 
-        <div
+        <motion.div
           style={{
             display: "flex",
             flexDirection: "column",
@@ -177,10 +178,24 @@ export default function SelectRole() {
             maxWidth: "440px",
             marginBottom: "40px",
           }}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: {
+              transition: { staggerChildren: 0.1 }
+            }
+          }}
         >
           {roles.map((r) => (
-            <button
+            <motion.button
               key={r.key}
+              variants={{
+                hidden: { y: 15, opacity: 0 },
+                visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+              }}
+              whileHover={!loading ? { scale: 1.02, y: -2 } : {}}
+              whileTap={!loading ? { scale: 0.98 } : {}}
               onClick={() => handleSelectRole(r.key)}
               disabled={loading}
               style={{
@@ -249,9 +264,9 @@ export default function SelectRole() {
                   {r.description}
                 </div>
               </div>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {loading && (
           <p style={{ color: "#aaa", fontSize: "14px" }}>

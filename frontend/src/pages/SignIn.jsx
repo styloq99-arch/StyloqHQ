@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from '../supabaseClient'
@@ -120,7 +121,12 @@ export default function Signin() {
           <h1 className="brand-title">StyloQ</h1>
         </div>
 
-        <div className="form-container">
+        <motion.div 
+          className="form-container"
+          initial={{ y: 15, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+        >
           {/* Error Message */}
           {error && (
             <div
@@ -299,13 +305,26 @@ export default function Signin() {
           <div className="signup-link">
             Don't have an account? <Link to="/">Sign up</Link>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* FORGOT PASSWORD — CONFIRM MODAL */}
+      <AnimatePresence>
       {forgotModal === "confirm" && (
-        <div style={overlayStyle} onClick={closeForgotModal}>
-          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+        <motion.div 
+          style={overlayStyle} 
+          onClick={closeForgotModal}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div 
+            style={modalStyle} 
+            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+          >
             <button
               style={closeBtnStyle}
               onClick={closeForgotModal}
@@ -358,22 +377,32 @@ export default function Signin() {
             </button>
 
             <button
-              style={cancelBtnStyle}
+              style={{ ...submitBtnStyle, marginTop: 0 }}
               onClick={closeForgotModal}
-              disabled={forgotLoading}
             >
               Cancel
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* FORGOT PASSWORD — EMAIL SENT MODAL */}
+      <AnimatePresence>
       {forgotModal === "sent" && (
-        <div style={overlayStyle} onClick={closeForgotModal}>
-          <div
+        <motion.div 
+          style={overlayStyle} 
+          onClick={closeForgotModal}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
             style={{ ...modalStyle, textAlign: "center" }}
             onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
           >
             <button
               style={closeBtnStyle}
@@ -419,15 +448,15 @@ export default function Signin() {
             </p>
 
             <button
-              className="btn-submit"
-              style={{ marginTop: 0 }}
               onClick={closeForgotModal}
+              style={{ ...submitBtnStyle, alignSelf: "center", marginTop: "20px" }}
             >
               BACK TO SIGN IN
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

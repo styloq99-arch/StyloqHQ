@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 
 export default function SalonDashboard() {
   const navigate = useNavigate();
@@ -50,15 +51,15 @@ export default function SalonDashboard() {
           <div className="db-content-grid">
             <div className="db-col">
               {/* Welcome Card */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Welcome, {user?.full_name || 'Salon Owner'}!</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '8px' }}>
                   Your salon dashboard is ready. Manage your barbers, appointments, and salon profile from here.
                 </p>
-              </section>
+              </motion.section>
 
               {/* Quick Stats */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Quick Stats</h3>
                 <div className="db-sub-grid">
                   <div className="db-sub-item">
@@ -74,10 +75,10 @@ export default function SalonDashboard() {
                     <span className="db-sub-label">Monthly Revenue</span>
                   </div>
                 </div>
-              </section>
+              </motion.section>
 
               {/* Coming Soon */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Coming Soon</h3>
                 <ul style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px' }}>
                   <li>Barber management and recruitment</li>
@@ -86,7 +87,7 @@ export default function SalonDashboard() {
                   <li>Customer reviews and ratings</li>
                   <li>Salon profile customization</li>
                 </ul>
-              </section>
+              </motion.section>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import "./global.css";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FavouritesProvider } from "./pages/FavouritesContext.jsx";
+import PageWrapper from "./Components/PageWrapper.jsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 import Index from "./pages/Index.jsx";
@@ -68,7 +69,8 @@ export default function App() {
       <AuthProvider>
         <ErrorBoundary>
           <FavouritesProvider>
-            <Routes>
+            <PageWrapper>
+              <Routes>
               {/* Public Routes - Protected from authenticated users */}
               <Route path="/" element={<Index />} />
               <Route
@@ -307,7 +309,8 @@ export default function App() {
               />
 
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
+            </PageWrapper>
             <Chatbot />
           </FavouritesProvider>
         </ErrorBoundary>

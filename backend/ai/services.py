@@ -18,7 +18,7 @@ MODEL_NAME = "gemini-3-flash-preview"
 
 # Get API key from environment variable for security
 # You can also set it directly here for testing, but use env var in production
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyCyFYkJqV-oqKnQcoaz2Oxt3z_qAxvisAc")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 print("API KEY LOADED:", GEMINI_API_KEY is not None)
 
 client = None

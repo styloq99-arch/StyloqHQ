@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import BarberSidebar from '../Components/BarberSidebar';
 
@@ -409,7 +410,7 @@ export default function BarberDashboard() {
           <div className="db-content-grid">
             <div className="db-col">
               {/* 1. AVERAGE RATING */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <div className="db-card-row">
                   <h3 className="db-card-title">Average Rating</h3>
                   <div className="db-rating-right">
@@ -428,10 +429,10 @@ export default function BarberDashboard() {
                     </div>
                   ))}
                 </div>
-              </section>
+              </motion.section>
 
               {/* 2. SUBSCRIPTION PERFORMANCE */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Subscription Performance</h3>
                 <div className="db-sub-grid">
                   <div className="db-sub-item">
@@ -454,16 +455,16 @@ export default function BarberDashboard() {
                   </div>
                   <span className="db-renewal-pct">{SUBSCRIPTION.renewalRate}%</span>
                 </div>
-              </section>
+              </motion.section>
 
               {/* 3. CUSTOMER RETENTION */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Customer Retention</h3>
                 <DonutChart data={retentionData} />
-              </section>
+              </motion.section>
 
               {/* 4. RECENT REVIEWS */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Recent Reviews</h3>
                 <div className="db-reviews-list">
                   {[
@@ -488,13 +489,13 @@ export default function BarberDashboard() {
                     </div>
                   ))}
                 </div>
-              </section>
+              </motion.section>
 
 
             </div>
             <div className="db-col">
               {/* 4. NEW TRENDS */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">New Trends</h3>
                 <div className="db-trends-scroll">
                   {TRENDS.map(t => (
@@ -508,9 +509,9 @@ export default function BarberDashboard() {
                     </div>
                   ))}
                 </div>
-              </section>
+              </motion.section>
               {/* 5. EARNING SUMMARY */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 <h3 className="db-section-title">Earning Summary</h3>
                 <div className="db-earn-list">
                   {[
@@ -527,9 +528,9 @@ export default function BarberDashboard() {
                     </div>
                   ))}
                 </div>
-              </section>
+              </motion.section>
               {/* 6. EARNINGS CHART */}
-              <section className="db-card">
+              <motion.section className="db-card" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
                 {/* Chart header */}
                 <div className="db-chart-header">
                   <div>
@@ -591,13 +592,13 @@ export default function BarberDashboard() {
                     </div>
                   ))}
                 </div>
-              </section>
+              </motion.section>
 
 
             </div>
           </div>
           {/* ═══ JOB VACANCIES FULL-WIDTH ROW ═══ */}
-          <section className="db-vacancies-section">
+          <motion.section className="db-vacancies-section" initial={{opacity:0, y:15}} whileInView={{opacity:1, y:0}} viewport={{once: true, margin: "-50px"}} transition={{duration:0.5, ease: "easeOut"}}>
             <div className="db-vacancies-header">
               <div className="db-vacancies-title-group">
                 <i className="fas fa-briefcase"></i>
@@ -636,7 +637,7 @@ export default function BarberDashboard() {
                 </div>
               ))}
             </div>
-          </section>
+          </motion.section>
           <div style={{ height: 90 }} />
         </div>
 

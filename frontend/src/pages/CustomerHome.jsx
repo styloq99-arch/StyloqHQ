@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useFavourites } from "./FavouritesContext";
 import CustomerSidebar from "../Components/CustomerSidebar";
@@ -607,7 +608,14 @@ export default function CustomerHome() {
                 if (!state) return null; // Skip if state not yet initialized
 
                 return (
-                  <div key={post.id} className="feed-card">
+                  <motion.div 
+                    key={post.id} 
+                    className="feed-card"
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  >
                     {/* Card Header */}
                     <div className="card-header">
                       <div className="header-left">
@@ -916,7 +924,7 @@ export default function CustomerHome() {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 );
               })}
 
