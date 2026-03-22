@@ -11,17 +11,17 @@ load_dotenv(_env_path)
 # Use Supabase PostgreSQL connection or fallback to SQLite
 USE_POSTGRES = os.getenv("USE_POSTGRES", "true").lower() == "true"
 
+from sqlalchemy.pool import NullPool
+
 if USE_POSTGRES:
     DATABASE_URL = os.getenv("DATABASE_URL")
-    if not DATABASE_URL:
-        # Fallback: Supabase pooler (session mode, port 5432)
-        # Password is URL-encoded (. → %2E)
-        DATABASE_URL = "postgresql+psycopg2://postgres.sbtmqbfkcswsgkjimujf:S4KSzzLKg5%2E7CM-@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+
     engine = create_engine(
         DATABASE_URL,
         echo=True,
         pool_pre_ping=True,
-        pool_recycle=300
+        pool_recycle=300,
+        poolclass=NullPool
     )
 else:
     DATABASE_URL = "sqlite:///database.db"
