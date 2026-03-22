@@ -1,13 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
+import { createPost } from '../api/feedApi';
 import { useAuth } from '../context/AuthContext';
-import { uploadPostImage, createPostRecord } from '../api/supabasePosts';
 
 
 export default function SharePost() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const imageSrc = location.state?.imageSrc
     || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&q=85';
@@ -16,38 +17,23 @@ export default function SharePost() {
   const [caption, setCaption] = useState('');
   const [sharing, setSharing] = useState(false);
   const [charFocus, setCharFocus] = useState(false);
-
-  const { user } = useAuth();
+  const [error, setError] = useState('');
 
   const handleShare = async () => {
     if (sharing) return;
     setSharing(true);
-    
+    setError('');
+
     try {
-      let finalImageUrl = imageSrc;
-      
-      // 1. If it's a real local file, upload to Supabase Storage
-      if (fileToUpload && user?.id) {
-         const { url, error } = await uploadPostImage(fileToUpload, user.id);
-         if (error) {
-           throw new Error("Failed to upload image. Please ensure your 'posts' storage bucket is created!");
-         }
-         finalImageUrl = url;
+      const res = await createPost(caption, imageSrc);
+      if (res.success) {
+        navigate('/barber-OwnProfile');
+      } else {
+        setError(res.message || 'Failed to create post');
+        setSharing(false);
       }
-
-      // 2. Insert into the Supabase database
-      if (user?.id) {
-         const { success, error } = await createPostRecord(user.id, finalImageUrl, caption);
-         if (!success) {
-           throw new Error("Failed to save post to the database. Does the 'posts' table exist?");
-         }
-      }
-
-      // 3. Navigate home
-      navigate('/barber-home'); // Sending to barber-home is a cleaner experience
     } catch (err) {
-      alert(err.message);
-      console.error(err);
+      setError('Network error. Please try again.');
       setSharing(false);
     }
   };
@@ -155,10 +141,11 @@ export default function SharePost() {
                   className="sp-profile-avatar"
                 />
                 <div>
-                  <p className="sp-profile-name">S.S.K. Perera</p>
+                  <p className="sp-profile-name">{user?.full_name || 'Barber'}</p>
                   <p className="sp-profile-role">Barber · StyloQ</p>
                 </div>
               </div>
+              {error && <p style={{ color: '#ff4444', fontSize: '0.85rem', margin: '8px 0' }}>{error}</p>}
 
               <div className="sp-divider" />
 

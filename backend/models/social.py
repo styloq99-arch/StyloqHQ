@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, UniqueConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from .base import Base
 
@@ -8,7 +9,7 @@ class Post(Base):
     __tablename__ = 'posts'
 
     id = Column(Integer, primary_key=True)
-    barber_id = Column(Integer, ForeignKey('barbers.id', ondelete="CASCADE"), nullable=False)
+    barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id', ondelete="CASCADE"), nullable=False)
     image_url = Column(String(255), nullable=False)
     caption = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -40,7 +41,7 @@ class PostLike(Base):
 
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('posts.id', ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
@@ -56,7 +57,7 @@ class Comment(Base):
 
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('posts.id', ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -69,7 +70,7 @@ class SavedPost(Base):
 
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('posts.id', ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
@@ -80,12 +81,10 @@ class SavedPost(Base):
     user = relationship("User", back_populates="saved_posts")
 
 
-# Existing models below unchanged
-
 class Event(Base):
     __tablename__ = 'events'
     id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey('clients.id'), nullable=False)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
     title = Column(String(200), nullable=False)
     description = Column(Text)
     event_date = Column(DateTime, nullable=False)
@@ -100,14 +99,16 @@ class Review(Base):
     booking_id = Column(Integer, ForeignKey('bookings.id'), unique=True, nullable=False)
     rating = Column(Integer, nullable=False)
     comment = Column(Text)
+    barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
+    barber = relationship("Barber")
     booking = relationship("Booking", back_populates="review")
 
 
 class Message(Base):
     __tablename__ = 'messages'
     id = Column(Integer, primary_key=True)
-    sender_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    receiver_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    sender_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    receiver_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     is_read = Column(Boolean, default=False)
@@ -119,8 +120,8 @@ class Message(Base):
 class Favorite(Base):
     __tablename__ = 'favorites'
     id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey('clients.id'), nullable=False)
-    barber_id = Column(Integer, ForeignKey('barbers.id'), nullable=False)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
+    barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
 
     client = relationship("Client", back_populates="favorites")
     barber = relationship("Barber", back_populates="favorited_by")
@@ -129,7 +130,7 @@ class Favorite(Base):
 class Notification(Base):
     __tablename__ = 'notifications'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     message = Column(String(255), nullable=False)
     is_read = Column(Boolean, default=False)
 

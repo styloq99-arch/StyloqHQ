@@ -52,12 +52,11 @@ def _get_barber_id_from_user():
         return None
     if current_user.role != "barber":
         return None
-    # Get barber profile from user
     session = None
     try:
-        from backend.models.base import SessionLocal
+        from models.base import SessionLocal
         session = SessionLocal()
-        from backend.models.barber import Barber
+        from models.barber import Barber
         barber = session.query(Barber).filter(Barber.user_id == current_user.id).first()
         return barber.id if barber else None
     finally:
@@ -66,11 +65,72 @@ def _get_barber_id_from_user():
 
 
 # =============================================================================
+# "ME" CONVENIENCE ROUTES (auto-resolve barber_id from token)
+# =============================================================================
+
+@barber_bp.get("/me/profile")
+@login_required
+@role_required(["barber"])
+def get_my_profile():
+    """GET /barber/me/profile - Get current barber's own profile."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    data, reason, error = services.get_barber_profile(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
+@barber_bp.put("/me/profile")
+@login_required
+@role_required(["barber"])
+def update_my_profile():
+    """PUT /barber/me/profile - Update current barber's own profile."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    body = request.get_json(silent=True) or {}
+    data, reason, error = services.update_barber_profile(barber_id, body)
+    if error:
+        return _err(reason, error)
+    return _ok(data, "Profile updated successfully.")
+
+
+@barber_bp.get("/me/appointments")
+@login_required
+@role_required(["barber"])
+def get_my_appointments():
+    """GET /barber/me/appointments - Get current barber's appointments."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    data, reason, error = services.view_barber_appointments(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
+@barber_bp.get("/me/appointments/overview")
+@login_required
+@role_required(["barber"])
+def get_my_appointments_overview():
+    """GET /barber/me/appointments/overview - Overview stats, weekly chart, peak hours."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    data, reason, error = services.get_appointment_overview(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
+# =============================================================================
 # PUBLIC ENDPOINTS (no authentication required)
 # =============================================================================
 
-@barber_bp.get("/<int:barber_id>/profile")
-def get_profile(barber_id: int):
+@barber_bp.get("/<barber_id>/profile")
+def get_profile(barber_id):
     """GET /barber/{barber_id}/profile - Get barber profile (public)."""
     data, reason, error = services.get_barber_profile(barber_id)
     if error:
@@ -78,8 +138,8 @@ def get_profile(barber_id: int):
     return _ok(data)
 
 
-@barber_bp.get("/<int:barber_id>/availability")
-def get_availability(barber_id: int):
+@barber_bp.get("/<barber_id>/availability")
+def get_availability(barber_id):
     """GET /barber/{barber_id}/availability - Get barber availability (public)."""
     data, reason, error = services.get_availability(barber_id)
     if error:
@@ -87,8 +147,8 @@ def get_availability(barber_id: int):
     return _ok(data)
 
 
-@barber_bp.get("/<int:barber_id>/portfolio")
-def get_portfolio(barber_id: int):
+@barber_bp.get("/<barber_id>/portfolio")
+def get_portfolio(barber_id):
     """GET /barber/{barber_id}/portfolio - Get barber portfolio (public)."""
     data, reason, error = services.get_portfolio(barber_id)
     if error:
@@ -96,10 +156,19 @@ def get_portfolio(barber_id: int):
     return _ok(data)
 
 
-@barber_bp.get("/<int:barber_id>/posts")
-def get_posts(barber_id: int):
+@barber_bp.get("/<barber_id>/posts")
+def get_posts(barber_id):
     """GET /barber/{barber_id}/posts - Get barber posts (public)."""
     data, reason, error = services.get_my_posts(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
+@barber_bp.get("/<barber_id>/reviews")
+def get_reviews(barber_id):
+    """GET /barber/{barber_id}/reviews - Get barber reviews (public)."""
+    data, reason, error = services.get_barber_reviews(barber_id)
     if error:
         return _err(reason, error)
     return _ok(data)
@@ -109,16 +178,15 @@ def get_posts(barber_id: int):
 # PROTECTED ENDPOINTS (authentication + barber role required)
 # =============================================================================
 
-@barber_bp.put("/<int:barber_id>/profile")
+@barber_bp.put("/<barber_id>/profile")
 @login_required
 @role_required(["barber"])
-def update_profile(barber_id: int):
+def update_profile(barber_id):
     """PUT /barber/{barber_id}/profile - Update barber profile."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only update your own profile", 403)
-    
+
     body = request.get_json(silent=True) or {}
     data, reason, error = services.update_barber_profile(barber_id, body)
     if error:
@@ -126,16 +194,15 @@ def update_profile(barber_id: int):
     return _ok(data, "Profile updated successfully.")
 
 
-@barber_bp.put("/<int:barber_id>/location")
+@barber_bp.put("/<barber_id>/location")
 @login_required
 @role_required(["barber"])
-def update_location(barber_id: int):
+def update_location(barber_id):
     """PUT /barber/{barber_id}/location - Update barber location."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only update your own location", 403)
-    
+
     body = request.get_json(silent=True) or {}
     data, reason, error = services.update_location(barber_id, body)
     if error:
@@ -143,93 +210,94 @@ def update_location(barber_id: int):
     return _ok(data, "Location updated successfully.")
 
 
-@barber_bp.put("/<int:barber_id>/availability")
+@barber_bp.put("/<barber_id>/availability")
 @login_required
 @role_required(["barber"])
-def update_availability(barber_id: int):
+def update_availability(barber_id):
     """PUT /barber/{barber_id}/availability - Replace the barber's full availability schedule."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only update your own availability", 403)
-    
+
     body  = request.get_json(silent=True) or {}
     slots = body.get("availability")
 
     if slots is None:
-        return jsonify({"error": "availability array is required."}), 400
+        return _err("bad_request", "availability array is required.")
 
-    result = services.update_availability(barber_id, slots)
-    return _respond(result)
+    data, reason, error = services.update_availability(barber_id, slots)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
 
 
-@barber_bp.post("/<int:barber_id>/portfolio")
+@barber_bp.post("/<barber_id>/portfolio")
 @login_required
 @role_required(["barber"])
-def add_portfolio_item(barber_id: int):
+def add_portfolio_item(barber_id):
     """POST /barber/{barber_id}/portfolio - Add portfolio item."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only add to your own portfolio", 403)
-    
+
     body        = request.get_json(silent=True) or {}
     image_url   = body.get("image_url")
     description = body.get("description")
 
     if not image_url:
-        return jsonify({"error": "image_url is required."}), 400
+        return _err("bad_request", "image_url is required.")
 
-    result = add_portfolio_item(barber_id, image_url, description)
-    return _respond(result, created=True)
+    data, reason, error = services.add_portfolio_item(barber_id, image_url, description)
+    if error:
+        return _err(reason, error)
+    return _ok(data, "Portfolio item added."), 201
 
 
-@barber_bp.delete("/<int:barber_id>/portfolio/<int:portfolio_id>")
+@barber_bp.delete("/<barber_id>/portfolio/<int:portfolio_id>")
 @login_required
 @role_required(["barber"])
-def delete_portfolio_item(barber_id: int, portfolio_id: int):
+def delete_portfolio_item(barber_id, portfolio_id: int):
     """DELETE /barber/{barber_id}/portfolio/{portfolio_id} - Delete portfolio item."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only delete from your own portfolio", 403)
-    
+
     data, reason, error = services.delete_portfolio_item(barber_id, portfolio_id)
     if error:
         return _err(reason, error)
     return _ok(data, f"Portfolio item {portfolio_id} deleted.")
 
 
-@barber_bp.post("/<int:barber_id>/posts")
+@barber_bp.post("/<barber_id>/posts")
 @login_required
 @role_required(["barber"])
-def create_post(barber_id: int):
+def create_post(barber_id):
     """POST /barber/{barber_id}/posts - Create a post."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only create posts for your own profile", 403)
-    
+
     body    = request.get_json(silent=True) or {}
     content = body.get("content")
 
     if not content:
-        return jsonify({"error": "content is required."}), 400
+        return _err("bad_request", "content is required.")
 
-    result = create_post(barber_id, content)
-    return _respond(result, created=True)
+    data, reason, error = services.create_post(barber_id, content)
+    if error:
+        return _err(reason, error)
+    return _ok(data, "Post created."), 201
 
 
-@barber_bp.get("/<int:barber_id>/appointments")
+@barber_bp.get("/<barber_id>/appointments")
 @login_required
 @role_required(["barber"])
-def get_appointments(barber_id: int):
+def get_appointments(barber_id):
     """GET /barber/{barber_id}/appointments - Returns appointments grouped by status."""
-    # Verify the barber owns this profile
     barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
+    if str(barber_id_from_user) != str(barber_id):
         return _err("forbidden", "You can only view your own appointments", 403)
-    
+
     data, reason, error = services.view_barber_appointments(barber_id)
     if error:
         return _err(reason, error)
@@ -269,27 +337,23 @@ def reschedule_appointment(appointment_id: int):
     if not new_datetime:
         return _err("bad_request", "new_datetime is required (format: YYYY-MM-DDTHH:MM:SS).")
 
-    result = reschedule_appointment(booking_id, new_datetime)
-    return _respond(result)
+    data, reason, error = services.reschedule_appointment(appointment_id, new_datetime)
+    if error:
+        return _err(reason, error)
+    return _ok(data, "Appointment rescheduled.")
 
 
-@barber_bp.post("/<int:barber_id>/book")
+@barber_bp.post("/<barber_id>/book")
 @login_required
-@role_required(["barber"])
-def book_appointment(barber_id: int):
-    """POST /barber/{barber_id}/book - Book an appointment (barber books for client)."""
-    # Verify the barber owns this profile
-    barber_id_from_user = _get_barber_id_from_user()
-    if barber_id_from_user != barber_id:
-        return _err("forbidden", "You can only book appointments for your own profile", 403)
-    
+def book_appointment(barber_id):
+    """POST /barber/{barber_id}/book - Book an appointment."""
     body        = request.get_json(silent=True) or {}
     customer_id = body.get("customer_id")
     appt_dt     = body.get("appointment_datetime")
     notes       = body.get("notes")
 
-    if not client_id:
-        return jsonify({"error": "client_id is required."}), 400
+    if not customer_id:
+        return _err("bad_request", "customer_id is required.")
     if not appt_dt:
         return _err("bad_request", "appointment_datetime is required.")
 
@@ -302,4 +366,3 @@ def book_appointment(barber_id: int):
     if error:
         return _err(reason, error)
     return _ok(data, "Appointment request submitted."), 201
-

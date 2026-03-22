@@ -21,12 +21,12 @@ export default function SignUpBarberStep4() {
   const prevData = location.state || {};
 
   // 2. State for Bio
-  const [bio, setBio] = useState("");  
-  
+  const [bio, setBio] = useState("");
+
   // 3. State for Specialties
   const [specialtiesList, setSpecialtiesList] = useState(INITIAL_SPECIALTIES);
   const [selectedSpecialties, setSelectedSpecialties] = useState([]);
-  
+
   // 4. State for "Another +" Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSpecialty, setNewSpecialty] = useState("");
@@ -60,7 +60,7 @@ export default function SignUpBarberStep4() {
   // Handle Next Button Click
   const handleNext = (e) => {
     e.preventDefault(); // Prevent default behavior
-    
+
     // 1. Validation: Must select at least one specialty
     if (selectedSpecialties.length === 0) {
       setError("Please select at least one specialty.");
@@ -89,12 +89,12 @@ export default function SignUpBarberStep4() {
 
   return (
     <div className="app-container">
-      
+
       {/* --- Header --- */}
       <header className="header">
 
         {/* --- Back Link --- */}
-        <Link to="/signup-barber-step3" className="back-btn">
+        <Link to="/verification-step2" className="back-btn">
           <i className="fas fa-arrow-left"></i>
         </Link>
 
@@ -109,14 +109,14 @@ export default function SignUpBarberStep4() {
 
       {/* --- Main Content --- */}
       <main className="content">
-        
+
         {/* Error Message */}
         {error && (
-          <div style={{ 
-            color: "#FF5722", 
-            textAlign: "center", 
-            fontSize: "13px", 
-            marginBottom: "10px" 
+          <div style={{
+            color: "#FF5722",
+            textAlign: "center",
+            fontSize: "13px",
+            marginBottom: "10px"
           }}>
             {error}
           </div>
@@ -125,73 +125,73 @@ export default function SignUpBarberStep4() {
         {/* 1. Professional Bio Section */}
         <label className="section-label">Professional Bio</label>
         <section>
-            <div className="section-card">
-                <span className="section-desc">
-                    Briefly describe your experience and style.
-                </span>
-                <textarea
-                    className="textarea"
-                    placeholder="e.g. Master barber with 10 years of experience..."
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    maxLength={300}
-                />
-                <div className="char-count">{bio.length}/300</div>
-            </div>
+          <div className="section-card">
+            <span className="section-desc">
+              Briefly describe your experience and style.
+            </span>
+            <textarea
+              className="textarea"
+              placeholder="e.g. Master barber with 10 years of experience..."
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={300}
+            />
+            <div className="char-count">{bio.length}/300</div>
+          </div>
         </section>
 
         {/* 2. Specialties Section */}
         <label className="section-label">Specialties</label>
         <section>
-            <div className="section-card">
-                <span className="section-desc">
-                    Select services you excel at.
-                </span>
+          <div className="section-card">
+            <span className="section-desc">
+              Select services you excel at.
+            </span>
 
-                <div className="specialties-grid">
-                    {/* Render Checkboxes */}
-                    {specialtiesList.map((item, index) => (
-                    <label
-                        key={index}
-                        className={`specialty-item ${selectedSpecialties.includes(item) ? "active" : ""}`}
-                    >
-                        {/* The Checkbox Input */}
-                        <input
-                            type="checkbox"
-                            className="specialty-checkbox"
-                            checked={selectedSpecialties.includes(item)}
-                            onChange={() => toggleSpecialty(item)}
-                        />
-                        {/* The Text Label */}
-                        <span className="specialty-text">{item}</span>
-                    </label>
-                    ))}
+            <div className="specialties-grid">
+              {/* Render Checkboxes */}
+              {specialtiesList.map((item, index) => (
+                <label
+                  key={index}
+                  className={`specialty-item ${selectedSpecialties.includes(item) ? "active" : ""}`}
+                >
+                  {/* The Checkbox Input */}
+                  <input
+                    type="checkbox"
+                    className="specialty-checkbox"
+                    checked={selectedSpecialties.includes(item)}
+                    onChange={() => toggleSpecialty(item)}
+                  />
+                  {/* The Text Label */}
+                  <span className="specialty-text">{item}</span>
+                </label>
+              ))}
 
-                    {/* Another + Button */}
-                    <div
-                        className="specialty-item add-btn"
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                    <i className="fas fa-plus"></i> Another +
-                    </div>
-                </div>
+              {/* Another + Button */}
+              <div
+                className="specialty-item add-btn"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <i className="fas fa-plus"></i> Another +
+              </div>
             </div>
+          </div>
         </section>
 
         {/* --- NEXT BUTTON (Fully Functional) --- */}
-        <button 
-            onClick={handleNext}
-            className="btn btn-primary" 
-            disabled={loading}
-            style={{ 
-                width: '100%', 
-                height: '48px', 
-                marginTop: '2rem',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1
-            }}
+        <button
+          onClick={handleNext}
+          className="btn btn-primary"
+          disabled={loading}
+          style={{
+            width: '100%',
+            height: '48px',
+            marginTop: '2rem',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1
+          }}
         >
-            {loading ? "SAVING..." : "NEXT"}
+          {loading ? "SAVING..." : "NEXT"}
         </button>
 
       </main>
