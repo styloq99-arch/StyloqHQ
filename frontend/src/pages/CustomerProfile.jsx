@@ -1,26 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CustomerSidebar from '../Components/CustomerSidebar';
+import { apiGet, apiPatch } from '../utils/api';
 
 // ─── Static Data ─────────────────────────────────────────────────────────────
 
-const INITIAL_PROFILE = {
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  phone: '077 123 4567',
-  idNumber: '200012345678',
-  city: 'Colombo',
-  username: 'john_doe',
+const FALLBACK_PROFILE = {
+  name: '',
+  email: '',
+  phone: '',
+  idNumber: '',
+  city: '',
+  username: '',
   avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
 };
-
-const INITIAL_APPOINTMENTS = [
-  { id: 'APT001', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'SIDE PART', serviceType: 'Hair Services', date: '2025-07-28', time: '10.00 AM', location: 'Liyo Salon (pvt) Ltd', price: 'Rs.1,500.00', payment: 'Pay On Visit', status: 'upcoming' },
-  { id: 'APT002', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'FULL BEARD', serviceType: 'Beard Services', date: '2025-07-15', time: '2.00 PM', location: 'Salon Next (pvt) Ltd', price: 'Rs.800.00', payment: 'Pay Online', status: 'completed' },
-  { id: 'APT003', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'UNDER CUT', serviceType: 'Hair Services', date: '2025-07-02', time: '11.00 AM', location: 'Colombo City Center Branch', price: 'Rs.2,000.00', payment: 'Pay On Visit', status: 'cancelled' },
-  { id: 'APT004', barber: 'S.S.K. Perera', barberImg: 'https://randomuser.me/api/portraits/men/32.jpg', service: 'HOT SHAVE', serviceType: 'Beard Services', date: '2025-06-20', time: '9.00 AM', location: 'Liyo Salon (pvt) Ltd', price: 'Rs.1,000.00', payment: 'Pay On Visit', status: 'completed' },
-];
 
 const PROFILE_FIELDS = [
   { icon: 'fa-user', label: 'Full Name', key: 'name' },
@@ -56,11 +50,11 @@ export default function CustomerProfile() {
   const [profile, setProfile] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('styloq_profile') || 'null');
-      return saved || INITIAL_PROFILE;
-    } catch { return INITIAL_PROFILE; }
+      return saved || FALLBACK_PROFILE;
+    } catch { return FALLBACK_PROFILE; }
   });
 
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
+  const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [appointmentFilter, setAppointmentFilter] = useState('all');
   const [isEditing, setIsEditing] = useState(false);
@@ -71,8 +65,54 @@ export default function CustomerProfile() {
   const [cancelModal, setCancelModal] = useState(null);
   const [detailModal, setDetailModal] = useState(null);
 
+  // Fetch profile + bookings from backend on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await apiGet('/customers/profile');
+        if (res.success && res.data) {
+          const d = res.data;
+          const merged = {
+            name: d.full_name || d.name || profile.name,
+            email: d.email || profile.email,
+            phone: d.phone_number || d.phone || profile.phone,
+            idNumber: d.id_number || profile.idNumber,
+            city: d.city || profile.city,
+            username: d.username || (d.email ? d.email.split('@')[0] : profile.username),
+            avatar: d.avatar || profile.avatar,
+          };
+          setProfile(merged);
+          setEditData(merged);
+          try { localStorage.setItem('styloq_profile', JSON.stringify(merged)); } catch (_) { }
+        }
+      } catch (_) { /* use cached */ }
+    };
+    const fetchBookings = async () => {
+      try {
+        const res = await apiGet('/customers/bookings');
+        if (res.success && Array.isArray(res.data)) {
+          setAppointments(res.data.map(b => ({
+            id: b.id || b.booking_id,
+            barber: b.barber_name || 'Barber',
+            barberImg: b.barber_avatar || 'https://randomuser.me/api/portraits/men/32.jpg',
+            service: b.service_name || b.service || 'Service',
+            serviceType: b.service_type || 'Hair Services',
+            date: b.appointment_datetime ? b.appointment_datetime.split('T')[0] : '',
+            time: b.appointment_datetime ? new Date(b.appointment_datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
+            location: b.location || 'N/A',
+            price: b.price ? `Rs.${b.price}` : 'N/A',
+            payment: b.payment_method || 'Pay On Visit',
+            status: (b.status || 'pending').toLowerCase(),
+          })));
+        }
+      } catch (_) { /* keep empty */ }
+    };
+    fetchProfile();
+    fetchBookings();
+  }, []);
+
   // Sync to localStorage whenever profile changes
-  React.useEffect(() => {
+  useEffect(() => {
     try { localStorage.setItem('styloq_profile', JSON.stringify(profile)); } catch (_) { }
   }, [profile]);
 
@@ -118,9 +158,17 @@ export default function CustomerProfile() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateEdit()) return;
     const updatedProfile = { ...editData, avatar: avatarPreview || editData.avatar };
+    try {
+      await apiPatch('/customers/profile', {
+        full_name: updatedProfile.name,
+        phone_number: updatedProfile.phone,
+        city: updatedProfile.city,
+        username: updatedProfile.username,
+      });
+    } catch (_) { /* save locally anyway */ }
     try { localStorage.setItem('styloq_profile', JSON.stringify(updatedProfile)); } catch (_) { }
     setProfile(updatedProfile);
     setIsEditing(false);
@@ -133,7 +181,10 @@ export default function CustomerProfile() {
     appointmentFilter === 'all' ? true : a.status === appointmentFilter
   );
 
-  const handleCancelConfirm = () => {
+  const handleCancelConfirm = async () => {
+    try {
+      await apiPatch(`/customers/bookings/${cancelModal}/cancel`);
+    } catch (_) { /* update UI anyway */ }
     setAppointments(prev =>
       prev.map(a => a.id === cancelModal ? { ...a, status: 'cancelled' } : a)
     );

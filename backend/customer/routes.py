@@ -451,3 +451,39 @@ def delete_comment(comment_id):
     
     return _ok(result, "Comment deleted")
 
+
+@customer_feed_bp.route("/create", methods=["POST"], strict_slashes=False)
+@login_required
+def create_post():
+    """POST /feed/create - Create a new post (barber only)."""
+    from models.base import SessionLocal
+    from models.barber import Barber
+
+    current_user = get_current_user_from_token()
+    if not current_user:
+        return _err("unauthorized", "User not authenticated")
+
+    if current_user.role != "barber":
+        return _err("forbidden", "Only barbers can create posts", 403)
+
+    # Resolve user.id to barber.id
+    db = SessionLocal()
+    try:
+        barber = db.query(Barber).filter(Barber.user_id == current_user.id).first()
+        if not barber:
+            return _err("not_found", "Barber profile not found for this user", 404)
+        barber_id = barber.id
+    finally:
+        db.close()
+
+    data = request.get_json(silent=True) or {}
+    caption = data.get("caption", "")
+    image_url = data.get("image_url", "")
+
+    result, reason, error = services.create_post(barber_id, caption, image_url)
+
+    if error:
+        return _err(reason, error)
+
+    return _ok(result, "Post created", 201)
+

@@ -1,54 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CustomerSidebar from '../Components/CustomerSidebar';
-
-// Mock Data for Search Results
-const BARBERS = [
-  {
-    id: 1,
-    name: "S.S.K. Perera",
-    salon: "Royal Cuts Studio",
-    rating: 4.8,
-    reviews: 120,
-    distance: "1.2 km",
-    price: "LKR 1500",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 2,
-    name: "D.H.Pathirana",
-    salon: "Urban Style Lounge",
-    rating: 4.5,
-    reviews: 85,
-    distance: "3.5 km",
-    price: "LKR 1200",
-    avatar: "https://randomuser.me/api/portraits/men/44.jpg",
-    image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 3,
-    name: "Kamal Jayasinghe",
-    salon: "The Gentleman's Bar",
-    rating: 4.9,
-    reviews: 210,
-    distance: "0.8 km",
-    price: "LKR 2000",
-    avatar: "https://randomuser.me/api/portraits/men/85.jpg",
-    image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 4,
-    name: "Nimal Silva",
-    salon: "Quick Clips",
-    rating: 4.2,
-    reviews: 40,
-    distance: "5.0 km",
-    price: "LKR 800",
-    avatar: "https://randomuser.me/api/portraits/men/12.jpg",
-    image: "https://images.unsplash.com/photo-1503951914875-452162b7f306?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  }
-];
+import { apiGet } from '../utils/api';
 
 const CATEGORIES = ["All", "Top Rated", "Near Me", "Price Low to High", "Beard Specialist"];
 
@@ -56,16 +9,39 @@ const CATEGORIES = ["All", "Top Rated", "Near Me", "Price Low to High", "Beard S
 export default function CustomerSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [barbers, setBarbers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchBarbers = async () => {
+      try {
+        const res = await apiGet('/customers/barbers');
+        if (res.success && Array.isArray(res.data)) {
+          setBarbers(res.data);
+        } else {
+          setError('Failed to load barbers');
+        }
+      } catch (err) {
+        setError('Network error loading barbers');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBarbers();
+  }, []);
 
   // Filter Logic
-  const filteredBarbers = BARBERS.filter(barber => {
-    const matchesSearch = barber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      barber.salon.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredBarbers = barbers.filter(barber => {
+    const name = barber.full_name || barber.name || '';
+    const salon = barber.salon_name || barber.salon || '';
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      salon.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Basic category filtering logic
+    const rating = barber.average_rating || barber.rating || 0;
     const matchesCategory = activeCategory === "All" ? true :
-      activeCategory === "Top Rated" ? barber.rating >= 4.8 :
-        true; // Simplified for demo
+      activeCategory === "Top Rated" ? rating >= 4.5 :
+        true;
 
     return matchesSearch && matchesCategory;
   });
@@ -129,20 +105,24 @@ export default function CustomerSearch() {
           <section className="results-section">
             <h3 className="section-heading">Available Barbers</h3>
 
-            {filteredBarbers.length > 0 ? (
+            {loading ? (
+              <div className="no-results"><p>Loading barbers...</p></div>
+            ) : error ? (
+              <div className="no-results"><p>{error}</p></div>
+            ) : filteredBarbers.length > 0 ? (
               <div className="barber-list">
                 {filteredBarbers.map((barber) => (
                   <div key={barber.id} className="barber-result-card">
 
                     {/* Left: Image & Basic Info */}
                     <div className="card-left">
-                      <img src={barber.image} alt={barber.name} className="barber-preview-img" />
+                      <img src={barber.profile_image || barber.image || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=500&q=80'} alt={barber.full_name || barber.name} className="barber-preview-img" />
                       <div className="barber-details">
-                        <h4 className="barber-name">{barber.name}</h4>
-                        <p className="barber-salon-name">{barber.salon}</p>
+                        <h4 className="barber-name">{barber.full_name || barber.name || 'Unknown'}</h4>
+                        <p className="barber-salon-name">{barber.salon_name || barber.salon || 'Independent'}</p>
                         <div className="meta-tags">
-                          <span className="meta-tag"><i className="fas fa-star"></i> {barber.rating}</span>
-                          <span className="meta-tag"><i className="fas fa-map-marker-alt"></i> {barber.distance}</span>
+                          <span className="meta-tag"><i className="fas fa-star"></i> {barber.average_rating || barber.rating || 'N/A'}</span>
+                          <span className="meta-tag"><i className="fas fa-map-marker-alt"></i> {barber.distance || 'N/A'}</span>
                         </div>
                       </div>
                     </div>
@@ -151,11 +131,11 @@ export default function CustomerSearch() {
                     <div className="card-right">
                       <div className="price-tag">
                         <span className="price-label">Starts at</span>
-                        <span className="price-value">{barber.price}</span>
+                        <span className="price-value">{barber.starting_price || barber.price || 'N/A'}</span>
                       </div>
                       <div className="action-buttons">
 
-                        <Link to="/barber-profile-view" className="btn btn-secondary" style={{ width: '100%', height: '40px', marginTop: '2rem', borderRadius: '20px' }}>
+                        <Link to={`/barber-profile-view/${barber.id}`} className="btn btn-secondary" style={{ width: '100%', height: '40px', marginTop: '2rem', borderRadius: '20px' }}>
                           View Profile
                         </Link>
 

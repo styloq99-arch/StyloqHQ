@@ -1,11 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
+import { createPost } from '../api/feedApi';
+import { useAuth } from '../context/AuthContext';
 
 
 export default function SharePost() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const imageSrc = location.state?.imageSrc
     || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&q=85';
@@ -13,13 +16,25 @@ export default function SharePost() {
   const [caption, setCaption] = useState('');
   const [sharing, setSharing] = useState(false);
   const [charFocus, setCharFocus] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (sharing) return;
     setSharing(true);
-    setTimeout(() => {
-      navigate('/barber-OwnProfile');
-    }, 900);
+    setError('');
+
+    try {
+      const res = await createPost(caption, imageSrc);
+      if (res.success) {
+        navigate('/barber-OwnProfile');
+      } else {
+        setError(res.message || 'Failed to create post');
+        setSharing(false);
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+      setSharing(false);
+    }
   };
 
   const remaining = 2200 - caption.length;
@@ -125,10 +140,11 @@ export default function SharePost() {
                   className="sp-profile-avatar"
                 />
                 <div>
-                  <p className="sp-profile-name">S.S.K. Perera</p>
+                  <p className="sp-profile-name">{user?.full_name || 'Barber'}</p>
                   <p className="sp-profile-role">Barber · StyloQ</p>
                 </div>
               </div>
+              {error && <p style={{ color: '#ff4444', fontSize: '0.85rem', margin: '8px 0' }}>{error}</p>}
 
               <div className="sp-divider" />
 

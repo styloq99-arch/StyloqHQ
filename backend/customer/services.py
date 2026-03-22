@@ -482,6 +482,26 @@ def get_single_post(post_id, user_id=None):
         db.close()
 
 
+def create_post(barber_id, caption, image_url):
+    """Create a new post for a barber"""
+    db = SessionLocal()
+    try:
+        post = Post(
+            barber_id=barber_id,
+            caption=caption,
+            image_url=image_url or ""
+        )
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+        return {"post_id": post.id, "message": "Post created"}, None, None
+    except Exception as e:
+        db.rollback()
+        return None, "db_error", str(e)
+    finally:
+        db.close()
+
+
 def toggle_post_like(post_id, user_id):
     """Like or unlike a post"""
     db = SessionLocal()
