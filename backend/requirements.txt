@@ -7,3 +7,4 @@ sqlalchemy
 python-dotenv
 PyJWT
 google-genai
+gunicorn
