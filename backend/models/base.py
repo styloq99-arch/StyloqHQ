@@ -1,11 +1,22 @@
 from sqlalchemy import create_engine, Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "sqlite:///database.db"
+# Load environment variables
+load_dotenv()
+
+# Use Supabase PostgreSQL connection
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:S4KSzzLKg5.7CM-@db.sbtmqbfkcswsgkjimujf.supabase.co:5432/postgres"
+)
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True
+    echo=True,
+    pool_pre_ping=True,  # Verify connections before using them
+    pool_recycle=300     # Recycle connections after 5 minutes
 )
 
 SessionLocal = sessionmaker(

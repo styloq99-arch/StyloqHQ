@@ -331,7 +331,7 @@ def update_profile():
 customer_feed_bp = Blueprint("customer_feed", __name__, url_prefix="/feed")
 
 
-@customer_feed_bp.route("/", methods=["GET"])
+@customer_feed_bp.route("/", methods=["GET"], strict_slashes=False)
 def get_feed():
     """GET /feed - Get posts for the main feed."""
     page = int(request.args.get("page", 1))
@@ -351,7 +351,7 @@ def get_feed():
     return _ok(posts)
 
 
-@customer_feed_bp.route("/<int:post_id>", methods=["GET"])
+@customer_feed_bp.route("/<int:post_id>", methods=["GET"], strict_slashes=False)
 def get_post(post_id):
     """GET /feed/{post_id} - Get a single post."""
     user_id = None
@@ -371,7 +371,7 @@ def get_post(post_id):
     return _ok(post)
 
 
-@customer_feed_bp.route("/<int:post_id>/like", methods=["POST"])
+@customer_feed_bp.route("/<int:post_id>/like", methods=["POST"], strict_slashes=False)
 @login_required
 def like_post(post_id):
     """POST /feed/{post_id}/like - Like or unlike a post."""
@@ -387,7 +387,7 @@ def like_post(post_id):
     return _ok(result)
 
 
-@customer_feed_bp.route("/<int:post_id>/save", methods=["POST"])
+@customer_feed_bp.route("/<int:post_id>/save", methods=["POST"], strict_slashes=False)
 @login_required
 def save_post(post_id):
     """POST /feed/{post_id}/save - Save or unsave a post."""
@@ -403,7 +403,7 @@ def save_post(post_id):
     return _ok(result)
 
 
-@customer_feed_bp.route("/<int:post_id>/comments", methods=["GET"])
+@customer_feed_bp.route("/<int:post_id>/comments", methods=["GET"], strict_slashes=False)
 def get_comments(post_id):
     """GET /feed/{post_id}/comments - Get comments for a post."""
     comments = services.get_post_comments(post_id)
@@ -414,7 +414,7 @@ def get_comments(post_id):
     return _ok(comments)
 
 
-@customer_feed_bp.route("/<int:post_id>/comments", methods=["POST"])
+@customer_feed_bp.route("/<int:post_id>/comments", methods=["POST"], strict_slashes=False)
 @login_required
 def add_comment(post_id):
     """POST /feed/{post_id}/comments - Add a comment."""
@@ -436,7 +436,7 @@ def add_comment(post_id):
     return _ok(comment, "Comment added", 201)
 
 
-@customer_feed_bp.route("/comments/<int:comment_id>", methods=["DELETE"])
+@customer_feed_bp.route("/comments/<int:comment_id>", methods=["DELETE"], strict_slashes=False)
 @login_required
 def delete_comment(comment_id):
     """DELETE /feed/comments/{comment_id} - Delete a comment."""
