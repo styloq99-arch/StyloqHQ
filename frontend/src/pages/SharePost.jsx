@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
+import { useAuth } from '../context/AuthContext';
+import { uploadPostImage, createPostRecord } from '../api/supabasePosts';
 
 
 export default function SharePost() {
@@ -9,17 +11,45 @@ export default function SharePost() {
 
   const imageSrc = location.state?.imageSrc
     || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&q=85';
+  const fileToUpload = location.state?.file;
 
   const [caption, setCaption] = useState('');
   const [sharing, setSharing] = useState(false);
   const [charFocus, setCharFocus] = useState(false);
 
-  const handleShare = () => {
+  const { user } = useAuth();
+
+  const handleShare = async () => {
     if (sharing) return;
     setSharing(true);
-    setTimeout(() => {
-      navigate('/barber-OwnProfile');
-    }, 900);
+    
+    try {
+      let finalImageUrl = imageSrc;
+      
+      // 1. If it's a real local file, upload to Supabase Storage
+      if (fileToUpload && user?.id) {
+         const { url, error } = await uploadPostImage(fileToUpload, user.id);
+         if (error) {
+           throw new Error("Failed to upload image. Please ensure your 'posts' storage bucket is created!");
+         }
+         finalImageUrl = url;
+      }
+
+      // 2. Insert into the Supabase database
+      if (user?.id) {
+         const { success, error } = await createPostRecord(user.id, finalImageUrl, caption);
+         if (!success) {
+           throw new Error("Failed to save post to the database. Does the 'posts' table exist?");
+         }
+      }
+
+      // 3. Navigate home
+      navigate('/barber-home'); // Sending to barber-home is a cleaner experience
+    } catch (err) {
+      alert(err.message);
+      console.error(err);
+      setSharing(false);
+    }
   };
 
   const remaining = 2200 - caption.length;

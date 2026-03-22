@@ -22,8 +22,8 @@ from functools import wraps
 from flask import request, jsonify, g, Blueprint
 from datetime import datetime, timedelta
 
-from backend.models.user import User
-from backend.models.base import SessionLocal
+from models.user import User
+from models.base import SessionLocal
 
 
 # JWT Configuration (same as auth/utils.py)

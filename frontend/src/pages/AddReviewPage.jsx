@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import CustomerSidebar from '../Components/CustomerSidebar';
+import { useAuth } from '../context/AuthContext';
+import { submitReview } from '../api/supabaseBarber';
 
 const RATING_LABELS = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
 
 
 export default function AddReviewPage() {
   const navigate = useNavigate();
+  const { barberId } = useParams();
+  const { user } = useAuth();
 
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -16,15 +20,8 @@ export default function AddReviewPage() {
   const [errors, setErrors] = useState({});
   const [charCount, setCharCount] = useState(0);
 
-  // Auto-read customer name from profile saved in localStorage
-  const [authorName] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('styloq_profile') || 'null');
-      return saved?.name || 'John Doe';
-    } catch {
-      return 'John Doe';
-    }
-  });
+  const authorName = user?.full_name || 'Anonymous';
+  const authorAvatar = `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 70) + 10}.jpg`;
 
   const activeRating = hoverRating || rating;
 
@@ -36,29 +33,19 @@ export default function AddReviewPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
-
-    const newReview = {
-      id: Date.now(),
-      text: `\u201c${reviewText.trim()}\u201d`,
-      author: authorName,
-      rating,
-      tags: selectedTags,
-      date: new Date().toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }),
-      avatar: `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 70) + 10}.jpg`,
-    };
+    if (!user) {
+      alert("Please sign in to submit a review.");
+      return;
+    }
 
     try {
-      const existing = JSON.parse(localStorage.getItem('styloq_reviews') || '[]');
-      localStorage.setItem('styloq_reviews', JSON.stringify([newReview, ...existing]));
-    } catch (_) { }
-
-    setSubmitted(true);
+      await submitReview(barberId, user.id, authorName, authorAvatar, rating, reviewText.trim(), selectedTags);
+      setSubmitted(true);
+    } catch (err) {
+      alert("Failed to submit review.");
+    }
   };
 
   /* ─── SUCCESS SCREEN ─── */
@@ -78,7 +65,7 @@ export default function AddReviewPage() {
 
             <h2 className="ar-success-title">Review Submitted!</h2>
             <p className="ar-success-sub">
-              Thank you, {authorName}. Your review has been added to S.S.K. Perera's profile.
+              Thank you, {authorName}. Your review has been added to the Barber's profile.
             </p>
 
             <div className="ar-success-preview">
@@ -95,7 +82,7 @@ export default function AddReviewPage() {
             </div>
 
             <div className="ar-success-actions">
-              <button className="ar-back-btn" onClick={() => navigate('/barber-profile')}>
+              <button className="ar-back-btn" onClick={() => navigate(`/barber-profile-view/${barberId}`)}>
                 <i className="fas fa-arrow-left"></i> Back to Profile
               </button>
               <Link to="/home" className="ar-home-btn">
@@ -140,8 +127,8 @@ export default function AddReviewPage() {
             <i className="fas fa-chevron-left"></i>
           </button>
           <div className="ar-hero-text">
-            <span className="ar-hero-label">Writing a review for</span>
-            <h1 className="ar-hero-title">S.S.K. Perera</h1>
+            <span className="ar-hero-label">Writing a review</span>
+            <h1 className="ar-hero-title">For your recent cut</h1>
           </div>
         </div>
 
@@ -153,8 +140,8 @@ export default function AddReviewPage() {
             className="ar-barber-avatar"
           />
           <div className="ar-barber-info">
-            <span className="ar-barber-name">S.S.K. Perera</span>
-            <span className="ar-barber-exp">17 years of experience</span>
+            <span className="ar-barber-name">Your Master Barber</span>
+            <span className="ar-barber-exp">We value your feedback</span>
           </div>
           <div className="ar-barber-badge">
             <i className="fas fa-shield-alt"></i> Verified

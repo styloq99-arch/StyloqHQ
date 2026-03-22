@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from backend.auth.utils import generate_token, login_required, get_current_user
-from backend.models.user import User, Client, Salon
-from backend.models.barber import Barber
-from backend.models.base import SessionLocal
+from auth.utils import generate_token, login_required, get_current_user
+from models.user import User, Client, Salon
+from models.barber import Barber
+from models.base import SessionLocal
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
