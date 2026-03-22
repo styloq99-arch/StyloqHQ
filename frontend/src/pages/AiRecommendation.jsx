@@ -36,7 +36,7 @@ export default function AiRecommendation() {
     formData.append("image", selectedFile);
 
     try {
-      const response = await fetch("/ai/hairstyle", {
+      const response = await fetch("http://localhost:5000/ai/hairstyle", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

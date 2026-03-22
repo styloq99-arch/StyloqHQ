@@ -1,27 +1,22 @@
 from sqlalchemy import create_engine, Table, Column, Integer, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
-from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from the correct path (backend/.env)
-_env_path = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(_env_path)
+# Load environment variables
+load_dotenv()
 
-# We're directly connected to Supabase PostgreSQL, so SQLite fallback is removed.
-from sqlalchemy.pool import NullPool
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set.")
+# Use Supabase PostgreSQL connection
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:S4KSzzLKg5.7CM-@db.sbtmqbfkcswsgkjimujf.supabase.co:5432/postgres"
+)
 
 engine = create_engine(
     DATABASE_URL,
     echo=True,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    poolclass=NullPool
+    pool_pre_ping=True,  # Verify connections before using them
+    pool_recycle=300     # Recycle connections after 5 minutes
 )
 
 SessionLocal = sessionmaker(
@@ -36,7 +31,7 @@ Base = declarative_base()
 barber_skills = Table(
     "barber_skills",
     Base.metadata,
-    Column("barber_id", UUID(as_uuid=True), ForeignKey("barbers.id"), primary_key=True),
+    Column("barber_id", Integer, ForeignKey("barbers.id"), primary_key=True),
     Column("skill_id", Integer, ForeignKey("skills.id"), primary_key=True)
 )
 

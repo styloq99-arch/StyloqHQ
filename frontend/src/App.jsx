@@ -207,14 +207,6 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/booking/:barberId"
-                element={
-                  <ProtectedRoute>
-                    <BookingPage />
-                  </ProtectedRoute>
-                }
-              />
 
               <Route
                 path="/Appointment-overview"

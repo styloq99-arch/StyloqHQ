@@ -40,15 +40,6 @@ export async function getBarberPosts(barberId) {
 }
 
 /**
- * Get barber reviews (public)
- * @param {number} barberId
- * @returns {Promise<{success: boolean, data?: object[], message?: string}>}
- */
-export async function getBarberReviews(barberId) {
-  return apiGet(`/barber/${barberId}/reviews`);
-}
-
-/**
  * Update barber profile (protected - barber only)
  * @param {number} barberId
  * @param {object} profileData

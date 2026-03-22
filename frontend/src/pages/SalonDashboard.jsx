@@ -22,11 +22,11 @@ export default function SalonDashboard() {
           <Link to="/salon-dashboard" className="sidebar-link active">
             <i className="fas fa-tachometer-alt"></i> <span>Dashboard</span>
           </Link>
-          <Link to="/salon-hire" className="sidebar-link">
-            <i className="fas fa-users"></i> <span>Hire Barbers</span>
+          <Link to="/salon-barbers" className="sidebar-link">
+            <i className="fas fa-users"></i> <span>Barbers</span>
           </Link>
-          <Link to="/salon-home" className="sidebar-link">
-            <i className="fas fa-home"></i> <span>Home</span>
+          <Link to="/salon-appointments" className="sidebar-link">
+            <i className="fas fa-calendar-alt"></i> <span>Appointments</span>
           </Link>
           <Link to="/salon-profile" className="sidebar-link">
             <i className="fas fa-building"></i> <span>Salon Profile</span>
@@ -98,13 +98,13 @@ export default function SalonDashboard() {
           <i className="fas fa-tachometer-alt"></i>
           <span>Dashboard</span>
         </Link>
-        <Link to="/salon-hire" className="nav-item">
+        <Link to="/salon-barbers" className="nav-item">
           <i className="fas fa-users"></i>
-          <span>Hire</span>
+          <span>Barbers</span>
         </Link>
-        <Link to="/salon-home" className="nav-item">
-          <i className="fas fa-home"></i>
-          <span>Home</span>
+        <Link to="/salon-appointments" className="nav-item">
+          <i className="fas fa-calendar-alt"></i>
+          <span>Appointments</span>
         </Link>
         <Link to="/salon-profile" className="nav-item">
           <i className="fas fa-building"></i>

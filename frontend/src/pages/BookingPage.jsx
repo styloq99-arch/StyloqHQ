@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import CustomerSidebar from '../Components/CustomerSidebar';
-import { apiPost } from '../utils/api';
 
 export default function BookingPage() {
   const navigate = useNavigate();
-  const { barberId } = useParams();
 
   const LOCATIONS = [
     "Liyo Salon (pvt) Ltd",
@@ -75,32 +73,12 @@ export default function BookingPage() {
     }
   };
 
-  const [bookingError, setBookingError] = useState('');
-
-  const handleConfirmBooking = async () => {
+  const handleConfirmBooking = () => {
     if (!selectedService) { alert("Please select a service type."); return; }
     if (!selectedTime) { alert("Please select a time slot."); return; }
     if (!selectedDate) { alert("Please select a valid date."); return; }
     setIsBooking(true);
-    setBookingError('');
-    try {
-      const res = await apiPost('/customers/bookings', {
-        barber_id: barberId || 1,
-        service_id: selectedService,
-        appointment_datetime: `${selectedDate}T${selectedTime}`,
-        location: selectedLocation,
-        payment_method: paymentMethod,
-      });
-      if (res.success) {
-        setStep(2);
-      } else {
-        setBookingError(res.message || 'Booking failed');
-      }
-    } catch (err) {
-      setBookingError('Network error. Please try again.');
-    } finally {
-      setIsBooking(false);
-    }
+    setTimeout(() => { setIsBooking(false); setStep(2); }, 1500);
   };
 
   const SERVICES = (SERVICE_CATALOG[selectedGender] || {})[selectedServiceType] || [];

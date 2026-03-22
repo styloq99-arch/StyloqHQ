@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from auth.utils import login_required, get_current_user_from_token
+from auth.utils import login_required, get_current_user_from_token, verify_token
 from customer import services
 
 customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
@@ -36,7 +36,7 @@ def get_barbers():
     return _ok(barbers)
 
 
-@customer_bp.get("/barbers/<barber_id>")
+@customer_bp.get("/barbers/<int:barber_id>")
 def get_barber_profile(barber_id):
     """GET /customers/barbers/{barber_id} - Return full barber profile."""
     barber = services.get_barber_profile(barber_id)
@@ -45,7 +45,7 @@ def get_barber_profile(barber_id):
     return _ok(barber)
 
 
-@customer_bp.get("/barbers/<barber_id>/services")
+@customer_bp.get("/barbers/<int:barber_id>/services")
 def get_barber_services(barber_id):
     """GET /customers/barbers/{barber_id}/services - Return all services offered by that barber."""
     barber_services = services.get_barber_services(barber_id)
@@ -54,7 +54,7 @@ def get_barber_services(barber_id):
     return _ok(barber_services)
 
 
-@customer_bp.get("/barbers/<barber_id>/reviews")
+@customer_bp.get("/barbers/<int:barber_id>/reviews")
 def get_barber_reviews(barber_id):
     """GET /customers/barbers/{barber_id}/reviews - Return reviews written for that barber."""
     reviews = services.get_barber_reviews(barber_id)
@@ -337,9 +337,15 @@ def get_feed():
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 10))
     
-    # Use the unified auth helper, which securely verifies the Supabase token and auto-syncs the user
-    user = get_current_user_from_token()
-    user_id = user.id if user else None
+    # Extract user_id directly from JWT (no DB session needed)
+    user_id = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            payload = verify_token(auth_header[7:])
+            user_id = payload.get("user_id")
+        except (ValueError, Exception):
+            pass
     
     posts = services.get_feed_posts(page, limit, user_id)
     return _ok(posts)
@@ -348,8 +354,14 @@ def get_feed():
 @customer_feed_bp.route("/<int:post_id>", methods=["GET"], strict_slashes=False)
 def get_post(post_id):
     """GET /feed/{post_id} - Get a single post."""
-    user = get_current_user_from_token()
-    user_id = user.id if user else None
+    user_id = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            payload = verify_token(auth_header[7:])
+            user_id = payload.get("user_id")
+        except (ValueError, Exception):
+            pass
     
     post, reason, error = services.get_single_post(post_id, user_id)
     
@@ -438,40 +450,4 @@ def delete_comment(comment_id):
         return _err(reason, error)
     
     return _ok(result, "Comment deleted")
-
-
-@customer_feed_bp.route("/create", methods=["POST"], strict_slashes=False)
-@login_required
-def create_post():
-    """POST /feed/create - Create a new post (barber only)."""
-    from models.base import SessionLocal
-    from models.barber import Barber
-
-    current_user = get_current_user_from_token()
-    if not current_user:
-        return _err("unauthorized", "User not authenticated")
-
-    if current_user.role != "barber":
-        return _err("forbidden", "Only barbers can create posts", 403)
-
-    # Resolve user.id to barber.id
-    db = SessionLocal()
-    try:
-        barber = db.query(Barber).filter(Barber.user_id == current_user.id).first()
-        if not barber:
-            return _err("not_found", "Barber profile not found for this user", 404)
-        barber_id = barber.id
-    finally:
-        db.close()
-
-    data = request.get_json(silent=True) or {}
-    caption = data.get("caption", "")
-    image_url = data.get("image_url", "")
-
-    result, reason, error = services.create_post(barber_id, caption, image_url)
-
-    if error:
-        return _err(reason, error)
-
-    return _ok(result, "Post created", 201)
 

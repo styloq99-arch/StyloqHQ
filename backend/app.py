@@ -1,5 +1,4 @@
 from flask import Flask
-import os
 
 # Load all models first
 import models
@@ -28,18 +27,20 @@ from models.base import Base, engine
 
 def create_app():
     app = Flask(__name__)
-    
-    # Get allowed origins from environment variable, default to everything for development
-    cors_origin = os.environ.get("CORS_ORIGIN", "*")
-    origins_list = [origin.strip() for origin in cors_origin.split(",")] if cors_origin != "*" else "*"
-
     CORS(
-        app,
-        origins=origins_list,
-        supports_credentials=True,
-        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization"]
+    app,
+    origins="*",
+    supports_credentials=True,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
     )
+
+    @app.after_request
+    def after_request(response):
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+        response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+        return response
 
     app.config["SECRET_KEY"] = "dev"
 

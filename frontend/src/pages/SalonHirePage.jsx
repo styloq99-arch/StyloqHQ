@@ -1,20 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const APPLICATIONS = [
-  { id: 1, name: 'Kasun Perera', avatar: 'https://i.pravatar.cc/150?img=11', role: 'Senior Barber', exp: '5 yrs', skills: ['Fade', 'Color', 'Beard'], status: 'Pending' },
-  { id: 2, name: 'Nuwan Silva', avatar: 'https://i.pravatar.cc/150?img=15', role: 'Junior Barber', exp: '3 yrs', skills: ['Classic Cut', 'Shave'], status: 'Shortlisted' },
-  { id: 3, name: 'Dinesh Ranasinghe', avatar: 'https://i.pravatar.cc/150?img=17', role: 'Senior Barber', exp: '7 yrs', skills: ['Fade', 'Perms', 'Texture'], status: 'Pending' },
-  { id: 4, name: 'Amila Fernando', avatar: 'https://i.pravatar.cc/150?img=52', role: 'Junior Barber', exp: '2 yrs', skills: ['Classic Cut'], status: 'Rejected' },
+  { id: 1, name: 'Kasun Perera',      avatar: 'https://i.pravatar.cc/150?img=11', role: 'Senior Barber', exp: '5 yrs', skills: ['Fade', 'Color', 'Beard'],   status: 'Pending'     },
+  { id: 2, name: 'Nuwan Silva',       avatar: 'https://i.pravatar.cc/150?img=15', role: 'Junior Barber', exp: '3 yrs', skills: ['Classic Cut', 'Shave'],      status: 'Shortlisted' },
+  { id: 3, name: 'Dinesh Ranasinghe', avatar: 'https://i.pravatar.cc/150?img=17', role: 'Senior Barber', exp: '7 yrs', skills: ['Fade', 'Perms', 'Texture'], status: 'Pending'     },
+  { id: 4, name: 'Amila Fernando',    avatar: 'https://i.pravatar.cc/150?img=52', role: 'Junior Barber', exp: '2 yrs', skills: ['Classic Cut'],                status: 'Rejected'    },
 ];
 
 const INITIAL_LISTINGS = [
   { id: 1, title: 'Senior Barber', type: 'Full Time', salary: 'RS. 60,000 – 80,000', deadline: '2026-01-15', experience: '3+ years', skills: ['Fade', 'Beard Design', 'Color'], applicants: 4, photo: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=300&fit=crop' },
-  { id: 2, title: 'Junior Barber', type: 'Part Time', salary: 'RS. 30,000 – 45,000', deadline: '2026-01-30', experience: '0-2 years', skills: ['Classic Cut', 'Shave'], applicants: 2, photo: null },
+  { id: 2, title: 'Junior Barber', type: 'Part Time', salary: 'RS. 30,000 – 45,000', deadline: '2026-01-30', experience: '0-2 years', skills: ['Classic Cut', 'Shave'],          applicants: 2, photo: null },
 ];
 
-const FILTERS = ['All', 'Pending', 'Shortlisted', 'Hired', 'Rejected'];
+const FILTERS    = ['All', 'Pending', 'Shortlisted', 'Hired', 'Rejected'];
 const EMPTY_FORM = { title: '', type: 'Full Time', salary: '', deadline: '', skills: '', experience: '', photo: null };
 
 const statusBadgeClass = status => {
@@ -23,26 +22,25 @@ const statusBadgeClass = status => {
 };
 
 export default function SalonHirePage() {
-  const { user } = useAuth();
-  const [page, setPage] = useState('listings');
-  const [listings, setListings] = useState(INITIAL_LISTINGS);
-  const [apps, setApps] = useState(APPLICATIONS);
-  const [filter, setFilter] = useState('All');
-  const [confirm, setConfirm] = useState(null);
+  const [page, setPage]           = useState('listings');
+  const [listings, setListings]   = useState(INITIAL_LISTINGS);
+  const [apps, setApps]           = useState(APPLICATIONS);
+  const [filter, setFilter]       = useState('All');
+  const [confirm, setConfirm]     = useState(null);
   const [postModal, setPostModal] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [formErr, setFormErr] = useState({});
-  const [toast, setToast] = useState('');
-  const photoRef = useRef(null);
+  const [form, setForm]           = useState(EMPTY_FORM);
+  const [formErr, setFormErr]     = useState({});
+  const [toast, setToast]         = useState('');
+  const photoRef                  = useRef(null);
 
-  const showToast = msg => { setToast(msg); setTimeout(() => setToast(''), 2500); };
-  const closeModal = () => { setPostModal(false); setForm(EMPTY_FORM); setFormErr({}); };
+  const showToast  = msg => { setToast(msg); setTimeout(() => setToast(''), 2500); };
+  const closeModal = ()  => { setPostModal(false); setForm(EMPTY_FORM); setFormErr({}); };
 
   const postVacancy = () => {
     const e = {};
-    if (!form.title.trim()) e.title = 'Required';
-    if (!form.salary.trim()) e.salary = 'Required';
-    if (!form.deadline) e.deadline = 'Required';
+    if (!form.title.trim())  e.title    = 'Required';
+    if (!form.salary.trim()) e.salary   = 'Required';
+    if (!form.deadline)      e.deadline = 'Required';
     setFormErr(e);
     if (Object.keys(e).length) return;
     setListings(p => [{
@@ -74,15 +72,15 @@ export default function SalonHirePage() {
           <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/salon-home" className="sidebar-link"><i className="fas fa-home" />        <span>Home</span></Link>
-          <Link to="/salon-hire" className="sidebar-link active"><i className="fas fa-users" /> <span>Hire Barbers</span></Link>
+          <Link to="/salon-home"    className="sidebar-link"><i className="fas fa-home" />        <span>Home</span></Link>
+          <Link to="/salon-hire"    className="sidebar-link active"><i className="fas fa-users" /> <span>Hire Barbers</span></Link>
           <Link to="/salon-profile" className="sidebar-link"><i className="fas fa-user-circle" />  <span>Profile</span></Link>
         </nav>
         <div className="sidebar-user">
-          <img src={user?.avatar || "https://i.pravatar.cc/150?img=32"} alt="Salon" className="user-avatar" />
+          <img src="https://i.pravatar.cc/150?img=32" alt="Salon" className="user-avatar" />
           <div className="user-info">
-            <p className="user-name">{user?.full_name || "Salon"}</p>
-            <p className="user-status">Salon</p>
+            <p className="user-name">Liyo Salon</p>
+            <p className="user-status">Colombo 07</p>
           </div>
         </div>
       </aside>
@@ -111,8 +109,8 @@ export default function SalonHirePage() {
 
           <div className="page-toggle-bar">
             {[
-              { key: 'listings', label: 'Job Listings', icon: 'fas fa-briefcase' },
-              { key: 'applications', label: 'Applications', icon: 'fas fa-users' },
+              { key: 'listings',     label: 'Job Listings', icon: 'fas fa-briefcase' },
+              { key: 'applications', label: 'Applications', icon: 'fas fa-users'     },
             ].map(btn => (
               <button
                 key={btn.key}
@@ -219,7 +217,7 @@ export default function SalonHirePage() {
                     <div className="barber-card-actions">
                       {app.status === 'Pending' && (<>
                         <button onClick={() => setConfirm({ id: app.id, action: 'shortlist' })} className="action-btn--shortlist">Shortlist</button>
-                        <button onClick={() => setConfirm({ id: app.id, action: 'reject' })} className="action-btn--reject">Reject</button>
+                        <button onClick={() => setConfirm({ id: app.id, action: 'reject' })}    className="action-btn--reject">Reject</button>
                       </>)}
                       {app.status === 'Shortlisted' && (
                         <button onClick={() => setConfirm({ id: app.id, action: 'hire' })} className="action-btn--hire">
@@ -243,8 +241,8 @@ export default function SalonHirePage() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="bottom-nav">
-        <Link to="/salon-home" className="nav-item"><i className="fas fa-home" />        <span>Home</span></Link>
-        <Link to="/salon-hire" className="nav-item active"><i className="fas fa-users" /><span>Hire</span></Link>
+        <Link to="/salon-home"    className="nav-item"><i className="fas fa-home"/>        <span>Home</span></Link>
+        <Link to="/salon-hire"    className="nav-item active"><i className="fas fa-users" /><span>Hire</span></Link>
         <Link to="/salon-profile" className="nav-item"><i className="fas fa-user-circle" /> <span>Profile</span></Link>
       </nav>
 

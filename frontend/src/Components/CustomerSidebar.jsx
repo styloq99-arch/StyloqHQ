@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function CustomerSidebar({ activePage }) {
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -12,12 +12,12 @@ export default function CustomerSidebar({ activePage }) {
   };
 
   const links = [
-    { to: "/home", icon: "fas fa-home", label: "Home" },
-    { to: "/ai-recommendation", icon: "fas fa-magic", label: "AI Stylist" },
-    { to: "/customer-search", icon: "fas fa-search", label: "Search" },
-    { to: "/favourites", icon: "fas fa-heart", label: "Favourites" },
-    { to: "/message", icon: "fas fa-comments", label: "Message" },
-    { to: "/customer-profile", icon: "fas fa-user", label: "Profile" },
+    { to: "/home",              icon: "fas fa-home",     label: "Home" },
+    { to: "/ai-recommendation", icon: "fas fa-magic",    label: "AI Stylist" },
+    { to: "/customer-search",   icon: "fas fa-search",   label: "Search" },
+    { to: "/favourites",        icon: "fas fa-heart",    label: "Favourites" },
+    { to: "/message",           icon: "fas fa-comments", label: "Message" },
+    { to: "/customer-profile",  icon: "fas fa-user",     label: "Profile" },
   ];
 
   return (
@@ -54,13 +54,13 @@ export default function CustomerSidebar({ activePage }) {
       </nav>
       <div className="sidebar-user">
         <img
-          src={user?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"}
+          src="https://randomuser.me/api/portraits/men/1.jpg"
           alt="User"
           className="user-avatar"
         />
         <div className="user-info">
-          <p className="user-name">{user?.full_name || "Customer"}</p>
-          <p className="user-status">{user?.role === "client" ? "Customer" : user?.role || "Customer"}</p>
+          <p className="user-name">John Doe</p>
+          <p className="user-status">Customer</p>
         </div>
       </div>
     </aside>

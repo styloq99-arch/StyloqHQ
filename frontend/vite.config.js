@@ -10,10 +10,10 @@ export default defineConfig({
       '/auth': 'http://127.0.0.1:5000',
       '/health': 'http://127.0.0.1:5000',
       '/customers': 'http://127.0.0.1:5000',
-      '/messages': 'http://127.0.0.1:5000',
-      '/ai': 'http://127.0.0.1:5000',
-      '/barber/': 'http://127.0.0.1:5000',
-      '/salon/': 'http://127.0.0.1:5000',
+      // Use regex: only proxy /salon/ and /barber/ API paths (with trailing slash)
+      // This avoids catching frontend routes like /salon-dashboard or /barber-home
+      '^/salon/': 'http://127.0.0.1:5000',
+      '^/barber/': 'http://127.0.0.1:5000',
     },
   },
 })

@@ -5,45 +5,56 @@ import BarberSidebar from '../Components/BarberSidebar';
 
 export default function BarberHomePage() {
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => { logout(); navigate('/signin'); };
-
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const { apiGet } = await import('../utils/api');
-        const res = await apiGet('/barber/me/appointments');
-        if (res.success && Array.isArray(res.data)) {
-          setAppointments(res.data.map(a => ({
-            id: a.id,
-            customerName: a.customer_name || 'Customer',
-            customerAvatar: a.customer_avatar || 'https://i.pravatar.cc/150?img=5',
-            date: a.appointment_datetime ? new Date(a.appointment_datetime).toLocaleDateString('en-GB') : '',
-            rawDate: a.appointment_datetime ? a.appointment_datetime.split('T')[0] : '',
-            time: a.appointment_datetime ? new Date(a.appointment_datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
-            location: a.location || 'N/A',
-            hairStyle: a.service_name || 'Service',
-            service: a.service_name || 'Service',
-            amount: a.price ? `RS.${Math.round(a.price).toLocaleString()}.00` : 'N/A',
-            status: a.status === 'Confirmed' || a.status === 'Completed' ? 'Paid' : 'Not Paid',
-            bookingStatus: a.status || 'Pending',
-            durationMinutes: a.duration_minutes,
-          })));
-        } else {
-          console.warn('Appointments response:', res);
-        }
-      } catch (err) {
-        console.error('Failed to fetch appointments:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAppointments();
-  }, []);
+  const appointments = [
+    {
+      id: 1,
+      customerName: 'Chamodi Wimansa',
+      customerAvatar: 'https://i.pravatar.cc/150?img=5',
+      date: '27/11/2025',
+      rawDate: '2025-11-27',
+      time: '9.30PM',
+      location: 'Liyo Salon',
+      hairStyle: 'Layer cut',
+      hairStyleImage: 'https://tse1.mm.bing.net/th/id/OIP.maLe0tFcOIenZvcJJ9rgLwHaIS?rs=1&pid=ImgDetMain&o=7&rm=3',
+      service: 'Layer cut',
+      amount: 'RS.2500.00',
+      status: 'Paid',
+      paymentOption: 'Pay Online'
+    },
+    {
+      id: 2,
+      customerName: 'Danush Wijewardana',
+      customerAvatar: 'https://i.pravatar.cc/150?img=12',
+      date: '27/11/2025',
+      rawDate: '2025-11-27',
+      time: '10.30PM',
+      location: 'Liyo Salon',
+      hairStyle: 'Fade',
+      hairStyleImage: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&h=250&fit=crop',
+      service: 'Fade',
+      amount: 'RS.2500.00',
+      status: 'Not Paid',
+      paymentOption: 'Pay Online'
+    },
+    {
+      id: 3,
+      customerName: 'Ranuthi Dahamsa',
+      customerAvatar: 'https://i.pravatar.cc/150?img=12',
+      date: '16/1/2026',
+      rawDate: '2026-01-16',
+      time: '1.00PM',
+      location: 'Liyo Salon',
+      hairStyle: 'relax',
+      hairStyleImage: 'https://thumbs.dreamstime.com/z/happy-people-beautiful-portrait-attractive-young-caucasian-brunette-waving-head-smiling-broadly-being-happy-people-112905105.jpg',
+      service: 'relax',
+      amount: 'RS.3500.00',
+      status: 'Not Paid',
+      paymentOption: 'Pay Online'
+    }
+  ];
 
   // --- FILTER STATE ---
   const [filterOpen, setFilterOpen] = useState(false);
@@ -115,7 +126,7 @@ export default function BarberHomePage() {
               />
               <div className="barber-welcome-text">
                 <h1>WELCOME</h1>
-                <h2>{user?.full_name?.toUpperCase() || 'BARBER'}</h2>
+                <h2>MR. PERERA</h2>
               </div>
             </div>
             <div className="notification-bell">
@@ -235,43 +246,6 @@ export default function BarberHomePage() {
               </div>
             </div>
           </div>
-
-          {/* --- APPOINTMENT CARDS --- */}
-          {loading ? (
-            <div className="appt-loading">
-              <i className="fas fa-spinner fa-spin"></i> Loading appointments…
-            </div>
-          ) : filteredAppointments.length === 0 ? (
-            <div className="appt-empty">
-              <i className="fas fa-calendar-times"></i>
-              <p>No appointments found</p>
-            </div>
-          ) : (
-            <div className="appt-card-list">
-              {filteredAppointments.map(appt => (
-                <div key={appt.id} className="appt-card">
-                  <div className="appt-card-left">
-                    <img src={appt.customerAvatar} alt={appt.customerName} className="appt-card-avatar" />
-                    <div className="appt-card-info">
-                      <h4 className="appt-card-name">{appt.customerName}</h4>
-                      <p className="appt-card-service">{appt.hairStyle}</p>
-                      <p className="appt-card-datetime">
-                        <i className="far fa-calendar-alt"></i> {appt.date}
-                        <span className="appt-card-time-sep">·</span>
-                        <i className="far fa-clock"></i> {appt.time}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="appt-card-right">
-                    <span className="appt-card-price">{appt.amount}</span>
-                    <span className={`appt-card-status ${appt.bookingStatus === 'Pending' ? 'pending' : appt.bookingStatus === 'Accepted' ? 'accepted' : appt.bookingStatus === 'Rejected' ? 'rejected' : 'other'}`}>
-                      {appt.bookingStatus}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
 
         </div>
       </div>

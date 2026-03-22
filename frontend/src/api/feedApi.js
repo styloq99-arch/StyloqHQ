@@ -74,14 +74,3 @@ export async function getComments(postId) {
 export async function getSavedPosts() {
   return apiGet('/feed/saved');
 }
-
-/**
- * Create a new post (barber only)
- * Backend: POST /feed/create
- * @param {string} caption
- * @param {string} imageUrl
- * @returns {Promise<{success: boolean, data?: {post_id, message}, message?: string}>}
- */
-export async function createPost(caption, imageUrl) {
-  return apiPost('/feed/create', { caption, image_url: imageUrl });
-}

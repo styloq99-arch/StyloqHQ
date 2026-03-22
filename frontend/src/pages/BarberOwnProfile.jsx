@@ -1,38 +1,69 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
-import { apiGet, apiPut } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../supabaseClient';
+import { getBarberPosts as getSupabaseBarberPosts } from '../api/supabasePosts';
+import { saveBarberProfileData, getBarberProfileData } from '../api/supabaseBarber';
 
-// ─── Empty defaults (all data is fetched from Supabase) ──────────────────────
+// Mock initial data as fallback frameworkrber Data (from signup flow) ─────────────────────────────────────
 
-const EMPTY_PROFILE = {
-  name: '',
-  email: '',
-  phone: '',
-  idNumber: '',
-  city: '',
-  experience: '0',
-  bio: '',
-  specialties: [],
-  avatar: '',
-  coverImage: '',
+const INITIAL_PROFILE = {
+  name: 'S.S.K. Perera',
+  email: 'ssk.perera@gmail.com',
+  phone: '+94 77 234 5678',
+  idNumber: '199012345678',
+  city: 'Colombo',
+  experience: '17',
+  bio: 'Master barber with 17 years of experience. Fresh fades • Clean shaves • Good vibes. Crafting confidence one cut at a time.',
+  specialties: ['Fade Haircut', 'Beard Styling', 'Classic Shave', 'Line Up', 'Hair Coloring'],
+  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+  coverImage: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80',
   workingHours: {
-    Mon: { active: false, start: 'Closed', end: 'Closed' },
-    Tue: { active: false, start: 'Closed', end: 'Closed' },
-    Wed: { active: false, start: 'Closed', end: 'Closed' },
-    Thu: { active: false, start: 'Closed', end: 'Closed' },
-    Fri: { active: false, start: 'Closed', end: 'Closed' },
-    Sat: { active: false, start: 'Closed', end: 'Closed' },
+    Mon: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Tue: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Wed: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Thu: { active: true, start: '09:00 AM', end: '06:00 PM' },
+    Fri: { active: true, start: '09:00 AM', end: '07:00 PM' },
+    Sat: { active: true, start: '10:00 AM', end: '05:00 PM' },
     Sun: { active: false, start: 'Closed', end: 'Closed' },
   },
-  services: [],
-  locations: [],
-  certifications: [],
+  services: [
+    { id: 1, name: 'Side Part', price: '1500', desc: 'Classic side part cut with clean finish' },
+    { id: 2, name: 'Fade Haircut', price: '1800', desc: 'Skin fade or taper fade, expertly blended' },
+    { id: 3, name: 'Beard Trim', price: '800', desc: 'Shape and define your beard' },
+    { id: 4, name: 'Classic Shave', price: '1200', desc: 'Hot towel straight-razor shave' },
+    { id: 5, name: 'Under Cut', price: '2000', desc: 'Bold undercut for a modern look' },
+  ],
+  locations: [
+    { id: 1, salonName: 'Liyo Salons (pvt) Ltd', address: 'No. 06, Pagoda Road, Nugegoda', district: 'Colombo', postalCode: '10250' },
+    { id: 2, salonName: 'Salon Next (pvt) Ltd', address: 'No. 7D, Vihara Mawatha, Peliyagoda', district: 'Colombo', postalCode: '11600' },
+  ],
+  certifications: [
+    { title: 'Hair / Barber Diploma', institute: 'Institute of Hairdressers & Beauticians (IHB)', date: '2010-05-15', desc: 'Basic hair-cutting, styling, salon hygiene and barbering skills.' },
+    { title: 'Advanced Color Specialist', institute: "L'Oréal Professional Academy", date: '2015-08-20', desc: 'Mastery in hair coloring, balayage, ombre, and color correction.' },
+    { title: "Men's Grooming Masterclass", institute: 'British Barbers Association', date: '2019-11-10', desc: 'Advanced straight razor shaving, beard sculpting, and classic fades.' },
+  ],
 };
 
-// Posts are fetched from the database
+// Mock uploaded work photos
+const WORK_PHOTOS = [
+  'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300&q=80',
+  'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=300&q=80',
+  'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&q=80',
+  'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=300&q=80',
+  'https://images.unsplash.com/photo-1621607512214-68297480165e?w=300&q=80',
+  'https://images.unsplash.com/photo-1596704017254-9b121068fb31?w=300&q=80',
+  'https://images.unsplash.com/photo-1560869713-bf919fd4a88a?w=300&q=80',
+  'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80',
+  'https://images.unsplash.com/photo-1549236177-f9b0031b5e8b?w=300&q=80',
+];
+
+const STATS = [
+  { label: 'Posts', value: '42' },
+  { label: 'Followers', value: '1.2K' },
+  { label: 'Rating', value: '4.9' },
+  { label: 'Bookings', value: '380' },
+];
 
 const TIME_SLOTS = [
   '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
@@ -40,6 +71,7 @@ const TIME_SLOTS = [
   '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
   '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM',
 ];
+
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 
@@ -55,23 +87,13 @@ function EditModal({ section, profile, onSave, onClose }) {
 
   const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
 
-  // Store actual File objects for upload
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [coverFile, setCoverFile] = useState(null);
-
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-    }
+    if (file) setAvatarPreview(URL.createObjectURL(file));
   };
   const handleCoverChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setCoverFile(file);
-      setCoverPreview(URL.createObjectURL(file));
-    }
+    if (file) setCoverPreview(URL.createObjectURL(file));
   };
 
   // ── specialty handlers ──
@@ -155,9 +177,6 @@ function EditModal({ section, profile, onSave, onClose }) {
     const saved = { ...data };
     if (avatarPreview) saved.avatar = avatarPreview;
     if (coverPreview) saved.coverImage = coverPreview;
-    // Attach actual File objects for Supabase Storage upload
-    saved._avatarFile = avatarFile;
-    saved._coverFile = coverFile;
     onSave(saved);
   };
 
@@ -492,112 +511,76 @@ function PhotoUploadModal({ onClose, onUpload }) {
   );
 }
 
+
+
+
+
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function BarberOwnProfile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
-  const [profile, setProfile] = useState(EMPTY_PROFILE);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [profile, setProfile] = useState({
+    ...INITIAL_PROFILE,
+    name: user?.full_name || 'Unknown Barber',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  });
+
+  useEffect(() => {
+    async function fetchProfileData() {
+      if (!user?.id) return;
+
+      const { success, data } = await getBarberProfileData(user.id);
+      if (success && data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          name: user.full_name || data.name || prev.name,
+          email: user.email || data.email || prev.email,
+          phone: user.phone || data.phone || prev.phone,
+        }));
+      } else {
+        // Fallback to initial profile data if no data found in DB
+        setProfile(prev => ({
+          ...INITIAL_PROFILE,
+          name: user.full_name || INITIAL_PROFILE.name,
+          email: user.email || INITIAL_PROFILE.email,
+          phone: user.phone || INITIAL_PROFILE.phone,
+        }));
+      }
+    }
+    fetchProfileData();
+  }, [user]);
+
   const [workPhotos, setWorkPhotos] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+
+  // Fetch true posts from Supabase on mount
+  useEffect(() => {
+    async function fetchPosts() {
+      if (!user?.id) return;
+      setLoadingPosts(true);
+      const { success, data } = await getSupabaseBarberPosts(user.id);
+      if (success && data.length > 0) {
+        setWorkPhotos(data.map(p => p.image_url));
+      } else {
+        // Drop down to mock data if there are strictly no posts, 
+        // but an empty array is fine too. We'll leave it empty to show reality.
+        setWorkPhotos([]);
+      }
+      setLoadingPosts(false);
+    }
+    fetchPosts();
+  }, [user]);
+
   const [editSection, setEditSection] = useState(null);
   const [photoModal, setPhotoModal] = useState(false);
   const [toast, setToast] = useState('');
   const [activeTab, setActiveTab] = useState('posts');
   const [photoViewer, setPhotoViewer] = useState(null);
-
-  // Fetch barber profile from backend on mount
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setProfileLoading(true);
-      try {
-        const res = await apiGet('/barber/me/profile');
-        if (res.success && res.data) {
-          const d = res.data;
-
-          // Map availability (day_of_week 0-6) to working hours object
-          const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-          const workingHours = { ...EMPTY_PROFILE.workingHours };
-          if (Array.isArray(d.availability)) {
-            d.availability.forEach(slot => {
-              const dayName = DAY_NAMES[slot.day_of_week];
-              if (dayName) {
-                const formatTime = (t) => {
-                  if (!t) return '09:00 AM';
-                  const parts = t.split(':');
-                  let h = parseInt(parts[0]);
-                  const m = parts[1] || '00';
-                  const ampm = h >= 12 ? 'PM' : 'AM';
-                  if (h > 12) h -= 12;
-                  if (h === 0) h = 12;
-                  return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
-                };
-                workingHours[dayName] = {
-                  active: true,
-                  start: formatTime(slot.start_time),
-                  end: formatTime(slot.end_time),
-                };
-              }
-            });
-          }
-
-          setProfile({
-            name: d.name || '',
-            email: d.email || '',
-            phone: d.phone || '',
-            idNumber: '',
-            city: d.current_location_name || '',
-            experience: d.years_experience ? String(d.years_experience) : '0',
-            bio: d.bio || '',
-            specialties: Array.isArray(d.specialties) ? d.specialties : [],
-            avatar: d.avatar || d.profile_image || '',
-            coverImage: d.cover_image || '',
-            workingHours,
-            services: Array.isArray(d.services)
-              ? d.services.map(s => ({ id: s.id, name: s.name, price: String(s.price || ''), desc: s.description || '' }))
-              : [],
-            locations: d.current_location_name
-              ? [{ id: 1, salonName: '', address: d.current_location_name, district: '', postalCode: '' }]
-              : [],
-            certifications: Array.isArray(d.certifications)
-              ? d.certifications.map(c => ({ title: c.name, institute: c.issuing_body || '', date: '', desc: '' }))
-              : [],
-            // Store raw stats for dynamic display
-            _postsCount: d.posts_count || 0,
-            _avgRating: d.avg_rating || 0,
-            _reviewCount: d.review_count || 0,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to fetch barber profile:', err);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  // Fetch real posts from the database
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await apiGet('/feed?limit=50');
-        console.log('[DEBUG] Feed response for profile posts:', res);
-        if (res.success && Array.isArray(res.data)) {
-          // Feed API returns 'imageUrl' (camelCase)
-          const images = res.data
-            .filter(p => p.imageUrl || p.image_url)
-            .map(p => p.imageUrl || p.image_url);
-          console.log('[DEBUG] Extracted images:', images);
-          setWorkPhotos(images);
-        }
-      } catch (err) {
-        console.error('Failed to fetch posts:', err);
-      }
-    };
-    fetchPosts();
-  }, []);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -605,77 +588,12 @@ export default function BarberOwnProfile() {
   };
 
   const handleSave = async (updated) => {
-    setEditSection(null);
-
-    try {
-      // Upload images to Supabase Storage if new files were selected
-      let avatarUrl = updated.avatar;
-      let coverUrl = updated.coverImage;
-
-      console.log('[DEBUG] handleSave called. _avatarFile:', updated._avatarFile, '_coverFile:', updated._coverFile);
-
-      if (updated._avatarFile) {
-        const ext = updated._avatarFile.name.split('.').pop();
-        const path = `avatars/${Date.now()}_avatar.${ext}`;
-        console.log('[DEBUG] Uploading avatar to path:', path);
-        const { data: uploadData, error } = await supabase.storage
-          .from('profile-images')
-          .upload(path, updated._avatarFile, { upsert: true });
-        console.log('[DEBUG] Avatar upload result:', { uploadData, error });
-        if (error) {
-          console.error('Avatar upload failed:', error);
-          showToast('Failed to upload profile photo: ' + error.message);
-          return;
-        }
-        const { data: urlData } = supabase.storage
-          .from('profile-images')
-          .getPublicUrl(uploadData.path);
-        avatarUrl = urlData.publicUrl;
-        console.log('[DEBUG] Avatar public URL:', avatarUrl);
-      }
-
-      if (updated._coverFile) {
-        const ext = updated._coverFile.name.split('.').pop();
-        const path = `covers/${Date.now()}_cover.${ext}`;
-        console.log('[DEBUG] Uploading cover to path:', path);
-        const { data: uploadData, error } = await supabase.storage
-          .from('profile-images')
-          .upload(path, updated._coverFile, { upsert: true });
-        console.log('[DEBUG] Cover upload result:', { uploadData, error });
-        if (error) {
-          console.error('Cover upload failed:', error);
-          showToast('Failed to upload cover photo: ' + error.message);
-          return;
-        }
-        const { data: urlData } = supabase.storage
-          .from('profile-images')
-          .getPublicUrl(uploadData.path);
-        coverUrl = urlData.publicUrl;
-        console.log('[DEBUG] Cover public URL:', coverUrl);
-      }
-
-      // Clean up temp file references
-      const { _avatarFile, _coverFile, ...cleanUpdated } = updated;
-      cleanUpdated.avatar = avatarUrl;
-      cleanUpdated.coverImage = coverUrl;
-
-      setProfile(cleanUpdated);
-      showToast('Profile updated successfully!');
-
-      await apiPut('/barber/me/profile', {
-        full_name: cleanUpdated.name,
-        phone_number: cleanUpdated.phone,
-        city: cleanUpdated.city,
-        bio: cleanUpdated.bio,
-        experience_years: parseInt(cleanUpdated.experience) || 0,
-        specialties: cleanUpdated.specialties,
-        profile_image: avatarUrl,
-        cover_image: coverUrl,
-      });
-    } catch (err) {
-      console.error('Profile save error:', err);
-      showToast('Failed to save profile.');
+    setProfile(updated);
+    setEditSection(null); // Assuming setEditSection(null) is the correct way to close the modal
+    if (user) {
+      await saveBarberProfileData(user.id, updated);
     }
+    showToast('Profile updated successfully!');
   };
 
   const handlePhotoUpload = (src) => {
@@ -790,11 +708,7 @@ export default function BarberOwnProfile() {
 
               {/* Stats */}
               <div className="bop-stats-row">
-                {[
-                  { label: 'Posts', value: profile._postsCount || workPhotos.length || 0 },
-                  { label: 'Rating', value: profile._avgRating || '–' },
-                  { label: 'Reviews', value: profile._reviewCount || 0 },
-                ].map(st => (
+                {STATS.map(st => (
                   <div key={st.label} className="bop-stat">
                     <span className="bop-stat-val">{st.value}</span>
                     <span className="bop-stat-label">{st.label}</span>
