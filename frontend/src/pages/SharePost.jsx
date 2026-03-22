@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import BarberSidebar from '../Components/BarberSidebar';
 
 
 export default function SharePost() {
@@ -9,8 +10,8 @@ export default function SharePost() {
   const imageSrc = location.state?.imageSrc
     || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&q=85';
 
-  const [caption,   setCaption]   = useState('');
-  const [sharing,   setSharing]   = useState(false);
+  const [caption, setCaption] = useState('');
+  const [sharing, setSharing] = useState(false);
   const [charFocus, setCharFocus] = useState(false);
 
   const handleShare = () => {
@@ -22,24 +23,13 @@ export default function SharePost() {
   };
 
   const remaining = 2200 - caption.length;
-  const pct       = (caption.length / 2200) * 100;
+  const pct = (caption.length / 2200) * 100;
 
   return (
     <div className="app-layout">
 
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/barber-home"       className="sidebar-link"><i className="fas fa-home"></i><span>Home</span></Link>
-          <Link to="/barber-dashboard"  className="sidebar-link"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
-          <Link to="/appointments"      className="sidebar-link"><i className="fas fa-calendar"></i><span>Appointments</span></Link>
-          <Link to="/barber-OwnProfile" className="sidebar-link"><i className="fas fa-user"></i><span>Profile</span></Link>
-          <Link to="/postingPhotos"     className="sidebar-link active"><i className="fas fa-plus-square"></i><span>New Post</span></Link>
-        </nav>
-      </aside>
+      <BarberSidebar activePage="New Post" />
 
       <div className="main-content sp-main">
 
@@ -165,8 +155,8 @@ export default function SharePost() {
                       background: remaining < 100
                         ? '#ff4444'
                         : remaining < 300
-                        ? '#ffaa00'
-                        : '#FF5722',
+                          ? '#ffaa00'
+                          : '#FF5722',
                     }}
                   />
                 </div>
@@ -199,10 +189,10 @@ export default function SharePost() {
 
       {/* Mobile bottom nav */}
       <nav className="bottom-nav">
-        <Link to="/barber-home"       className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
-        <Link to="/barber-dashboard"  className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
-        <Link to="/postingPhotos"     className="nav-item active add-circle-btn"><i className="fas fa-plus"></i></Link>
-        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/barber-home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+        <Link to="/postingPhotos" className="nav-item active add-circle-btn"><i className="fas fa-plus"></i></Link>
+        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
         <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
       </nav>
     </div>

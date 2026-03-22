@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getConversations, getChatHistory, sendMessage } from "../api/messageApi";
+import CustomerSidebar from "../Components/CustomerSidebar";
+import BarberSidebar from "../Components/BarberSidebar";
+import SalonSidebar from "../Components/SalonSidebar";
 
 export default function Messages() {
   const { token, user } = useAuth();
   const location = useLocation();
   const messagesEndRef = useRef(null);
-  
+
   const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -55,7 +58,7 @@ export default function Messages() {
   const fetchMessages = async (forceLoad = false) => {
     if (!token || !selectedContact) return;
     if (forceLoad) setLoadingMessages(true);
-    
+
     const res = await getChatHistory(token, selectedContact.id);
     if (res.success) {
       setMessages(res.data);
@@ -105,32 +108,14 @@ export default function Messages() {
 
   return (
     <div className="app-layout" style={{ height: "100vh", overflow: "hidden" }}>
-      {/* Sidebar - mimicking CustomerHome */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: "40px" }}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/home" className="sidebar-link">
-            <i className="fas fa-home"></i> <span>Home</span>
-          </Link>
-          <Link to="/ai-recommendation" className="sidebar-link">
-            <i className="fas fa-magic"></i> <span>AI Stylist</span>
-          </Link>
-          <Link to="/customer-search" className="sidebar-link">
-            <i className="fas fa-search"></i> <span>Search</span>
-          </Link>
-          <Link to="/favourites" className="sidebar-link">
-            <i className="fas fa-heart"></i> <span>Favourites</span>
-          </Link>
-          <Link to="/message" className="sidebar-link active">
-            <i className="fas fa-comments"></i> <span>Message</span>
-          </Link>
-          <Link to="/profile" className="sidebar-link">
-            <i className="fas fa-user"></i> <span>Profile</span>
-          </Link>
-        </nav>
-      </aside>
+      {/* Role-aware Sidebar */}
+      {user?.role === "barber" ? (
+        <BarberSidebar activePage="Message" />
+      ) : user?.role === "salon" ? (
+        <SalonSidebar activePage="Message" />
+      ) : (
+        <CustomerSidebar activePage="Message" />
+      )}
 
       <div className="main-content" style={{ display: "flex", flexDirection: "column", height: "100vh", padding: 0 }}>
         {/* Header */}
@@ -140,11 +125,11 @@ export default function Messages() {
 
         <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
           {/* Contacts List */}
-          <div style={{ 
-            width: "350px", 
-            borderRight: "1px solid var(--border-faint)", 
+          <div style={{
+            width: "350px",
+            borderRight: "1px solid var(--border-faint)",
             backgroundColor: "var(--bg-elevated)",
-            display: "flex", 
+            display: "flex",
             flexDirection: "column",
             overflowY: "auto"
           }}>
@@ -158,7 +143,7 @@ export default function Messages() {
               </div>
             ) : (
               contacts.map((contact) => (
-                <div 
+                <div
                   key={contact.id}
                   onClick={() => setSelectedContact(contact)}
                   style={{
@@ -178,9 +163,9 @@ export default function Messages() {
                     )}
                   </div>
                   {contact.last_message && (
-                    <p style={{ 
-                      margin: 0, 
-                      fontSize: "0.9rem", 
+                    <p style={{
+                      margin: 0,
+                      fontSize: "0.9rem",
                       color: contact.last_message.is_read || contact.last_message.is_mine ? "var(--text-secondary)" : "var(--text-primary)",
                       fontWeight: contact.last_message.is_read || contact.last_message.is_mine ? "normal" : "bold",
                       whiteSpace: "nowrap",
@@ -200,22 +185,22 @@ export default function Messages() {
             {selectedContact ? (
               <>
                 {/* Chat Header */}
-                <div style={{ 
-                  padding: "1rem 2rem", 
-                  backgroundColor: "var(--bg-elevated)", 
+                <div style={{
+                  padding: "1rem 2rem",
+                  backgroundColor: "var(--bg-elevated)",
                   borderBottom: "1px solid var(--border-faint)",
                   display: "flex",
                   alignItems: "center",
                   gap: "1rem"
                 }}>
-                  <div style={{ 
-                    width: "40px", 
-                    height: "40px", 
-                    borderRadius: "50%", 
-                    backgroundColor: "var(--color-accent)", 
-                    color: "white", 
-                    display: "flex", 
-                    alignItems: "center", 
+                  <div style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor: "var(--color-accent)",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
                     justifyContent: "center",
                     fontWeight: "bold"
                   }}>
@@ -237,9 +222,9 @@ export default function Messages() {
                     </div>
                   ) : (
                     messages.map((msg) => (
-                      <div 
-                        key={msg.id} 
-                        style={{ 
+                      <div
+                        key={msg.id}
+                        style={{
                           alignSelf: msg.is_mine ? "flex-end" : "flex-start",
                           maxWidth: "70%",
                           display: "flex",
@@ -270,31 +255,31 @@ export default function Messages() {
                 {/* Input Area */}
                 <div style={{ padding: "1.5rem 2rem", backgroundColor: "var(--bg-elevated)", borderTop: "1px solid var(--border-faint)" }}>
                   <form onSubmit={handleSend} style={{ display: "flex", gap: "1rem" }}>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
-                      placeholder="Type your message..." 
-                      style={{ 
-                        flex: 1, 
-                        padding: "1rem", 
-                        borderRadius: "30px", 
+                      placeholder="Type your message..."
+                      style={{
+                        flex: 1,
+                        padding: "1rem",
+                        borderRadius: "30px",
                         border: "1px solid var(--border-deep)",
                         backgroundColor: "var(--bg-base)",
                         color: "var(--text-primary)",
                         outline: "none"
-                      }} 
+                      }}
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={!inputText.trim()}
-                      style={{ 
-                        width: "50px", 
-                        height: "50px", 
-                        borderRadius: "50%", 
-                        backgroundColor: inputText.trim() ? "var(--color-accent)" : "var(--border-deep)", 
-                        color: "white", 
-                        border: "none", 
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                        backgroundColor: inputText.trim() ? "var(--color-accent)" : "var(--border-deep)",
+                        color: "white",
+                        border: "none",
                         cursor: inputText.trim() ? "pointer" : "default",
                         display: "flex",
                         alignItems: "center",

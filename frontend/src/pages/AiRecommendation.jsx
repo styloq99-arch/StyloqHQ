@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import CustomerSidebar from "../Components/CustomerSidebar";
 
 export default function AiRecommendation() {
   const { token, user } = useAuth();
@@ -16,7 +17,7 @@ export default function AiRecommendation() {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       // Reset state on new file
-      setResults(null); 
+      setResults(null);
       setError(null);
     }
   };
@@ -61,30 +62,7 @@ export default function AiRecommendation() {
   return (
     <div className="app-layout">
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: "40px" }}>
-            StyloQ
-          </h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/home" className="sidebar-link">
-            <i className="fas fa-home"></i> <span>Home</span>
-          </Link>
-          <Link to="/ai-recommendation" className="sidebar-link active">
-            <i className="fas fa-magic"></i> <span>AI Stylist</span>
-          </Link>
-          <Link to="/customer-search" className="sidebar-link">
-            <i className="fas fa-search"></i> <span>Search</span>
-          </Link>
-          <Link to="/favourites" className="sidebar-link">
-            <i className="fas fa-heart"></i> <span>Favourites</span>
-          </Link>
-          <Link to="/profile" className="sidebar-link">
-            <i className="fas fa-user"></i> <span>Profile</span>
-          </Link>
-        </nav>
-      </aside>
+      <CustomerSidebar activePage="AI Stylist" />
 
       {/* Main Content */}
       <div className="main-content">
@@ -100,28 +78,28 @@ export default function AiRecommendation() {
           <div style={{ maxWidth: "800px", margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: "2rem" }}>
               <h2 style={{ fontSize: "2rem", color: "var(--text-primary)", marginBottom: "0.5rem" }}>
-                Discover Your Perfect Style 
+                Discover Your Perfect Style
               </h2>
               <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem" }}>
                 Upload a portrait and our AI will analyze your face shape to recommend hairstyles tailored specifically to you.
               </p>
             </div>
 
-            <div style={{ 
-              background: "var(--bg-elevated)", 
-              borderRadius: "16px", 
+            <div style={{
+              background: "var(--bg-elevated)",
+              borderRadius: "16px",
               boxShadow: "var(--shadow-modal)",
               padding: "2rem",
               marginBottom: "2rem",
               border: "1px solid var(--border-faint)"
             }}>
-              
+
               {!selectedFile ? (
-                <div 
-                  style={{ 
-                    border: "2px dashed var(--border-deep)", 
-                    borderRadius: "12px", 
-                    padding: "3rem 2rem", 
+                <div
+                  style={{
+                    border: "2px dashed var(--border-deep)",
+                    borderRadius: "12px",
+                    padding: "3rem 2rem",
                     textAlign: "center",
                     cursor: "pointer",
                     position: "relative"
@@ -131,29 +109,29 @@ export default function AiRecommendation() {
                   <i className="fas fa-cloud-upload-alt" style={{ fontSize: "3rem", color: "var(--color-accent)", marginBottom: "1rem" }}></i>
                   <h3 style={{ margin: "0 0 0.5rem 0", color: "var(--text-primary)" }}>Upload your photo</h3>
                   <p style={{ color: "var(--text-dim)", margin: 0 }}>JPG, PNG. Max 5MB</p>
-                  <input 
-                    type="file" 
-                    id="file-upload" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    id="file-upload"
+                    accept="image/*"
                     style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }}
                     onChange={handleFileChange}
                   />
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    style={{ 
-                      width: "100%", 
-                      maxWidth: "300px", 
-                      borderRadius: "12px", 
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    style={{
+                      width: "100%",
+                      maxWidth: "300px",
+                      borderRadius: "12px",
                       objectFit: "cover",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                    }} 
+                    }}
                   />
                   <div style={{ display: "flex", gap: "1rem" }}>
-                    <button 
+                    <button
                       className="btn btn-secondary"
                       onClick={() => { setSelectedFile(null); setPreviewUrl(null); setResults(null); }}
                       disabled={loading}
@@ -161,7 +139,7 @@ export default function AiRecommendation() {
                       Choose Different Photo
                     </button>
                     {!results && (
-                      <button 
+                      <button
                         className="btn btn-primary"
                         onClick={handleAnalyze}
                         disabled={loading}
@@ -197,19 +175,19 @@ export default function AiRecommendation() {
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
                   {results.recommendedStyles.map((style) => (
-                    <div key={style.id} style={{ 
-                      background: "var(--bg-elevated)", 
-                      borderRadius: "16px", 
-                      overflow: "hidden", 
+                    <div key={style.id} style={{
+                      background: "var(--bg-elevated)",
+                      borderRadius: "16px",
+                      overflow: "hidden",
                       boxShadow: "var(--shadow-card, 0 4px 6px rgba(0,0,0,0.05))",
                       border: "1px solid var(--border-faint)"
                     }}>
                       <div style={{ width: "100%", height: "250px", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         {style.previewImage ? (
-                          <img 
-                            src={`data:image/jpeg;base64,${style.previewImage}`} 
-                            alt={style.name} 
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                          <img
+                            src={`data:image/jpeg;base64,${style.previewImage}`}
+                            alt={style.name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
                         ) : (
                           <div style={{ textAlign: "center", color: "var(--text-dim)" }}>
@@ -227,7 +205,7 @@ export default function AiRecommendation() {
                     </div>
                   ))}
                 </div>
-                
+
                 {results.note && (
                   <p style={{ textAlign: "center", color: "var(--text-dim)", fontSize: "0.85rem", marginTop: "2rem" }}>
                     * {results.note}

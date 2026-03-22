@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import BarberSidebar from '../Components/BarberSidebar';
 
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
@@ -8,11 +9,11 @@ const BARBER_WORKING_HOURS = { start: 9, end: 19 }; // 9 AM – 7 PM
 
 const WEEK_DATA = [
   { day: 'S', value: 15 },
-  { day: 'M', value: 4  },
-  { day: 'T', value: 5  },
-  { day: 'W', value: 1  },
-  { day: 'T', value: 3  },
-  { day: 'F', value: 7  },
+  { day: 'M', value: 4 },
+  { day: 'T', value: 5 },
+  { day: 'W', value: 1 },
+  { day: 'T', value: 3 },
+  { day: 'F', value: 7 },
   { day: 'S', value: 10 },
 ];
 
@@ -47,9 +48,9 @@ const getMax = (arr) => Math.max(...arr.map((d) => d.value), 1);
 // Colour by relative height
 const getBarColor = (value, max) => {
   const pct = value / max;
-  if (pct >= 1)    return '#D32F2F';   // peak  – deep red
-  if (pct > 0.55)  return '#FF5722';   // high  – accent orange
-  if (pct > 0.25)  return '#FF7043';   // mid   – light orange
+  if (pct >= 1) return '#D32F2F';   // peak  – deep red
+  if (pct > 0.55) return '#FF5722';   // high  – accent orange
+  if (pct > 0.25) return '#FF7043';   // mid   – light orange
   return '#8D5524';                    // low   – brown
 };
 
@@ -88,7 +89,7 @@ const AnimatedBar = ({ value, max, label, delay = 0, isPeak = false, showValue =
 
 // ─── CHART (grid + y-axis + bars) ────────────────────────────────────────────
 const BarChart = ({ data, animKey, xTitle }) => {
-  const max    = getMax(data);
+  const max = getMax(data);
   const yticks = buildYTicks(max);
   const peakVal = Math.max(...data.map((d) => d.value));
 
@@ -137,14 +138,14 @@ const BarChart = ({ data, animKey, xTitle }) => {
 
 const AppointmentsOverview = () => {
 
-  const [filter, setFilter]     = useState('week');
+  const [filter, setFilter] = useState('week');
   const [dropOpen, setDropOpen] = useState(false);
-  const [animKey, setAnimKey]   = useState(0);
+  const [animKey, setAnimKey] = useState(0);
   const dropRef = useRef(null);
 
   const chartData = filter === 'week' ? WEEK_DATA : MONTH_DATA;
-  const peakData  = buildPeakData(PEAK_HOURS_RAW, BARBER_WORKING_HOURS);
-  const peakMax   = getMax(peakData);
+  const peakData = buildPeakData(PEAK_HOURS_RAW, BARBER_WORKING_HOURS);
+  const peakMax = getMax(peakData);
   const peakPeakVal = Math.max(...peakData.map((d) => d.value));
   const peakPeakLabel = peakData.find((d) => d.value === peakPeakVal)?.label;
 
@@ -165,19 +166,8 @@ const AppointmentsOverview = () => {
   return (
     <div className="overview-page app-layout">
 
-      {/* ── DESKTOP SIDEBAR ─────────────────────────────────────── */}
-      <aside className="desktop-sidebar">
-        <div className="sidebar-logo">
-          <h1 className="brand-title" style={{ fontSize: '40px' }}>StyloQ</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/barber-home"      className="sidebar-link"><i className="fas fa-home" /><span>Home</span></Link>
-          <Link to="/barber-dashboard" className="sidebar-link"><i className="fas fa-calendar-alt" /><span>DashBoard</span></Link>
-          <Link to="/message"          className="sidebar-link"><i className="fas fa-comments" /><span>Message</span></Link>
-          <Link to="/barber-OwnProfile"          className="sidebar-link"><i className="fas fa-user" /><span>Profile</span></Link>
-          <Link to="/postingPhotos"     className="sidebar-link"><i className="fas fa-plus-square"></i> <span>New Post</span></Link>
-        </nav>
-      </aside>
+      {/* ── DESKTOP SIDEBAR ── */}
+      <BarberSidebar activePage="Home" />
 
       {/* ── MAIN ────────────────────────────────────────────────── */}
       <div className="overview-main main-content">
@@ -233,7 +223,7 @@ const AppointmentsOverview = () => {
           {/* ── CHARTS ROW (side-by-side on desktop) ────────────── */}
           <div className="charts-row">
 
-                        {/* Appointments Overview chart */}
+            {/* Appointments Overview chart */}
             <div className="chart-section">
               <div className="chart-section-header">
                 <h2 className="chart-title">Appointments Overview</h2>
@@ -274,7 +264,7 @@ const AppointmentsOverview = () => {
               />
             </div>
 
-                                    {/* Peak Hours chart */}
+            {/* Peak Hours chart */}
             <div className="chart-section">
               <div className="chart-section-header">
                 <div>
@@ -340,21 +330,21 @@ const AppointmentsOverview = () => {
                 </div>
               </div>
             </div>
-            
+
 
 
           </div>{/* end charts-row */}
-            
+
         </div>{/* end overview-body */}
 
-      {/* Mobile bottom nav */}
-      <nav className="bottom-nav">
-        <Link to="/barber-home"       className="nav-item active"><i className="fas fa-home"></i><span>Home</span></Link>
-        <Link to="/barber-dashboard"  className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
-        <Link to="/postingPhotos"     className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
-        <Link to="/message"           className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
-        <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
-      </nav>
+        {/* Mobile bottom nav */}
+        <nav className="bottom-nav">
+          <Link to="/barber-home" className="nav-item active"><i className="fas fa-home"></i><span>Home</span></Link>
+          <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+          <Link to="/postingPhotos" className="nav-item add-circle-btn"><i className="fas fa-plus"></i></Link>
+          <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
+          <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+        </nav>
 
       </div>{/* end overview-main */}
     </div>
