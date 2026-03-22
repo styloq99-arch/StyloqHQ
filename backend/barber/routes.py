@@ -159,7 +159,7 @@ def update_availability(barber_id: int):
     if slots is None:
         return jsonify({"error": "availability array is required."}), 400
 
-    result = update_availability(barber_id, slots)
+    result = services.update_availability(barber_id, slots)
     return _respond(result)
 
 
