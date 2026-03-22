@@ -1,6 +1,7 @@
 import os
 import json
 import base64
+
 import google.genai as genai
 from google.genai import types
 
@@ -18,7 +19,7 @@ MODEL_NAME = "gemini-2.5-flash"
 
 # Get API key from environment variable for security
 # You can also set it directly here for testing, but use env var in production
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyCtq9kUERwjvfJ6w2GaSV1JvawwenZcf5E")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 print("API KEY LOADED:", GEMINI_API_KEY is not None)
 
 client = None
