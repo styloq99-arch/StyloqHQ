@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
-from backend.auth.utils import login_required, get_current_user_from_token
-from backend.models.base import SessionLocal
-from backend.models.social import Message
-from backend.models.user import User
+from auth.utils import login_required, get_current_user_from_token
+from models.base import SessionLocal
+from models.social import Message
+from models.user import User
 from sqlalchemy import or_, and_, desc
 import datetime
 

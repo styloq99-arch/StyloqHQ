@@ -1,7 +1,7 @@
 from sqlalchemy import func
-from backend.models.base import SessionLocal
-from backend.models.social import Post, Comment, PostLike, SavedPost
-from backend.models.user import User
+from models.base import SessionLocal
+from models.social import Post, Comment, PostLike, SavedPost
+from models.user import User
 
 
 def fetch_feed_posts_paginated(page=1, limit=5, current_user_id=None):

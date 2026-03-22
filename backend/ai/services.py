@@ -4,11 +4,13 @@ import base64
 
 import google.genai as genai
 from google.genai import types
+from dotenv import load_dotenv
+load_dotenv()
 
 from sqlalchemy import func
-from backend.models.base import SessionLocal
-from backend.models.booking import Booking
-from backend.models.booking import Hairstyle
+from models.base import SessionLocal
+from models.booking import Booking
+from models.booking import Hairstyle
 
 # -------------------------------------------------
 # GEMINI CONFIG
