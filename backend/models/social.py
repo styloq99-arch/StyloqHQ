@@ -84,7 +84,7 @@ class SavedPost(Base):
 class Event(Base):
     __tablename__ = 'events'
     id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey('clients.id'), nullable=False)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
     title = Column(String(200), nullable=False)
     description = Column(Text)
     event_date = Column(DateTime, nullable=False)
@@ -118,7 +118,7 @@ class Message(Base):
 class Favorite(Base):
     __tablename__ = 'favorites'
     id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey('clients.id'), nullable=False)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
     barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
 
     client = relationship("Client", back_populates="favorites")

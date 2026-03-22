@@ -33,7 +33,7 @@ class User(Base):
 class Client(Base):
     __tablename__ = 'clients'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), unique=True, nullable=False)
 
     hair_type = Column(String(50))

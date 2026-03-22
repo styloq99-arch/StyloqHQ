@@ -6,7 +6,7 @@ from .base import Base
 class Booking(Base):
     __tablename__ = 'bookings'
     id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey('clients.id'), nullable=False)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
     barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
     service_id = Column(Integer, ForeignKey('services.id'), nullable=False)
     hairstyle_id = Column(Integer, ForeignKey('hairstyles.id'), nullable=True) # AI Link

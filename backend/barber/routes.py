@@ -151,6 +151,15 @@ def get_posts(barber_id):
     return _ok(data)
 
 
+@barber_bp.get("/<barber_id>/reviews")
+def get_reviews(barber_id):
+    """GET /barber/{barber_id}/reviews - Get barber reviews (public)."""
+    data, reason, error = services.get_barber_reviews(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
 # =============================================================================
 # PROTECTED ENDPOINTS (authentication + barber role required)
 # =============================================================================

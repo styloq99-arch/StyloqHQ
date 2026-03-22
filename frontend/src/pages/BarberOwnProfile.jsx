@@ -4,54 +4,34 @@ import BarberSidebar from '../Components/BarberSidebar';
 import { apiGet, apiPut } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
-// ─── Mock Barber Data (from signup flow) ─────────────────────────────────────
+// ─── Empty defaults (all data is fetched from Supabase) ──────────────────────
 
-const INITIAL_PROFILE = {
-  name: 'S.S.K. Perera',
-  email: 'ssk.perera@gmail.com',
-  phone: '+94 77 234 5678',
-  idNumber: '199012345678',
-  city: 'Colombo',
-  experience: '17',
-  bio: 'Master barber with 17 years of experience. Fresh fades • Clean shaves • Good vibes. Crafting confidence one cut at a time.',
-  specialties: ['Fade Haircut', 'Beard Styling', 'Classic Shave', 'Line Up', 'Hair Coloring'],
-  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-  coverImage: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80',
+const EMPTY_PROFILE = {
+  name: '',
+  email: '',
+  phone: '',
+  idNumber: '',
+  city: '',
+  experience: '0',
+  bio: '',
+  specialties: [],
+  avatar: '',
+  coverImage: '',
   workingHours: {
-    Mon: { active: true, start: '09:00 AM', end: '06:00 PM' },
-    Tue: { active: true, start: '09:00 AM', end: '06:00 PM' },
-    Wed: { active: true, start: '09:00 AM', end: '06:00 PM' },
-    Thu: { active: true, start: '09:00 AM', end: '06:00 PM' },
-    Fri: { active: true, start: '09:00 AM', end: '07:00 PM' },
-    Sat: { active: true, start: '10:00 AM', end: '05:00 PM' },
+    Mon: { active: false, start: 'Closed', end: 'Closed' },
+    Tue: { active: false, start: 'Closed', end: 'Closed' },
+    Wed: { active: false, start: 'Closed', end: 'Closed' },
+    Thu: { active: false, start: 'Closed', end: 'Closed' },
+    Fri: { active: false, start: 'Closed', end: 'Closed' },
+    Sat: { active: false, start: 'Closed', end: 'Closed' },
     Sun: { active: false, start: 'Closed', end: 'Closed' },
   },
-  services: [
-    { id: 1, name: 'Side Part', price: '1500', desc: 'Classic side part cut with clean finish' },
-    { id: 2, name: 'Fade Haircut', price: '1800', desc: 'Skin fade or taper fade, expertly blended' },
-    { id: 3, name: 'Beard Trim', price: '800', desc: 'Shape and define your beard' },
-    { id: 4, name: 'Classic Shave', price: '1200', desc: 'Hot towel straight-razor shave' },
-    { id: 5, name: 'Under Cut', price: '2000', desc: 'Bold undercut for a modern look' },
-  ],
-  locations: [
-    { id: 1, salonName: 'Liyo Salons (pvt) Ltd', address: 'No. 06, Pagoda Road, Nugegoda', district: 'Colombo', postalCode: '10250' },
-    { id: 2, salonName: 'Salon Next (pvt) Ltd', address: 'No. 7D, Vihara Mawatha, Peliyagoda', district: 'Colombo', postalCode: '11600' },
-  ],
-  certifications: [
-    { title: 'Hair / Barber Diploma', institute: 'Institute of Hairdressers & Beauticians (IHB)', date: '2010-05-15', desc: 'Basic hair-cutting, styling, salon hygiene and barbering skills.' },
-    { title: 'Advanced Color Specialist', institute: "L'Oréal Professional Academy", date: '2015-08-20', desc: 'Mastery in hair coloring, balayage, ombre, and color correction.' },
-    { title: "Men's Grooming Masterclass", institute: 'British Barbers Association', date: '2019-11-10', desc: 'Advanced straight razor shaving, beard sculpting, and classic fades.' },
-  ],
+  services: [],
+  locations: [],
+  certifications: [],
 };
 
-// Posts are now fetched from the database — no more mock data
-
-const STATS = [
-  { label: 'Posts', value: '42' },
-  { label: 'Followers', value: '1.2K' },
-  { label: 'Rating', value: '4.9' },
-  { label: 'Bookings', value: '380' },
-];
+// Posts are fetched from the database
 
 const TIME_SLOTS = [
   '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
@@ -504,7 +484,8 @@ export default function BarberOwnProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [profile, setProfile] = useState(INITIAL_PROFILE);
+  const [profile, setProfile] = useState(EMPTY_PROFILE);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [workPhotos, setWorkPhotos] = useState([]);
   const [editSection, setEditSection] = useState(null);
   const [photoModal, setPhotoModal] = useState(false);
@@ -515,31 +496,69 @@ export default function BarberOwnProfile() {
   // Fetch barber profile from backend on mount
   useEffect(() => {
     const fetchProfile = async () => {
+      setProfileLoading(true);
       try {
         const res = await apiGet('/barber/me/profile');
         if (res.success && res.data) {
           const d = res.data;
-          setProfile(prev => ({
-            ...prev,
-            name: d.full_name || d.name || prev.name,
-            email: d.email || prev.email,
-            phone: d.phone_number || d.phone || prev.phone,
-            city: d.city || prev.city,
-            experience: d.experience_years ? String(d.experience_years) : prev.experience,
-            bio: d.bio || prev.bio,
-            specialties: d.specialties || prev.specialties,
-            avatar: d.avatar || d.profile_image || prev.avatar,
-            coverImage: d.cover_image || prev.coverImage,
-            services: Array.isArray(d.services) && d.services.length > 0
+
+          // Map availability (day_of_week 0-6) to working hours object
+          const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          const workingHours = { ...EMPTY_PROFILE.workingHours };
+          if (Array.isArray(d.availability)) {
+            d.availability.forEach(slot => {
+              const dayName = DAY_NAMES[slot.day_of_week];
+              if (dayName) {
+                const formatTime = (t) => {
+                  if (!t) return '09:00 AM';
+                  const parts = t.split(':');
+                  let h = parseInt(parts[0]);
+                  const m = parts[1] || '00';
+                  const ampm = h >= 12 ? 'PM' : 'AM';
+                  if (h > 12) h -= 12;
+                  if (h === 0) h = 12;
+                  return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+                };
+                workingHours[dayName] = {
+                  active: true,
+                  start: formatTime(slot.start_time),
+                  end: formatTime(slot.end_time),
+                };
+              }
+            });
+          }
+
+          setProfile({
+            name: d.name || '',
+            email: d.email || '',
+            phone: d.phone || '',
+            idNumber: '',
+            city: d.current_location_name || '',
+            experience: d.years_experience ? String(d.years_experience) : '0',
+            bio: d.bio || '',
+            specialties: Array.isArray(d.specialties) ? d.specialties : [],
+            avatar: d.avatar || d.profile_image || '',
+            coverImage: d.cover_image || '',
+            workingHours,
+            services: Array.isArray(d.services)
               ? d.services.map(s => ({ id: s.id, name: s.name, price: String(s.price || ''), desc: s.description || '' }))
-              : prev.services,
-            locations: Array.isArray(d.locations) && d.locations.length > 0
-              ? d.locations.map(l => ({ id: l.id, salonName: l.salon_name || l.name || '', address: l.address || '', district: l.district || '', postalCode: l.postal_code || '' }))
-              : prev.locations,
-          }));
+              : [],
+            locations: d.current_location_name
+              ? [{ id: 1, salonName: '', address: d.current_location_name, district: '', postalCode: '' }]
+              : [],
+            certifications: Array.isArray(d.certifications)
+              ? d.certifications.map(c => ({ title: c.name, institute: c.issuing_body || '', date: '', desc: '' }))
+              : [],
+            // Store raw stats for dynamic display
+            _postsCount: d.posts_count || 0,
+            _avgRating: d.avg_rating || 0,
+            _reviewCount: d.review_count || 0,
+          });
         }
       } catch (err) {
         console.error('Failed to fetch barber profile:', err);
+      } finally {
+        setProfileLoading(false);
       }
     };
     fetchProfile();
@@ -699,7 +718,11 @@ export default function BarberOwnProfile() {
 
               {/* Stats */}
               <div className="bop-stats-row">
-                {STATS.map(st => (
+                {[
+                  { label: 'Posts', value: profile._postsCount || workPhotos.length || 0 },
+                  { label: 'Rating', value: profile._avgRating || '–' },
+                  { label: 'Reviews', value: profile._reviewCount || 0 },
+                ].map(st => (
                   <div key={st.label} className="bop-stat">
                     <span className="bop-stat-val">{st.value}</span>
                     <span className="bop-stat-label">{st.label}</span>

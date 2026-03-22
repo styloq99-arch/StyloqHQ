@@ -30,7 +30,7 @@ def _now_utc() -> str:
 # =============================================================================
 
 def get_barber_profile(barber_id):
-    """Return the barber row as a dict, or (None, reason, error)."""
+    """Return the barber row as a dict with all related data."""
     session = SessionLocal()
     try:
         barber = session.query(Barber).filter(Barber.id == barber_id).first()
@@ -38,6 +38,69 @@ def get_barber_profile(barber_id):
             return None, "not_found", f"Barber {barber_id} not found."
 
         user = session.query(User).filter(User.id == barber.user_id).first()
+
+        # ── Services ──
+        from models.booking import Service
+        services_rows = (
+            session.query(Service)
+            .filter(Service.barber_id == barber_id)
+            .all()
+        )
+        services_list = [
+            {
+                "id": s.id,
+                "name": s.name,
+                "price": s.price,
+                "duration_minutes": s.duration_minutes,
+            }
+            for s in services_rows
+        ]
+
+        # ── Certifications ──
+        from models.barber import Certification
+        cert_rows = (
+            session.query(Certification)
+            .filter(Certification.barber_id == barber_id)
+            .all()
+        )
+        certifications_list = [
+            {
+                "id": c.id,
+                "name": c.name,
+                "issuing_body": c.issuing_body,
+                "image_url": c.image_url,
+            }
+            for c in cert_rows
+        ]
+
+        # ── Availability ──
+        from models.booking import Availability
+        avail_rows = (
+            session.query(Availability)
+            .filter(Availability.barber_id == barber_id)
+            .order_by(Availability.day_of_week, Availability.start_time)
+            .all()
+        )
+        availability_list = [
+            {
+                "id": a.id,
+                "day_of_week": a.day_of_week,
+                "start_time": str(a.start_time) if a.start_time else None,
+                "end_time": str(a.end_time) if a.end_time else None,
+            }
+            for a in avail_rows
+        ]
+
+        # ── Skills / Specialties ──
+        from models.barber import Skill
+        skills_list = [skill.name for skill in barber.skills] if barber.skills else []
+
+        # ── Posts count ──
+        from models.social import Post
+        posts_count = session.query(Post).filter(Post.barber_id == barber_id).count()
+
+        # ── Review stats ──
+        review_stats = _get_review_stats(session, barber_id)
 
         data = {
             "id": str(barber.id),
@@ -50,8 +113,73 @@ def get_barber_profile(barber_id):
             "name": user.full_name if user else None,
             "email": user.email if user else None,
             "phone": user.phone_number if user else None,
+            "services": services_list,
+            "certifications": certifications_list,
+            "availability": availability_list,
+            "specialties": skills_list,
+            "posts_count": posts_count,
+            "avg_rating": review_stats["avg_rating"],
+            "review_count": review_stats["review_count"],
         }
         return data, None, None
+    finally:
+        session.close()
+
+
+def _get_review_stats(session, barber_id):
+    """Get average rating and review count for a barber."""
+    try:
+        row = session.execute(
+            text("""
+                SELECT COALESCE(AVG(r.rating), 0) AS avg_rating,
+                       COUNT(r.id) AS review_count
+                FROM reviews r
+                JOIN bookings b ON r.booking_id = b.id
+                WHERE b.barber_id = :bid
+            """),
+            {"bid": barber_id},
+        ).first()
+        return {
+            "avg_rating": round(float(row[0]), 1) if row else 0,
+            "review_count": int(row[1]) if row else 0,
+        }
+    except Exception:
+        return {"avg_rating": 0, "review_count": 0}
+
+
+def get_barber_reviews(barber_id):
+    """Return all reviews for a barber with reviewer info."""
+    session = SessionLocal()
+    try:
+        barber = session.query(Barber).filter(Barber.id == barber_id).first()
+        if not barber:
+            return None, "not_found", f"Barber {barber_id} not found."
+
+        rows = session.execute(
+            text("""
+                SELECT r.id, r.rating, r.comment, r.booking_id,
+                       u.full_name AS author,
+                       b.appointment_datetime
+                FROM reviews r
+                JOIN bookings b ON r.booking_id = b.id
+                JOIN clients c ON b.client_id = c.id
+                JOIN users u ON c.user_id = u.id
+                WHERE b.barber_id = :bid
+                ORDER BY b.appointment_datetime DESC
+            """),
+            {"bid": barber_id},
+        ).mappings().all()
+
+        reviews = []
+        for r in rows:
+            reviews.append({
+                "id": r["id"],
+                "rating": r["rating"],
+                "text": r["comment"],
+                "author": r["author"],
+                "date": r["appointment_datetime"].strftime("%Y-%m-%d") if r["appointment_datetime"] else None,
+            })
+        return reviews, None, None
     finally:
         session.close()
 
@@ -371,7 +499,7 @@ def view_barber_appointments(barber_id):
             status = b.status or "Pending"
             grouped.setdefault(status, []).append({
                 "id": b.id,
-                "client_id": b.client_id,
+                "client_id": str(b.client_id),
                 "barber_id": str(b.barber_id),
                 "service_id": b.service_id,
                 "appointment_datetime": b.appointment_datetime.isoformat() if b.appointment_datetime else None,
@@ -483,7 +611,7 @@ def handle_booking_request(barber_id, customer_id, appointment_datetime: str, no
         return {
             "id": new_booking.id,
             "barber_id": str(new_booking.barber_id),
-            "client_id": new_booking.client_id,
+            "client_id": str(new_booking.client_id),
             "appointment_datetime": new_booking.appointment_datetime.isoformat(),
             "status": new_booking.status,
         }, None, None
