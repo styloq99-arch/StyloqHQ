@@ -59,3 +59,60 @@ export async function createPostRecord(barberId, imageUrl, caption) {
     return { success: false, error };
   }
 }
+
+/**
+ * Fetch all posts for the feed, including barber names
+ */
+export async function getSupabasePosts() {
+  try {
+    const { data: postsData, error: postsError } = await supabase
+      .from('posts')
+      .select('id, barber_id, image_url, caption, likes, created_at')
+      .order('created_at', { ascending: false });
+
+    if (postsError) throw postsError;
+    if (!postsData || postsData.length === 0) return { success: true, data: [] };
+
+    const barberIds = [...new Set(postsData.map(p => p.barber_id))];
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('id, full_name, first_name, last_name')
+      .in('id', barberIds);
+
+    const userMap = {};
+    if (!usersError && usersData) {
+      usersData.forEach(u => {
+        userMap[u.id] = u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim();
+      });
+    }
+
+    const enrichedPosts = postsData.map(p => ({
+      ...p,
+      users: { full_name: userMap[p.barber_id] }
+    }));
+
+    return { success: true, data: enrichedPosts };
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return { success: false, error, data: [] };
+  }
+}
+
+/**
+ * Fetch posts for a specific barber
+ */
+export async function getBarberPosts(barberId) {
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('barber_id', barberId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.error("Error fetching barber posts:", error);
+    return { success: false, error, data: [] };
+  }
+}

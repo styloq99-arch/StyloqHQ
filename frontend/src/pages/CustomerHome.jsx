@@ -4,13 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import { useFavourites } from "./FavouritesContext";
 import CustomerSidebar from "../Components/CustomerSidebar";
 import {
-  getFeed,
   toggleLike,
   addComment,
   toggleSave,
   deletePost,
   getComments,
 } from "../api/feedApi";
+import { getSupabasePosts } from "../api/supabasePosts";
 
 export default function CustomerHome() {
   const navigate = useNavigate();
@@ -44,58 +44,55 @@ export default function CustomerHome() {
         setLoading(true);
         setError(null);
 
-        const response = await getFeed({ page, limit: 5 });
+        const response = await getSupabasePosts();
 
-        // getFeed returns { success, data, message } from the API helper
         if (!response.success) {
-          setError(response.message || "Failed to load feed");
+          setError(response.error?.message || "Failed to load feed");
           return;
         }
 
         const rawPosts = Array.isArray(response.data) ? response.data : [];
 
-        // DEBUG: log raw backend data for liked/saved
-        console.log('[DEBUG] Raw feed data:', rawPosts.map(p => ({ id: p.id, likes: p.likes, liked: p.liked, saved: p.saved })));
+        // Normalize data specifically for Supabase schema
+        const newPosts = rawPosts.map((p) => {
+           let bName = "Unknown Barber";
+           if (p.users) {
+               // Support both array (if one-to-many relationship returned) and object formats
+               const u = Array.isArray(p.users) ? p.users[0] : p.users;
+               if (u) bName = u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || bName;
+           }
+           return {
+             id: p.id,
+             barber_id: p.barber_id,
+             barberName: bName,
+             imageUrl: p.image_url || "",
+             caption: p.caption || "",
+             likes: p.likes || 0,
+             commentsCount: 0,
+             liked: false,
+             saved: false,
+             createdAt: p.created_at || "",
+           };
+        });
 
-        // Normalize backend snake_case to camelCase
-        const newPosts = rawPosts.map((p) => ({
-          id: p.id,
-          barber_id: p.barber_id,
-          barberName: p.barberName || p.barber_name || "Unknown",
-          imageUrl: p.imageUrl || p.image_url || "",
-          caption: p.caption || "",
-          likes: p.likes || 0,
-          commentsCount: p.commentsCount ?? p.comments_count ?? 0,
-          liked: p.liked || false,
-          saved: p.saved || false,
-          createdAt: p.createdAt || p.created_at || "",
-        }));
-
-        if (page === 1) {
-          setPosts(newPosts);
-        } else {
-          setPosts((prev) => [...prev, ...newPosts]);
-        }
+        // Pagination override (currently loads all)
+        setPosts(newPosts);
 
         const newStates = {};
         newPosts.forEach((post) => {
-          // Always update liked/saved status from backend, even if post exists
           newStates[post.id] = {
-            liked: post.liked || false,
-            likes: post.likes || 0,
-            commentsCount: post.commentsCount || 0,
-            saved: post.saved || false,
-            showComments: postStates[post.id]?.showComments || false,
-            commentText: postStates[post.id]?.commentText || "",
-            commentList: postStates[post.id]?.commentList || [],
+            liked: post.liked,
+            likes: post.likes,
+            commentsCount: post.commentsCount,
+            saved: post.saved,
+            showComments: false,
+            commentText: "",
+            commentList: [],
           };
         });
 
-        if (Object.keys(newStates).length > 0) {
-          setPostStates((prev) => ({ ...prev, ...newStates }));
-        }
-
-        setHasMore(newPosts.length === 5);
+        setPostStates(newStates);
+        setHasMore(false); // disable infinite scroll till paginated setup
       } catch (err) {
         setError(err.message || "Failed to load feed");
       } finally {
