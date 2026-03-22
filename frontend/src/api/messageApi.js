@@ -1,51 +1,28 @@
-const API_BASE_URL = "http://localhost:5000/messages";
+import { apiGet, apiPost } from "../utils/api.js";
 
-export async function getConversations(token) {
-  try {
-    const res = await fetch(`${API_BASE_URL}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch conversations:", error);
-    return { success: false, message: error.message };
-  }
+/**
+ * Get all conversations for the current user
+ * @returns {Promise<{success: boolean, data?: Array, message?: string}>}
+ */
+export async function getConversations() {
+  return apiGet("/messages");
 }
 
-export async function getChatHistory(token, userId) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/${userId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch chat history:", error);
-    return { success: false, message: error.message };
-  }
+/**
+ * Get chat history with a specific user
+ * @param {number|string} userId - The ID of the user to chat with
+ * @returns {Promise<{success: boolean, data?: Array, message?: string}>}
+ */
+export async function getChatHistory(userId) {
+  return apiGet(`/messages/${userId}`);
 }
 
-export async function sendMessage(token, userId, content) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/${userId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content }),
-    });
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error("Failed to send message:", error);
-    return { success: false, message: error.message };
-  }
+/**
+ * Send a message to a user
+ * @param {number|string} userId - The ID of the recipient
+ * @param {string} content - The message content
+ * @returns {Promise<{success: boolean, data?: {id, content, timestamp, is_mine}, message?: string}>}
+ */
+export async function sendMessage(userId, content) {
+  return apiPost(`/messages/${userId}`, { content });
 }
