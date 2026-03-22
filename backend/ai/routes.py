@@ -1,8 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend.auth.utils import login_required, get_current_user_from_token, role_required
-from .services import analyze_and_recommend
-from backend.ai.services import fetch_customer_retention
-from backend.ai.services import fetch_trending_hairstyles
+from backend.ai.services import analyze_and_recommend, fetch_customer_retention, fetch_trending_hairstyles
 
 
 ai_bp = Blueprint("ai", __name__, url_prefix="/ai")
