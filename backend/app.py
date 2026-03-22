@@ -1,28 +1,28 @@
 from flask import Flask
 
 # Load all models first
-import backend.models
+import models
 
-from backend.feed.routes import feed_bp
-from backend.customer.routes import customer_bp, customer_feed_bp
-from backend.auth.routes import auth_bp
-from backend.salon.routes import salon_bp
+from feed.routes import feed_bp
+from customer.routes import customer_bp, customer_feed_bp
+from auth.routes import auth_bp
+from salon.routes import salon_bp
 
 from flask_cors import CORS
 
 # Import Messaging routes
-from backend.message.routes import message_bp
+from message.routes import message_bp
 
 # Import AI routes
-from backend.ai.routes import ai_bp
+from ai.routes import ai_bp
 
 try:
-    from backend.barber.routes import barber_bp
+    from barber.routes import barber_bp
     BARBER_BP_AVAILABLE = True
 except Exception:
     BARBER_BP_AVAILABLE = False
 
-from backend.models.base import Base, engine
+from models.base import Base, engine
 
 
 def create_app():

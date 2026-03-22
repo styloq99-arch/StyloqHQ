@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from backend.auth.utils import login_required, get_current_user_from_token, role_required
-from backend.barber import services
+from auth.utils import login_required, get_current_user_from_token, role_required
+from barber import services
 
 barber_bp = Blueprint("barber", __name__, url_prefix="/barber")
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from backend.auth.utils import login_required, get_current_user_from_token, role_required
-from backend.feed.services import (
+from auth.utils import login_required, get_current_user_from_token, role_required
+from feed.services import (
     fetch_feed_posts_paginated,
     fetch_single_post,
     create_post,

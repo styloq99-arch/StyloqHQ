@@ -1,10 +1,10 @@
 from sqlalchemy import func
 from datetime import datetime
-from backend.models.base import SessionLocal
-from backend.models.user import User, Client
-from backend.models.barber import Barber
-from backend.models.booking import Booking, Service, Hairstyle
-from backend.models.social import Post, PostLike, SavedPost, Comment, Review
+from models.base import SessionLocal
+from models.user import User, Client
+from models.barber import Barber
+from models.booking import Booking, Service, Hairstyle
+from models.social import Post, PostLike, SavedPost, Comment, Review
 
 
 # =============================================================================
