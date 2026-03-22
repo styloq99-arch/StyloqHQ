@@ -4,6 +4,8 @@ import base64
 
 import google.genai as genai
 from google.genai import types
+from dotenv import load_dotenv
+load_dotenv()
 
 from sqlalchemy import func
 from backend.models.base import SessionLocal
