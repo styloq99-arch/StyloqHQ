@@ -25,7 +25,7 @@ barber_skills = Table(
 )
 
 # IMPORTANT: import models so SQLAlchemy registers them
-import backend.models.user
-import backend.models.barber
-import backend.models.booking
-import backend.models.social
+from models import user
+from models import barber
+from models import booking
+from models import social
