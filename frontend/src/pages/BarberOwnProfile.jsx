@@ -1,8 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
+import { useAuth } from '../context/AuthContext';
+import { getBarberPosts as getSupabaseBarberPosts } from '../api/supabasePosts';
+import { saveBarberProfileData, getBarberProfileData } from '../api/supabaseBarber';
 
-// ─── Mock Barber Data (from signup flow) ─────────────────────────────────────
+// Mock initial data as fallback frameworkrber Data (from signup flow) ─────────────────────────────────────
 
 const INITIAL_PROFILE = {
   name: 'S.S.K. Perera',
@@ -517,9 +520,62 @@ function PhotoUploadModal({ onClose, onUpload }) {
 
 export default function BarberOwnProfile() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const [profile, setProfile] = useState(INITIAL_PROFILE);
-  const [workPhotos, setWorkPhotos] = useState(WORK_PHOTOS);
+  const [profile, setProfile] = useState({
+    ...INITIAL_PROFILE,
+    name: user?.full_name || 'Unknown Barber',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  });
+
+  useEffect(() => {
+    async function fetchProfileData() {
+      if (!user?.id) return;
+
+      const { success, data } = await getBarberProfileData(user.id);
+      if (success && data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          name: user.full_name || data.name || prev.name,
+          email: user.email || data.email || prev.email,
+          phone: user.phone || data.phone || prev.phone,
+        }));
+      } else {
+        // Fallback to initial profile data if no data found in DB
+        setProfile(prev => ({
+          ...INITIAL_PROFILE,
+          name: user.full_name || INITIAL_PROFILE.name,
+          email: user.email || INITIAL_PROFILE.email,
+          phone: user.phone || INITIAL_PROFILE.phone,
+        }));
+      }
+    }
+    fetchProfileData();
+  }, [user]);
+
+  const [workPhotos, setWorkPhotos] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+
+  // Fetch true posts from Supabase on mount
+  useEffect(() => {
+    async function fetchPosts() {
+      if (!user?.id) return;
+      setLoadingPosts(true);
+      const { success, data } = await getSupabaseBarberPosts(user.id);
+      if (success && data.length > 0) {
+        setWorkPhotos(data.map(p => p.image_url));
+      } else {
+        // Drop down to mock data if there are strictly no posts, 
+        // but an empty array is fine too. We'll leave it empty to show reality.
+        setWorkPhotos([]);
+      }
+      setLoadingPosts(false);
+    }
+    fetchPosts();
+  }, [user]);
+
   const [editSection, setEditSection] = useState(null);
   const [photoModal, setPhotoModal] = useState(false);
   const [toast, setToast] = useState('');
@@ -531,9 +587,12 @@ export default function BarberOwnProfile() {
     setTimeout(() => setToast(''), 2500);
   };
 
-  const handleSave = (updated) => {
+  const handleSave = async (updated) => {
     setProfile(updated);
-    setEditSection(null);
+    setEditSection(null); // Assuming setEditSection(null) is the correct way to close the modal
+    if (user) {
+      await saveBarberProfileData(user.id, updated);
+    }
     showToast('Profile updated successfully!');
   };
 

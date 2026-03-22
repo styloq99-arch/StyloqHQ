@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CustomerSidebar from '../Components/CustomerSidebar';
@@ -50,15 +50,37 @@ const formatDate = (dateStr) =>
 
 export default function CustomerProfile() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('styloq_profile') || 'null');
-      return saved || INITIAL_PROFILE;
-    } catch { return INITIAL_PROFILE; }
+      if (saved && saved.name !== 'John Doe') return saved;
+    } catch { }
+    return {
+      name: user?.full_name || 'Unknown User',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      idNumber: '200012345678',
+      city: 'Colombo',
+      username: user?.full_name?.split(' ')[0] || 'user',
+      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    };
   });
+
+  // Force sync if user loads dynamically after initial render or localStorage is stale
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.full_name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        username: prev.username === 'user' || prev.username === 'john_doe' ? (user.full_name?.split(' ')[0] || prev.username) : prev.username
+      }));
+    }
+  }, [user]);
 
   const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
   const [activeTab, setActiveTab] = useState('profile');
