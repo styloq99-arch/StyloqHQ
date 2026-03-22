@@ -8,3 +8,4 @@ python-dotenv
 PyJWT
 google-genai
 gunicorn
+psycopg2-binary

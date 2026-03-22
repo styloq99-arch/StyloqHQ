@@ -13,6 +13,10 @@ def fetch_feed_posts_paginated(page=1, limit=5, current_user_id=None):
         result = []
 
         for post in posts:
+            # Skip posts with broken barber relationships
+            if not post.barber or not post.barber.user:
+                continue
+                
             like_count = len(post.likes)
             comment_count = len(post.comments)
 
@@ -46,6 +50,10 @@ def fetch_single_post(post_id, current_user_id=None):
     try:
         post = db.get(Post, post_id)
         if not post:
+            return None
+        
+        # Check for broken relationships
+        if not post.barber or not post.barber.user:
             return None
 
         liked = False
