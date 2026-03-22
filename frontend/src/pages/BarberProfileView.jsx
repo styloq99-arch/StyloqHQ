@@ -60,10 +60,29 @@ export default function BarberProfile() {
           getBarberReviews(barberId),
         ]);
 
-        if (profileRes.success) {
-          setProfileData(profileRes.data);
+        let combined = null;
+        if (profileRes.success) combined = profileRes.data;
+
+        if (userRes.user) {
+          combined = {
+            ...(combined || {}),
+            name: userRes.user.full_name,
+            email: userRes.user.email,
+            phone: userRes.user.phone_number,
+          };
+        }
+
+        if (jsonbRes.success && jsonbRes.data) {
+          combined = {
+            ...(combined || {}),
+            ...jsonbRes.data
+          };
+        }
+
+        if (combined) {
+          setProfileData(combined);
         } else {
-          setProfileError(profileRes.message || 'Failed to load barber profile');
+          setProfileError("Failed to fully load barber profile");
         }
 
         if (postsRes.success && Array.isArray(postsRes.data)) {
@@ -74,7 +93,7 @@ export default function BarberProfile() {
           setReviewsData(reviewsRes.data);
         }
       } catch (err) {
-        setProfileError('Unable to connect to server.');
+        setProfileError("Unable to connect to server.");
       } finally {
         setProfileLoading(false);
       }
@@ -145,20 +164,31 @@ export default function BarberProfile() {
 
   return (
     <div className="app-layout">
-
       {/* ── 1. DESKTOP SIDEBAR ── */}
       <CustomerSidebar activePage="Search" />
 
       {/* ── 2. MAIN CONTENT ── */}
       <div className="main-content">
         <div className="bp-page-body">
-
           {/* Loading / Error states */}
           {profileLoading && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>Loading barber profile...</div>
+            <div
+              style={{ textAlign: "center", padding: "40px 0", color: "#aaa" }}
+            >
+              Loading barber profile...
+            </div>
           )}
           {profileError && (
-            <div style={{ textAlign: 'center', padding: '20px', color: '#FF5722', background: 'rgba(255,87,34,0.1)', borderRadius: '8px', margin: '20px' }}>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "20px",
+                color: "#FF5722",
+                background: "rgba(255,87,34,0.1)",
+                borderRadius: "8px",
+                margin: "20px",
+              }}
+            >
               {profileError}
             </div>
           )}
@@ -341,8 +371,8 @@ export default function BarberProfile() {
                                 </div>
                               ))}
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
                     </div>
                   )}
                 </div>
@@ -463,13 +493,24 @@ export default function BarberProfile() {
 
       {/* ── MOBILE BOTTOM NAV ── */}
       <nav className="bottom-nav">
-        <Link to="/home" className="nav-item"><i className="fas fa-home"></i>   <span>Home</span></Link>
-        <Link to="/customer-search" className="nav-item active"><i className="fas fa-search"></i><span>Search</span></Link>
-        <Link to="/favourites" className="nav-item"><i className="fas fa-heart"></i>  <span>Favourites</span></Link>
-        <Link to="/message" className="nav-item"><i className="fas fa-comments"></i><span>Message</span></Link>
-        <Link to="/customer-profile" className="nav-item"><i className="fas fa-user"></i>   <span>Profile</span></Link>
+        <Link to="/home" className="nav-item">
+          <i className="fas fa-home"></i> <span>Home</span>
+        </Link>
+        <Link to="/customer-search" className="nav-item active">
+          <i className="fas fa-search"></i>
+          <span>Search</span>
+        </Link>
+        <Link to="/favourites" className="nav-item">
+          <i className="fas fa-heart"></i> <span>Favourites</span>
+        </Link>
+        <Link to="/message" className="nav-item">
+          <i className="fas fa-comments"></i>
+          <span>Message</span>
+        </Link>
+        <Link to="/customer-profile" className="nav-item">
+          <i className="fas fa-user"></i> <span>Profile</span>
+        </Link>
       </nav>
-
     </div>
   );
 }
