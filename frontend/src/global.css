@@ -1423,6 +1423,143 @@ body {
 }
 
 /* ==================================================================================================
+   Barber Appointment Cards (Home Page)
+   ===================== */
+.appt-loading, .appt-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+  font-family: "Poppins", sans-serif;
+}
+
+.appt-empty i {
+  font-size: 36px;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.5;
+}
+
+.appt-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px 0 30px;
+}
+
+.appt-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-deep);
+  border-radius: 16px;
+  padding: 16px 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.appt-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-subtle);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.appt-card-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.appt-card-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-accent);
+}
+
+.appt-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appt-card-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  font-family: "Poppins", sans-serif;
+}
+
+.appt-card-service {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.appt-card-datetime {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.appt-card-time-sep {
+  opacity: 0.5;
+}
+
+.appt-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.appt-card-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  font-family: "Poppins", sans-serif;
+}
+
+.appt-card-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: "Poppins", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.appt-card-status.pending {
+  background: rgba(255, 152, 0, 0.15);
+  color: #FF9800;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.appt-card-status.accepted {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.appt-card-status.rejected {
+  background: rgba(244, 67, 54, 0.15);
+  color: #F44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.appt-card-status.other {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ==================================================================================================
    BookingPage.css
    ===================== */
 

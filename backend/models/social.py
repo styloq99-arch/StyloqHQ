@@ -99,6 +99,8 @@ class Review(Base):
     booking_id = Column(Integer, ForeignKey('bookings.id'), unique=True, nullable=False)
     rating = Column(Integer, nullable=False)
     comment = Column(Text)
+    barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
+    barber = relationship("Barber")
     booking = relationship("Booking", back_populates="review")
 
 

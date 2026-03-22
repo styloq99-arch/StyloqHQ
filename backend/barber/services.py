@@ -120,6 +120,8 @@ def get_barber_profile(barber_id):
             "posts_count": posts_count,
             "avg_rating": review_stats["avg_rating"],
             "review_count": review_stats["review_count"],
+            "profile_image": barber.profile_image,
+            "cover_image": barber.cover_image,
         }
         return data, None, None
     finally:
@@ -207,6 +209,12 @@ def update_barber_profile(barber_id, data: dict):
 
         if "current_location_name" in data:
             barber.current_location_name = (data["current_location_name"] or "").strip() or None
+
+        if "profile_image" in data:
+            barber.profile_image = (data["profile_image"] or "").strip() or None
+
+        if "cover_image" in data:
+            barber.cover_image = (data["cover_image"] or "").strip() or None
 
         # Update user-level fields (name, email, phone)
         user = session.query(User).filter(User.id == barber.user_id).first()
@@ -479,33 +487,179 @@ def get_my_posts(barber_id):
 # =============================================================================
 
 def view_barber_appointments(barber_id):
-    """Return appointments grouped by status."""
+    """Return all appointments for a barber as a flat list with customer & service info."""
     session = SessionLocal()
     try:
         barber = session.query(Barber).filter(Barber.id == barber_id).first()
         if not barber:
             return None, "not_found", f"Barber {barber_id} not found."
 
-        from models.booking import Booking
-        bookings = (
-            session.query(Booking)
-            .filter(Booking.barber_id == barber_id)
-            .order_by(Booking.appointment_datetime)
-            .all()
-        )
+        rows = session.execute(
+            text("""
+                SELECT b.id,
+                       b.appointment_datetime,
+                       b.status,
+                       u.full_name   AS customer_name,
+                       s.name        AS service_name,
+                       s.price       AS price,
+                       s.duration_minutes
+                FROM bookings b
+                JOIN clients c  ON b.client_id  = c.id
+                JOIN users   u  ON c.user_id    = u.id
+                LEFT JOIN services s ON b.service_id = s.id
+                WHERE b.barber_id = :bid
+                ORDER BY b.appointment_datetime DESC
+            """),
+            {"bid": barber_id},
+        ).mappings().all()
 
-        grouped = {}
-        for b in bookings:
-            status = b.status or "Pending"
-            grouped.setdefault(status, []).append({
-                "id": b.id,
-                "client_id": str(b.client_id),
-                "barber_id": str(b.barber_id),
-                "service_id": b.service_id,
-                "appointment_datetime": b.appointment_datetime.isoformat() if b.appointment_datetime else None,
-                "status": b.status,
+        result = []
+        for r in rows:
+            result.append({
+                "id": r["id"],
+                "appointment_datetime": r["appointment_datetime"].isoformat() if r["appointment_datetime"] else None,
+                "status": r["status"],
+                "customer_name": r["customer_name"],
+                "service_name": r["service_name"],
+                "price": float(r["price"]) if r["price"] else None,
+                "duration_minutes": r["duration_minutes"],
             })
-        return grouped, None, None
+        return result, None, None
+    except Exception as e:
+        return None, "db_error", f"Database error: {e}"
+    finally:
+        session.close()
+
+
+def get_appointment_overview(barber_id):
+    """Return overview stats, weekly chart, monthly chart, peak hours from real bookings."""
+    from datetime import datetime, timedelta
+    session = SessionLocal()
+    try:
+        barber = session.query(Barber).filter(Barber.id == barber_id).first()
+        if not barber:
+            return None, "not_found", f"Barber {barber_id} not found."
+
+        today = datetime.utcnow().date()
+
+        # ── Stats ──────────────────────────────────────────────
+        stats_rows = session.execute(
+            text("""
+                SELECT
+                    COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE DATE(appointment_datetime) = :today) AS today_count,
+                    COUNT(*) FILTER (WHERE status = 'Cancelled') AS cancelled,
+                    COUNT(*) FILTER (WHERE status IN ('Completed', 'Confirmed')) AS paid
+                FROM bookings
+                WHERE barber_id = :bid
+            """),
+            {"bid": barber_id, "today": today},
+        ).mappings().first()
+
+        stats = {
+            "today": stats_rows["today_count"],
+            "total": stats_rows["total"],
+            "cancelled": stats_rows["cancelled"],
+            "paid": stats_rows["paid"],
+        }
+
+        # ── Weekly chart (current week, Sun-Sat) ───────────────
+        # Find the start of the current week (Sunday)
+        days_since_sunday = (today.weekday() + 1) % 7
+        week_start = today - timedelta(days=days_since_sunday)
+
+        week_rows = session.execute(
+            text("""
+                SELECT EXTRACT(DOW FROM appointment_datetime)::int AS dow,
+                       COUNT(*) AS cnt
+                FROM bookings
+                WHERE barber_id = :bid
+                  AND DATE(appointment_datetime) >= :ws
+                  AND DATE(appointment_datetime) < :we
+                GROUP BY dow
+                ORDER BY dow
+            """),
+            {"bid": barber_id, "ws": week_start, "we": week_start + timedelta(days=7)},
+        ).mappings().all()
+
+        dow_map = {int(r["dow"]): int(r["cnt"]) for r in week_rows}
+        day_labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+        week_data = [{"day": day_labels[d], "value": dow_map.get(d, 0)} for d in range(7)]
+
+        # ── Monthly chart (current month, by week) ─────────────
+        first_of_month = today.replace(day=1)
+        month_rows = session.execute(
+            text("""
+                SELECT EXTRACT(DAY FROM appointment_datetime)::int AS d,
+                       COUNT(*) AS cnt
+                FROM bookings
+                WHERE barber_id = :bid
+                  AND DATE(appointment_datetime) >= :ms
+                  AND EXTRACT(MONTH FROM appointment_datetime) = :m
+                  AND EXTRACT(YEAR FROM appointment_datetime)  = :y
+                GROUP BY d
+            """),
+            {"bid": barber_id, "ms": first_of_month, "m": today.month, "y": today.year},
+        ).mappings().all()
+
+        # Aggregate into 4 weeks
+        week_buckets = [0, 0, 0, 0]
+        for r in month_rows:
+            day_num = int(r["d"])
+            week_idx = min((day_num - 1) // 7, 3)
+            week_buckets[week_idx] += int(r["cnt"])
+        month_data = [{"day": f"W{i+1}", "value": week_buckets[i]} for i in range(4)]
+
+        # ── Peak hours ─────────────────────────────────────────
+        peak_rows = session.execute(
+            text("""
+                SELECT EXTRACT(HOUR FROM appointment_datetime)::int AS hr,
+                       COUNT(*) AS cnt
+                FROM bookings
+                WHERE barber_id = :bid
+                GROUP BY hr
+                ORDER BY hr
+            """),
+            {"bid": barber_id},
+        ).mappings().all()
+
+        peak_hours = {int(r["hr"]): int(r["cnt"]) for r in peak_rows}
+
+        # ── Working hours (from availability table) ────────────
+        avail_rows = session.execute(
+            text("""
+                SELECT MIN(start_time) AS earliest, MAX(end_time) AS latest
+                FROM availability
+                WHERE barber_id = :bid
+            """),
+            {"bid": barber_id},
+        ).mappings().first()
+
+        if avail_rows and avail_rows["earliest"] and avail_rows["latest"]:
+            working_hours = {
+                "start": avail_rows["earliest"].hour,
+                "end": avail_rows["latest"].hour,
+            }
+        else:
+            working_hours = {"start": 9, "end": 19}  # sensible default
+
+        # Expand range to include any hours that actually have bookings
+        if peak_hours:
+            min_hr = min(peak_hours.keys())
+            max_hr = max(peak_hours.keys())
+            working_hours["start"] = min(working_hours["start"], min_hr)
+            working_hours["end"] = max(working_hours["end"], max_hr + 1)
+
+        return {
+            "stats": stats,
+            "week_data": week_data,
+            "month_data": month_data,
+            "peak_hours": peak_hours,
+            "working_hours": working_hours,
+        }, None, None
+
+    except Exception as e:
+        return None, "db_error", f"Database error: {e}"
     finally:
         session.close()
 

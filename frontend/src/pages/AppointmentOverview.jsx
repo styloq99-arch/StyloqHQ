@@ -1,35 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
-
-
-// ─── MOCK DATA ───────────────────────────────────────────────────────────────
-// workingHours drives Peak Hours x-axis — comes from SignUpBarberStep6 data.
-const BARBER_WORKING_HOURS = { start: 9, end: 19 }; // 9 AM – 7 PM
-
-const WEEK_DATA = [
-  { day: 'S', value: 15 },
-  { day: 'M', value: 4 },
-  { day: 'T', value: 5 },
-  { day: 'W', value: 1 },
-  { day: 'T', value: 3 },
-  { day: 'F', value: 7 },
-  { day: 'S', value: 10 },
-];
-
-const MONTH_DATA = [
-  { day: 'W1', value: 28 },
-  { day: 'W2', value: 34 },
-  { day: 'W3', value: 19 },
-  { day: 'W4', value: 41 },
-];
-
-const PEAK_HOURS_RAW = {
-  9: 6, 10: 4, 11: 3, 12: 2, 13: 3,
-  14: 5, 15: 7, 16: 9, 17: 12, 18: 5,
-};
-
-const STATS = { today: 10, total: 45, cancelled: 10, paid: 5 };
+import { apiGet } from '../utils/api';
 
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
@@ -38,7 +10,7 @@ const buildPeakData = (raw, { start, end }) => {
   for (let h = start; h < end; h++) {
     // Show 12-hr label (9, 10, 11, 12, 1, 2 …)
     const label = h > 12 ? String(h - 12) : String(h);
-    result.push({ label, value: raw[h] ?? 0 });
+    result.push({ label, value: raw[h] ?? raw[String(h)] ?? 0 });
   }
   return result;
 };
@@ -142,11 +114,39 @@ const AppointmentsOverview = () => {
   const [dropOpen, setDropOpen] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const dropRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
-  const chartData = filter === 'week' ? WEEK_DATA : MONTH_DATA;
-  const peakData = buildPeakData(PEAK_HOURS_RAW, BARBER_WORKING_HOURS);
+  // ── Real data from API (replaces all mock constants) ──
+  const [stats, setStats] = useState({ today: 0, total: 0, cancelled: 0, paid: 0 });
+  const [weekData, setWeekData] = useState([]);
+  const [monthData, setMonthData] = useState([]);
+  const [peakHoursRaw, setPeakHoursRaw] = useState({});
+  const [workingHours, setWorkingHours] = useState({ start: 9, end: 19 });
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await apiGet('/barber/me/appointments/overview');
+        if (res.success && res.data) {
+          setStats(res.data.stats);
+          setWeekData(res.data.week_data);
+          setMonthData(res.data.month_data);
+          setPeakHoursRaw(res.data.peak_hours || {});
+          setWorkingHours(res.data.working_hours || { start: 9, end: 19 });
+        }
+      } catch (err) {
+        console.error('Failed to fetch overview:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOverview();
+  }, []);
+
+  const chartData = filter === 'week' ? weekData : monthData;
+  const peakData = buildPeakData(peakHoursRaw, workingHours);
   const peakMax = getMax(peakData);
-  const peakPeakVal = Math.max(...peakData.map((d) => d.value));
+  const peakPeakVal = Math.max(...peakData.map((d) => d.value), 0);
   const peakPeakLabel = peakData.find((d) => d.value === peakPeakVal)?.label;
 
   const handleFilter = (val) => {
@@ -202,19 +202,19 @@ const AppointmentsOverview = () => {
           <div className="stats-grid">
             <div className="stat-card stat-card--orange">
               <span className="stat-label text-orange">TODAY<br />BOOKINGS</span>
-              <span className="stat-value">{STATS.today}</span>
+              <span className="stat-value">{stats.today}</span>
             </div>
             <div className="stat-card stat-card--orange">
               <span className="stat-label text-orange">TOTAL<br />BOOKINGS</span>
-              <span className="stat-value">{STATS.total}</span>
+              <span className="stat-value">{stats.total}</span>
             </div>
             <div className="stat-card stat-card--red">
               <span className="stat-label text-red">CANCEL<br />BOOKINGS</span>
-              <span className="stat-value">{STATS.cancelled}</span>
+              <span className="stat-value">{stats.cancelled}</span>
             </div>
             <div className="stat-card stat-card--green">
               <span className="stat-label text-green">PAID<br />BOOKINGS</span>
-              <span className="stat-value">{STATS.paid}</span>
+              <span className="stat-value">{stats.paid}</span>
             </div>
           </div>
 
@@ -270,7 +270,7 @@ const AppointmentsOverview = () => {
                 <div>
                   <h2 className="chart-title">Peak Hours</h2>
                   <p className="peak-hours-subtitle">
-                    {BARBER_WORKING_HOURS.start}:00 – {BARBER_WORKING_HOURS.end}:00
+                    {workingHours.start}:00 – {workingHours.end}:00
                     &nbsp;·&nbsp;Peak:&nbsp;
                     <span className="peak-hours-highlight">
                       {peakPeakLabel}:00 ({peakPeakVal} appts)

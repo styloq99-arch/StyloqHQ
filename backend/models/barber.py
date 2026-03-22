@@ -15,6 +15,8 @@ class Barber(Base):
     is_verified = Column(Boolean, default=False)
     instagram_handle = Column(String(100))
     current_location_name = Column(String(200))
+    profile_image = Column(String(500))
+    cover_image = Column(String(500))
 
     user = relationship("User", back_populates="barber_profile")
     skills = relationship("Skill", secondary=barber_skills, back_populates="barbers")

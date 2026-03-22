@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
 import { apiGet, apiPut } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
 
 // ─── Empty defaults (all data is fetched from Supabase) ──────────────────────
 
@@ -54,13 +55,23 @@ function EditModal({ section, profile, onSave, onClose }) {
 
   const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
 
+  // Store actual File objects for upload
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) setAvatarPreview(URL.createObjectURL(file));
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
   };
   const handleCoverChange = (e) => {
     const file = e.target.files[0];
-    if (file) setCoverPreview(URL.createObjectURL(file));
+    if (file) {
+      setCoverFile(file);
+      setCoverPreview(URL.createObjectURL(file));
+    }
   };
 
   // ── specialty handlers ──
@@ -144,6 +155,9 @@ function EditModal({ section, profile, onSave, onClose }) {
     const saved = { ...data };
     if (avatarPreview) saved.avatar = avatarPreview;
     if (coverPreview) saved.coverImage = coverPreview;
+    // Attach actual File objects for Supabase Storage upload
+    saved._avatarFile = avatarFile;
+    saved._coverFile = coverFile;
     onSave(saved);
   };
 
@@ -591,19 +605,77 @@ export default function BarberOwnProfile() {
   };
 
   const handleSave = async (updated) => {
-    setProfile(updated);
     setEditSection(null);
-    showToast('Profile updated successfully!');
+
     try {
+      // Upload images to Supabase Storage if new files were selected
+      let avatarUrl = updated.avatar;
+      let coverUrl = updated.coverImage;
+
+      console.log('[DEBUG] handleSave called. _avatarFile:', updated._avatarFile, '_coverFile:', updated._coverFile);
+
+      if (updated._avatarFile) {
+        const ext = updated._avatarFile.name.split('.').pop();
+        const path = `avatars/${Date.now()}_avatar.${ext}`;
+        console.log('[DEBUG] Uploading avatar to path:', path);
+        const { data: uploadData, error } = await supabase.storage
+          .from('profile-images')
+          .upload(path, updated._avatarFile, { upsert: true });
+        console.log('[DEBUG] Avatar upload result:', { uploadData, error });
+        if (error) {
+          console.error('Avatar upload failed:', error);
+          showToast('Failed to upload profile photo: ' + error.message);
+          return;
+        }
+        const { data: urlData } = supabase.storage
+          .from('profile-images')
+          .getPublicUrl(uploadData.path);
+        avatarUrl = urlData.publicUrl;
+        console.log('[DEBUG] Avatar public URL:', avatarUrl);
+      }
+
+      if (updated._coverFile) {
+        const ext = updated._coverFile.name.split('.').pop();
+        const path = `covers/${Date.now()}_cover.${ext}`;
+        console.log('[DEBUG] Uploading cover to path:', path);
+        const { data: uploadData, error } = await supabase.storage
+          .from('profile-images')
+          .upload(path, updated._coverFile, { upsert: true });
+        console.log('[DEBUG] Cover upload result:', { uploadData, error });
+        if (error) {
+          console.error('Cover upload failed:', error);
+          showToast('Failed to upload cover photo: ' + error.message);
+          return;
+        }
+        const { data: urlData } = supabase.storage
+          .from('profile-images')
+          .getPublicUrl(uploadData.path);
+        coverUrl = urlData.publicUrl;
+        console.log('[DEBUG] Cover public URL:', coverUrl);
+      }
+
+      // Clean up temp file references
+      const { _avatarFile, _coverFile, ...cleanUpdated } = updated;
+      cleanUpdated.avatar = avatarUrl;
+      cleanUpdated.coverImage = coverUrl;
+
+      setProfile(cleanUpdated);
+      showToast('Profile updated successfully!');
+
       await apiPut('/barber/me/profile', {
-        full_name: updated.name,
-        phone_number: updated.phone,
-        city: updated.city,
-        bio: updated.bio,
-        experience_years: parseInt(updated.experience) || 0,
-        specialties: updated.specialties,
+        full_name: cleanUpdated.name,
+        phone_number: cleanUpdated.phone,
+        city: cleanUpdated.city,
+        bio: cleanUpdated.bio,
+        experience_years: parseInt(cleanUpdated.experience) || 0,
+        specialties: cleanUpdated.specialties,
+        profile_image: avatarUrl,
+        cover_image: coverUrl,
       });
-    } catch (_) { /* saved locally */ }
+    } catch (err) {
+      console.error('Profile save error:', err);
+      showToast('Failed to save profile.');
+    }
   };
 
   const handlePhotoUpload = (src) => {

@@ -111,6 +111,20 @@ def get_my_appointments():
     return _ok(data)
 
 
+@barber_bp.get("/me/appointments/overview")
+@login_required
+@role_required(["barber"])
+def get_my_appointments_overview():
+    """GET /barber/me/appointments/overview - Overview stats, weekly chart, peak hours."""
+    barber_id = _get_barber_id_from_user()
+    if not barber_id:
+        return _err("not_found", "Barber profile not found for this user", 404)
+    data, reason, error = services.get_appointment_overview(barber_id)
+    if error:
+        return _err(reason, error)
+    return _ok(data)
+
+
 # =============================================================================
 # PUBLIC ENDPOINTS (no authentication required)
 # =============================================================================

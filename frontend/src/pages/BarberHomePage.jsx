@@ -26,13 +26,15 @@ export default function BarberHomePage() {
             rawDate: a.appointment_datetime ? a.appointment_datetime.split('T')[0] : '',
             time: a.appointment_datetime ? new Date(a.appointment_datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
             location: a.location || 'N/A',
-            hairStyle: a.service_name || a.hairstyle_name || 'Service',
-            hairStyleImage: a.hairstyle_image || 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&h=250&fit=crop',
+            hairStyle: a.service_name || 'Service',
             service: a.service_name || 'Service',
-            amount: a.price ? `RS.${a.price}.00` : 'N/A',
+            amount: a.price ? `RS.${Math.round(a.price).toLocaleString()}.00` : 'N/A',
             status: a.status === 'Confirmed' || a.status === 'Completed' ? 'Paid' : 'Not Paid',
-            paymentOption: a.payment_method || 'Pay Online'
+            bookingStatus: a.status || 'Pending',
+            durationMinutes: a.duration_minutes,
           })));
+        } else {
+          console.warn('Appointments response:', res);
         }
       } catch (err) {
         console.error('Failed to fetch appointments:', err);
@@ -233,6 +235,43 @@ export default function BarberHomePage() {
               </div>
             </div>
           </div>
+
+          {/* --- APPOINTMENT CARDS --- */}
+          {loading ? (
+            <div className="appt-loading">
+              <i className="fas fa-spinner fa-spin"></i> Loading appointments…
+            </div>
+          ) : filteredAppointments.length === 0 ? (
+            <div className="appt-empty">
+              <i className="fas fa-calendar-times"></i>
+              <p>No appointments found</p>
+            </div>
+          ) : (
+            <div className="appt-card-list">
+              {filteredAppointments.map(appt => (
+                <div key={appt.id} className="appt-card">
+                  <div className="appt-card-left">
+                    <img src={appt.customerAvatar} alt={appt.customerName} className="appt-card-avatar" />
+                    <div className="appt-card-info">
+                      <h4 className="appt-card-name">{appt.customerName}</h4>
+                      <p className="appt-card-service">{appt.hairStyle}</p>
+                      <p className="appt-card-datetime">
+                        <i className="far fa-calendar-alt"></i> {appt.date}
+                        <span className="appt-card-time-sep">·</span>
+                        <i className="far fa-clock"></i> {appt.time}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="appt-card-right">
+                    <span className="appt-card-price">{appt.amount}</span>
+                    <span className={`appt-card-status ${appt.bookingStatus === 'Pending' ? 'pending' : appt.bookingStatus === 'Accepted' ? 'accepted' : appt.bookingStatus === 'Rejected' ? 'rejected' : 'other'}`}>
+                      {appt.bookingStatus}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
         </div>
       </div>
