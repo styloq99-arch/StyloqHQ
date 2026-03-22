@@ -14,6 +14,10 @@ console.log("API Base URL:", API_BASE_URL);
 
 async function getAuthToken() {
   const { data } = await supabase.auth.getSession();
+
+  console.log("FULL SESSION:", data.session);
+  console.log("ACCESS TOKEN:", data.session?.access_token);
+
   return data.session?.access_token || null;
 }
 

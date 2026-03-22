@@ -44,18 +44,7 @@ const INITIAL_PROFILE = {
   ],
 };
 
-// Mock uploaded work photos
-const WORK_PHOTOS = [
-  'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300&q=80',
-  'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=300&q=80',
-  'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&q=80',
-  'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=300&q=80',
-  'https://images.unsplash.com/photo-1621607512214-68297480165e?w=300&q=80',
-  'https://images.unsplash.com/photo-1596704017254-9b121068fb31?w=300&q=80',
-  'https://images.unsplash.com/photo-1560869713-bf919fd4a88a?w=300&q=80',
-  'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80',
-  'https://images.unsplash.com/photo-1549236177-f9b0031b5e8b?w=300&q=80',
-];
+// Posts are now fetched from the database — no more mock data
 
 const STATS = [
   { label: 'Posts', value: '42' },
@@ -516,7 +505,7 @@ export default function BarberOwnProfile() {
   const { user } = useAuth();
 
   const [profile, setProfile] = useState(INITIAL_PROFILE);
-  const [workPhotos, setWorkPhotos] = useState(WORK_PHOTOS);
+  const [workPhotos, setWorkPhotos] = useState([]);
   const [editSection, setEditSection] = useState(null);
   const [photoModal, setPhotoModal] = useState(false);
   const [toast, setToast] = useState('');
@@ -554,6 +543,27 @@ export default function BarberOwnProfile() {
       }
     };
     fetchProfile();
+  }, []);
+
+  // Fetch real posts from the database
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await apiGet('/feed?limit=50');
+        console.log('[DEBUG] Feed response for profile posts:', res);
+        if (res.success && Array.isArray(res.data)) {
+          // Feed API returns 'imageUrl' (camelCase)
+          const images = res.data
+            .filter(p => p.imageUrl || p.image_url)
+            .map(p => p.imageUrl || p.image_url);
+          console.log('[DEBUG] Extracted images:', images);
+          setWorkPhotos(images);
+        }
+      } catch (err) {
+        console.error('Failed to fetch posts:', err);
+      }
+    };
+    fetchPosts();
   }, []);
 
   const showToast = (msg) => {

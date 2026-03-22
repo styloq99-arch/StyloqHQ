@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, Table, Column, Integer, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from pathlib import Path
@@ -8,24 +9,20 @@ from dotenv import load_dotenv
 _env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(_env_path)
 
-# Use Supabase PostgreSQL connection or fallback to SQLite
-USE_POSTGRES = os.getenv("USE_POSTGRES", "true").lower() == "true"
-
+# We're directly connected to Supabase PostgreSQL, so SQLite fallback is removed.
 from sqlalchemy.pool import NullPool
 
-if USE_POSTGRES:
-    DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set.")
 
-    engine = create_engine(
-        DATABASE_URL,
-        echo=True,
-        pool_pre_ping=True,
-        pool_recycle=300,
-        poolclass=NullPool
-    )
-else:
-    DATABASE_URL = "sqlite:///database.db"
-    engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(
+    DATABASE_URL,
+    echo=True,
+    pool_pre_ping=True,
+    pool_recycle=300,
+    poolclass=NullPool
+)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -39,7 +36,7 @@ Base = declarative_base()
 barber_skills = Table(
     "barber_skills",
     Base.metadata,
-    Column("barber_id", Integer, ForeignKey("barbers.id"), primary_key=True),
+    Column("barber_id", UUID(as_uuid=True), ForeignKey("barbers.id"), primary_key=True),
     Column("skill_id", Integer, ForeignKey("skills.id"), primary_key=True)
 )
 

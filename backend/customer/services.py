@@ -425,12 +425,28 @@ def get_feed_posts(page=1, limit=10, user_id=None):
             liked = False
             saved = False
             if user_id:
-                liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user_id).first() is not None
-                saved = db.query(SavedPost).filter(SavedPost.post_id == post.id, SavedPost.user_id == user_id).first() is not None
+                try:
+                    liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user_id).first() is not None
+                except Exception:
+                    db.rollback()
+                    liked = False
+                try:
+                    saved = db.query(SavedPost).filter(SavedPost.post_id == post.id, SavedPost.user_id == user_id).first() is not None
+                except Exception:
+                    db.rollback()
+                    saved = False
             
             # Use explicit COUNT queries for reliable counts
-            likes_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
-            comments_count = db.query(Comment).filter(Comment.post_id == post.id).count()
+            try:
+                likes_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
+            except Exception:
+                db.rollback()
+                likes_count = 0
+            try:
+                comments_count = db.query(Comment).filter(Comment.post_id == post.id).count()
+            except Exception:
+                db.rollback()
+                comments_count = 0
 
             result.append({
                 "id": post.id,
@@ -463,17 +479,36 @@ def get_single_post(post_id, user_id=None):
         liked = False
         saved = False
         if user_id:
-            liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user_id).first() is not None
-            saved = db.query(SavedPost).filter(SavedPost.post_id == post.id, SavedPost.user_id == user_id).first() is not None
+            try:
+                liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user_id).first() is not None
+            except Exception:
+                db.rollback()
+                liked = False
+            try:
+                saved = db.query(SavedPost).filter(SavedPost.post_id == post.id, SavedPost.user_id == user_id).first() is not None
+            except Exception:
+                db.rollback()
+                saved = False
         
+        try:
+            likes_count = len(post.likes)
+        except Exception:
+            db.rollback()
+            likes_count = 0
+        try:
+            comments_count = len(post.comments)
+        except Exception:
+            db.rollback()
+            comments_count = 0
+
         return {
             "id": post.id,
             "barber_id": post.barber_id,
             "barber_name": barber_user.full_name if barber_user else "Unknown",
             "image_url": post.image_url,
             "caption": post.caption,
-            "likes": len(post.likes),
-            "comments_count": len(post.comments),
+            "likes": likes_count,
+            "comments_count": comments_count,
             "liked": liked,
             "saved": saved,
             "created_at": post.created_at.isoformat()

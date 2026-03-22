@@ -1,13 +1,15 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
+import uuid
 from .base import Base, barber_skills
 from sqlalchemy import Table, ForeignKey
 
 class Barber(Base):
     __tablename__ = "barbers"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), unique=True, nullable=False)
     bio = Column(Text)
     years_experience = Column(Integer)
     is_verified = Column(Boolean, default=False)
@@ -33,16 +35,16 @@ class Skill(Base):
 class LocationHistory(Base):
     __tablename__ = 'location_history'
     id = Column(Integer, primary_key=True)
-    barber_id = Column(Integer, ForeignKey('barbers.id'), nullable=False)
+    barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
     location_name = Column(String(200), nullable=False)
     start_date = Column(DateTime, default=datetime.utcnow)
-    end_date = Column(DateTime, nullable=True) # Null means "Current"
+    end_date = Column(DateTime, nullable=True)
     barber = relationship("Barber", back_populates="location_history")
 
 class Certification(Base):
     __tablename__ = 'certifications'
     id = Column(Integer, primary_key=True)
-    barber_id = Column(Integer, ForeignKey('barbers.id'), nullable=False)
+    barber_id = Column(UUID(as_uuid=True), ForeignKey('barbers.id'), nullable=False)
     name = Column(String(150), nullable=False)
     issuing_body = Column(String(100))
     image_url = Column(String(255))

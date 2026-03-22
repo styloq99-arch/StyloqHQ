@@ -60,7 +60,7 @@ def get_hairstyle_recommendation():
         return _err("ai_error", f"Failed to generate recommendation: {str(e)}", 500)
 
 
-@ai_bp.route("/barber/<int:barber_id>/retention", methods=["GET"])
+@ai_bp.route("/barber/<barber_id>/retention", methods=["GET"])
 @login_required
 @role_required(["barber"])
 def get_customer_retention(barber_id):
@@ -70,13 +70,13 @@ def get_customer_retention(barber_id):
         return _err("unauthorized", "User not authenticated")
     
     # Verify the barber is accessing their own data
-    from backend.models.base import SessionLocal
-    from backend.models.barber import Barber
+    from models.base import SessionLocal
+    from models.barber import Barber
     
     session = SessionLocal()
     try:
         barber = session.query(Barber).filter(Barber.user_id == current_user.id).first()
-        if not barber or barber.id != barber_id:
+        if not barber or str(barber.id) != str(barber_id):
             return _err("forbidden", "You can only view your own statistics", 403)
         
         data = fetch_customer_retention(barber_id)
