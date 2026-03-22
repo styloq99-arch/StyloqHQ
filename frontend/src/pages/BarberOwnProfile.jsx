@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
 import { useAuth } from '../context/AuthContext';
-import { getBarberPosts } from '../api/supabasePosts';
+import { getBarberPosts as getSupabaseBarberPosts } from '../api/supabasePosts';
+import { saveBarberProfileData, getBarberProfileData } from '../api/supabaseBarber';
 
-// ─── Mock Barber Data (from signup flow) ─────────────────────────────────────
+// Mock initial data as fallback frameworkrber Data (from signup flow) ─────────────────────────────────────
 
 const INITIAL_PROFILE = {
   name: 'S.S.K. Perera',
@@ -529,14 +530,29 @@ export default function BarberOwnProfile() {
   });
 
   useEffect(() => {
-    if (user) {
-      setProfile(prev => ({
-        ...prev,
-        name: user.full_name || prev.name,
-        email: user.email || prev.email,
-        phone: user.phone || prev.phone
-      }));
+    async function fetchProfileData() {
+      if (!user?.id) return;
+
+      const { success, data } = await getBarberProfileData(user.id);
+      if (success && data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          name: user.full_name || data.name || prev.name,
+          email: user.email || data.email || prev.email,
+          phone: user.phone || data.phone || prev.phone,
+        }));
+      } else {
+        // Fallback to initial profile data if no data found in DB
+        setProfile(prev => ({
+          ...INITIAL_PROFILE,
+          name: user.full_name || INITIAL_PROFILE.name,
+          email: user.email || INITIAL_PROFILE.email,
+          phone: user.phone || INITIAL_PROFILE.phone,
+        }));
+      }
     }
+    fetchProfileData();
   }, [user]);
 
   const [workPhotos, setWorkPhotos] = useState([]);
@@ -547,7 +563,7 @@ export default function BarberOwnProfile() {
     async function fetchPosts() {
       if (!user?.id) return;
       setLoadingPosts(true);
-      const { success, data } = await getBarberPosts(user.id);
+      const { success, data } = await getSupabaseBarberPosts(user.id);
       if (success && data.length > 0) {
         setWorkPhotos(data.map(p => p.image_url));
       } else {
@@ -571,9 +587,12 @@ export default function BarberOwnProfile() {
     setTimeout(() => setToast(''), 2500);
   };
 
-  const handleSave = (updated) => {
+  const handleSave = async (updated) => {
     setProfile(updated);
-    setEditSection(null);
+    setEditSection(null); // Assuming setEditSection(null) is the correct way to close the modal
+    if (user) {
+      await saveBarberProfileData(user.id, updated);
+    }
     showToast('Profile updated successfully!');
   };
 
