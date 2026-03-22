@@ -5,6 +5,39 @@
 import { apiGet, apiPost, apiDelete } from "../utils/api.js";
 
 /**
+ * Create a new post (barber only)
+ * Backend: POST /feed/create with body { "caption": "text", "image_url": "url" }
+ * Or multipart: POST /feed/create with FormData containing caption and image
+ * @param {FormData|string} postData - FormData with image and caption, or object with image_url and caption
+ * @returns {Promise<{success: boolean, data?: object, message?: string}>}
+ */
+export async function createPost(postData) {
+  // Check if it's FormData or regular data
+  if (postData instanceof FormData) {
+    return apiPostForm('/feed/create', postData);
+  }
+  return apiPost('/feed/create', postData);
+}
+
+/**
+ * Helper for FormData POST requests
+ */
+async function apiPostForm(endpoint, formData) {
+  const token = localStorage.getItem('supabase_token') || 
+                await (await import('../supabaseClient.js')).supabase.auth.getSession().then(r => r.data.session?.access_token);
+  
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData
+  });
+  
+  return response.json();
+}
+
+/**
  * Get feed posts (paginated)
  * Backend: GET /feed?page=1&limit=5
  * @param {object} params - { page: number, limit: number }

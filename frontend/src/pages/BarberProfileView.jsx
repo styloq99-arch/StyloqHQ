@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getBarberProfile, getBarberPortfolio } from "../api/barberApi";
-import { getBarberPosts as getSupabaseBarberPosts } from "../api/supabasePosts";
+import { getBarberProfile, getBarberPortfolio, getBarberPosts } from "../api/barberApi";
 import { getUserByUid } from "../api/supabaseDb";
 import { getBarberProfileData, getBarberReviews } from '../api/supabaseBarber';
 import CustomerSidebar from "../Components/CustomerSidebar";
@@ -192,7 +191,7 @@ export default function BarberProfile() {
             success: false,
             message: "Fallback",
           })),
-          getSupabaseBarberPosts(barberId),
+          getBarberPosts(barberId),
           getUserByUid(barberId),
           getBarberProfileData(barberId),
           getBarberReviews(barberId)

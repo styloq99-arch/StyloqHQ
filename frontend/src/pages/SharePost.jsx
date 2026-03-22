@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
 import { useAuth } from '../context/AuthContext';
-import { uploadPostImage, createPostRecord } from '../api/supabasePosts';
+import { createPost as createFeedPost } from '../api/feedApi';
+import { uploadPostImage } from '../api/supabasePosts';
 
 
 export default function SharePost() {
@@ -26,7 +27,7 @@ export default function SharePost() {
     try {
       let finalImageUrl = imageSrc;
       
-      // 1. If it's a real local file, upload to Supabase Storage
+      // 1. Upload image to Supabase Storage (if local file)
       if (fileToUpload && user?.id) {
          const { url, error } = await uploadPostImage(fileToUpload, user.id);
          if (error) {
@@ -35,16 +36,18 @@ export default function SharePost() {
          finalImageUrl = url;
       }
 
-      // 2. Insert into the Supabase database
-      if (user?.id) {
-         const { success, error } = await createPostRecord(user.id, finalImageUrl, caption);
-         if (!success) {
-           throw new Error("Failed to save post to the database. Does the 'posts' table exist?");
-         }
+      // 2. Create post through backend API (not direct Supabase database)
+      const response = await createFeedPost({ 
+        caption: caption, 
+        image_url: finalImageUrl 
+      });
+      
+      if (!response.success) {
+        throw new Error(response.message || "Failed to create post");
       }
 
       // 3. Navigate home
-      navigate('/barber-home'); // Sending to barber-home is a cleaner experience
+      navigate('/barber-home');
     } catch (err) {
       alert(err.message);
       console.error(err);

@@ -4,13 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import { useFavourites } from "./FavouritesContext";
 import CustomerSidebar from "../Components/CustomerSidebar";
 import {
+  getFeed,
   toggleLike,
   addComment,
   toggleSave,
   deletePost,
   getComments,
 } from "../api/feedApi";
-import { getSupabasePosts } from "../api/supabasePosts";
 
 export default function CustomerHome() {
   const navigate = useNavigate();
@@ -44,10 +44,10 @@ export default function CustomerHome() {
         setLoading(true);
         setError(null);
 
-        const response = await getSupabasePosts();
+        const response = await getFeed({ page, limit: 10 });
 
         if (!response.success) {
-          setError(response.error?.message || "Failed to load feed");
+          setError(response.message || "Failed to load feed");
           return;
         }
 

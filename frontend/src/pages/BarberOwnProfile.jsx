@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
 import { useAuth } from '../context/AuthContext';
-import { getBarberPosts as getSupabaseBarberPosts } from '../api/supabasePosts';
+import { getFeed } from '../api/feedApi';
 import { saveBarberProfileData, getBarberProfileData } from '../api/supabaseBarber';
 
 // Mock initial data as fallback frameworkrber Data (from signup flow) ─────────────────────────────────────
@@ -563,8 +563,9 @@ export default function BarberOwnProfile() {
     async function fetchPosts() {
       if (!user?.id) return;
       setLoadingPosts(true);
-      const { success, data } = await getSupabaseBarberPosts(user.id);
-      if (success && data.length > 0) {
+      const response = await getFeed({ page: 1, limit: 20 });
+      const data = response.success ? response.data : [];
+      if (data.length > 0) {
         setWorkPhotos(data.map(p => p.image_url));
       } else {
         // Drop down to mock data if there are strictly no posts, 
