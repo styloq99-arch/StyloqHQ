@@ -36,7 +36,7 @@ export default function PostingPhotos() {
     if (!file) return;
     const url = URL.createObjectURL(file);
     setPreviewSrc(url);
-    setSelected({ id: 'custom', src: url, file: file });
+    setSelected({ id: 'custom', src: url });
     triggerAnim();
   };
 
@@ -48,7 +48,7 @@ export default function PostingPhotos() {
   };
 
   const handleNext = () => {
-    navigate('/share-post', { state: { imageSrc: previewSrc, file: selected.file || null } });
+    navigate('/share-post', { state: { imageSrc: previewSrc } });
   };
 
   const GallerySection = () => (

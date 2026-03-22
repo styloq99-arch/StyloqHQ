@@ -11,7 +11,6 @@ export default function SharePost() {
 
   const imageSrc = location.state?.imageSrc
     || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&q=85';
-  const fileToUpload = location.state?.file;
 
   const [caption, setCaption] = useState('');
   const [sharing, setSharing] = useState(false);

@@ -7,7 +7,7 @@ import BarberSidebar from "../Components/BarberSidebar";
 import SalonSidebar from "../Components/SalonSidebar";
 
 export default function Messages() {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
   const location = useLocation();
   const messagesEndRef = useRef(null);
 
@@ -31,7 +31,7 @@ export default function Messages() {
 
   // Fetch contacts
   const fetchContacts = async () => {
-    setLoadingContacts(true);
+    if (!token) return;
     const res = await getConversations();
     if (res.success) {
       setContacts(res.data);
@@ -52,14 +52,14 @@ export default function Messages() {
     // Poll contacts every 10s to see if there are new messages pushing people to top
     const interval = setInterval(fetchContacts, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [token]);
 
   // Fetch chat history for selected user
   const fetchMessages = async (forceLoad = false) => {
-    if (!selectedContact) return;
+    if (!token || !selectedContact) return;
     if (forceLoad) setLoadingMessages(true);
 
-    const res = await getChatHistory(selectedContact.id);
+    const res = await getChatHistory(null, selectedContact.id);
     if (res.success) {
       setMessages(res.data);
     }
@@ -73,7 +73,7 @@ export default function Messages() {
       const interval = setInterval(() => fetchMessages(false), 3000);
       return () => clearInterval(interval);
     }
-  }, [selectedContact]);
+  }, [selectedContact, token]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function Messages() {
     setMessages((prev) => [...prev, tempMsg]);
     setInputText("");
 
-    const res = await sendMessage(selectedContact.id, tempMsg.content);
+    const res = await sendMessage(null, selectedContact.id, tempMsg.content);
     if (res.success) {
       // Re-fetch strictly to get accurate DB ID
       fetchMessages(false);
@@ -215,9 +215,7 @@ export default function Messages() {
                 {/* Messages Area */}
                 <div style={{ flex: 1, overflowY: "auto", padding: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
                   {loadingMessages ? (
-                    <div style={{ textAlign: "center", color: "var(--text-dim)" }}>
-                      <i className="fas fa-spinner fa-spin"></i> Fetching history...
-                    </div>
+                    <div style={{ textAlign: "center", color: "var(--text-dim)" }}><i className="fas fa-spinner fa-spin"></i> Fetching history...</div>
                   ) : messages.length === 0 ? (
                     <div style={{ textAlign: "center", color: "var(--text-dim)", marginTop: "auto", marginBottom: "auto" }}>
                       Send a message to start the conversation!

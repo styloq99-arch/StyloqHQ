@@ -252,7 +252,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/add-review/:barberId" element={<AddReviewPage />} />
+              <Route path="/add-review" element={<AddReviewPage />} />
               <Route
                 path="/barber-profile-view"
                 element={<BarberProfileView />}

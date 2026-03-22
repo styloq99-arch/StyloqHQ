@@ -50,7 +50,7 @@ const formatDate = (dateStr) =>
 
 export default function CustomerProfile() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState(() => {
