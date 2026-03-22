@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getBarberProfile, getBarberPosts, getBarberPortfolio } from '../api/barberApi';
+import { getBarberProfile, getBarberPortfolio } from '../api/barberApi';
+import { getBarberPosts as getSupabaseBarberPosts } from '../api/supabasePosts';
 import CustomerSidebar from '../Components/CustomerSidebar';
 
 // --- DATA ---
@@ -89,7 +90,7 @@ export default function BarberProfile() {
       try {
         const [profileRes, postsRes] = await Promise.all([
           getBarberProfile(barberId),
-          getBarberPosts(barberId),
+          getSupabaseBarberPosts(barberId),
         ]);
 
         if (profileRes.success) {
@@ -236,14 +237,20 @@ export default function BarberProfile() {
               <h3 className="section-heading bp-section-title" style={{ margin: 0 }}>Posts &amp; Reels</h3>
             </div>
             <div className="categories-scroll bp-posts-scroll">
-              {[1, 2, 3, 4].map(i => (
-                <img
-                  key={i}
-                  src={`https://picsum.photos/seed/post${i}/200/200`}
-                  alt="Post"
-                  className="bp-post-img"
-                />
-              ))}
+              {postsData && postsData.length > 0 ? (
+                postsData.map(post => (
+                  <img
+                    key={post.id}
+                    src={post.image_url}
+                    alt={post.caption || "Post"}
+                    className="bp-post-img"
+                  />
+                ))
+              ) : (
+                <div style={{ color: "var(--text-dim)", fontStyle: "italic", padding: "10px 0" }}>
+                  No posts yet.
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
+import { useAuth } from '../context/AuthContext';
+import { getBarberPosts } from '../api/supabasePosts';
 
 // ─── Mock Barber Data (from signup flow) ─────────────────────────────────────
 
@@ -517,9 +519,47 @@ function PhotoUploadModal({ onClose, onUpload }) {
 
 export default function BarberOwnProfile() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const [profile, setProfile] = useState(INITIAL_PROFILE);
-  const [workPhotos, setWorkPhotos] = useState(WORK_PHOTOS);
+  const [profile, setProfile] = useState({
+    ...INITIAL_PROFILE,
+    name: user?.full_name || 'Unknown Barber',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.full_name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone
+      }));
+    }
+  }, [user]);
+
+  const [workPhotos, setWorkPhotos] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+
+  // Fetch true posts from Supabase on mount
+  useEffect(() => {
+    async function fetchPosts() {
+      if (!user?.id) return;
+      setLoadingPosts(true);
+      const { success, data } = await getBarberPosts(user.id);
+      if (success && data.length > 0) {
+        setWorkPhotos(data.map(p => p.image_url));
+      } else {
+        // Drop down to mock data if there are strictly no posts, 
+        // but an empty array is fine too. We'll leave it empty to show reality.
+        setWorkPhotos([]);
+      }
+      setLoadingPosts(false);
+    }
+    fetchPosts();
+  }, [user]);
+
   const [editSection, setEditSection] = useState(null);
   const [photoModal, setPhotoModal] = useState(false);
   const [toast, setToast] = useState('');
