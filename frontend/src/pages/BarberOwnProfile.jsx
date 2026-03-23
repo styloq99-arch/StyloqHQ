@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
-import { apiGet, apiPut } from '../utils/api';
+import { apiGet, apiPut, apiPost } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 
@@ -447,12 +447,17 @@ function EditModal({ section, profile, onSave, onClose }) {
 
 function PhotoUploadModal({ onClose, onUpload }) {
   const fileRef = useRef(null);
+  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [caption, setCaption] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFile = (e) => {
-    const file = e.target.files[0];
-    if (file) setPreview(URL.createObjectURL(file));
+    const f = e.target.files[0];
+    if (f) {
+      setFile(f);
+      setPreview(URL.createObjectURL(f));
+    }
   };
 
   return (
@@ -482,10 +487,103 @@ function PhotoUploadModal({ onClose, onUpload }) {
           </div>
         </div>
         <div className="bop-modal-footer">
-          <button className="bop-modal-cancel" onClick={onClose}>Cancel</button>
-          <button className="bop-modal-save" disabled={!preview} onClick={() => { onUpload(preview, caption); onClose(); }}>
-            <i className="fas fa-upload"></i> Upload
+          <button className="bop-modal-cancel" onClick={onClose} disabled={isUploading}>Cancel</button>
+          <button 
+            className="bop-modal-save" 
+            disabled={!preview || isUploading} 
+            onClick={async () => {
+              setIsUploading(true);
+              await onUpload(file, caption);
+              setIsUploading(false);
+              onClose(); 
+            }}
+          >
+            {isUploading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-upload"></i>} Upload
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Post Detail Modal ───────────────────────────────────────────────────────
+function PostDetailModal({ post, profile, onClose }) {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likes || 0);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const res = await apiGet(`/feed/${post.id}/comments`);
+        if (res.success) setComments(res.data.comments || []);
+      } catch(err) { console.error('Failed to fetch comments:', err); }
+      finally { setLoadingComments(false); }
+    };
+    fetchComments();
+    setIsLiked(post.liked || false);
+  }, [post.id]);
+
+  const handleLike = async () => {
+    setIsLiked(prev => !prev);
+    setLikeCount(prev => (isLiked ? prev - 1 : prev + 1));
+    await apiPost(`/feed/${post.id}/like`);
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    const res = await apiPost(`/feed/${post.id}/comment`, { comment: newComment });
+    if (res.success) {
+      setComments([...comments, { user_name: 'You', text: newComment, created_at: new Date().toISOString() }]);
+      setNewComment('');
+    }
+  };
+
+  return (
+    <div className="post-detail-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="post-detail-modal">
+        <button className="post-detail-close" onClick={onClose}><i className="fas fa-times"></i></button>
+        <div className="post-detail-left">
+          <img src={post.imageUrl || post.image_url} alt="Post" />
+        </div>
+        <div className="post-detail-right">
+          <div className="post-detail-header">
+            <img src={profile.avatar || 'https://via.placeholder.com/40'} alt="avatar" className="post-avatar" />
+            <span className="post-author">{profile.name || 'Barber'}</span>
+          </div>
+          <div className="post-detail-body">
+            {post.caption && (
+              <div className="post-caption-block">
+                <img src={profile.avatar || 'https://via.placeholder.com/40'} alt="avatar" className="post-avatar" />
+                <p><strong>{profile.name || 'Barber'}</strong> {post.caption}</p>
+              </div>
+            )}
+            <div className="post-comments-list">
+              {loadingComments ? <p className="bop-no-tags-hint">Loading comments...</p> : 
+                comments.map((c, i) => (
+                  <div key={i} className="post-comment-item">
+                     <strong>{c.user_name || c.author}</strong> {c.text || c.comment}
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+          <div className="post-detail-footer">
+            <div className="post-actions">
+              <button onClick={handleLike} className={isLiked ? 'liked' : ''}>
+                <i className={`${isLiked ? 'fas' : 'far'} fa-heart`}></i>
+              </button>
+              <button><i className="far fa-comment"></i></button>
+            </div>
+            <div className="post-likes-count">{likeCount} likes</div>
+            <form onSubmit={handleCommentSubmit} className="post-comment-form">
+              <input value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add a comment..." />
+              <button type="submit" disabled={!newComment.trim()}>Post</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -543,6 +641,7 @@ export default function BarberOwnProfile() {
           }
 
           setProfile({
+            id: d.id,
             name: d.name || '',
             email: d.email || '',
             phone: d.phone || '',
@@ -578,26 +677,22 @@ export default function BarberOwnProfile() {
     fetchProfile();
   }, []);
 
-  // Fetch real posts from the database
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await apiGet('/feed?limit=50');
-        console.log('[DEBUG] Feed response for profile posts:', res);
-        if (res.success && Array.isArray(res.data)) {
-          // Feed API returns 'imageUrl' (camelCase)
-          const images = res.data
-            .filter(p => p.imageUrl || p.image_url)
-            .map(p => p.imageUrl || p.image_url);
-          console.log('[DEBUG] Extracted images:', images);
-          setWorkPhotos(images);
-        }
-      } catch (err) {
-        console.error('Failed to fetch posts:', err);
+  const fetchPosts = async () => {
+    if (!profile.id) return;
+    try {
+      const res = await apiGet(`/feed?limit=50&barber_id=${profile.id}`);
+      console.log('[DEBUG] Feed response for profile posts:', res);
+      if (res.success && Array.isArray(res.data)) {
+        setWorkPhotos(res.data);
       }
-    };
+    } catch (err) {
+      console.error('Failed to fetch posts:', err);
+    }
+  };
+
+  useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [profile.id]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -678,9 +773,40 @@ export default function BarberOwnProfile() {
     }
   };
 
-  const handlePhotoUpload = (src) => {
-    setWorkPhotos(prev => [src, ...prev]);
-    showToast('Photo uploaded!');
+  const handlePhotoUpload = async (file, caption) => {
+    try {
+      showToast('Uploading photo...');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `posts/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('profile-images')
+        .getPublicUrl(filePath);
+
+      const publicUrl = data.publicUrl;
+
+      const res = await apiPost('/feed/create', {
+        caption: caption,
+        image_url: publicUrl
+      });
+
+      if (res.success) {
+        fetchPosts();
+        showToast('Photo uploaded!');
+      } else {
+        showToast(res.message || 'Failed to create post');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Upload failed');
+    }
   };
 
   return (
@@ -710,26 +836,12 @@ export default function BarberOwnProfile() {
       )}
 
       {/* ── Photo Viewer ── */}
-      {photoViewer !== null && (
-        <div className="bop-viewer-backdrop" onClick={() => setPhotoViewer(null)}>
-          <button className="bop-viewer-close" onClick={() => setPhotoViewer(null)}>
-            <i className="fas fa-times"></i>
-          </button>
-          <img src={workPhotos[photoViewer]} alt="work" className="bop-viewer-img" />
-          <div className="bop-viewer-nav">
-            <button
-              className="bop-viewer-btn"
-              disabled={photoViewer === 0}
-              onClick={e => { e.stopPropagation(); setPhotoViewer(v => v - 1); }}
-            ><i className="fas fa-chevron-left"></i></button>
-            <span className="bop-viewer-count">{photoViewer + 1} / {workPhotos.length}</span>
-            <button
-              className="bop-viewer-btn"
-              disabled={photoViewer === workPhotos.length - 1}
-              onClick={e => { e.stopPropagation(); setPhotoViewer(v => v + 1); }}
-            ><i className="fas fa-chevron-right"></i></button>
-          </div>
-        </div>
+      {photoViewer !== null && workPhotos[photoViewer] && (
+        <PostDetailModal
+          post={workPhotos[photoViewer]}
+          profile={profile}
+          onClose={() => setPhotoViewer(null)}
+        />
       )}
 
       {/* ── Desktop Sidebar ── */}
@@ -837,9 +949,9 @@ export default function BarberOwnProfile() {
                 </button>
               </div>
               <div className="bop-grid">
-                {workPhotos.map((src, i) => (
+                {workPhotos.map((post, i) => (
                   <div key={i} className="bop-grid-item" onClick={() => setPhotoViewer(i)}>
-                    <img src={src} alt={`work ${i + 1}`} className="bop-grid-img" />
+                    <img src={post.imageUrl || post.image_url} alt={`work ${i + 1}`} className="bop-grid-img" />
                     <div className="bop-grid-hover">
                       <i className="fas fa-expand-alt"></i>
                     </div>
@@ -862,17 +974,21 @@ export default function BarberOwnProfile() {
                   <i className="fas fa-pen"></i> Edit
                 </button>
               </div>
-              <div className="bop-services-list">
-                {profile.services.map(svc => (
-                  <div key={svc.id} className="bop-service-row">
-                    <div className="bop-service-info">
-                      <span className="bop-service-name">{svc.name}</span>
-                      {svc.desc && <span className="bop-service-desc">{svc.desc}</span>}
+              {profile.services.length === 0 ? (
+                <p className="bop-no-tags-hint" style={{ marginBottom: '1.5rem' }}>No services added yet.</p>
+              ) : (
+                <div className="bop-services-list">
+                  {profile.services.map(svc => (
+                    <div key={svc.id} className="bop-service-row">
+                      <div className="bop-service-info">
+                        <span className="bop-service-name">{svc.name}</span>
+                        {svc.desc && <span className="bop-service-desc">{svc.desc}</span>}
+                      </div>
+                      <span className="bop-service-price">LKR {parseInt(svc.price).toLocaleString()}</span>
                     </div>
-                    <span className="bop-service-price">LKR {parseInt(svc.price).toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               <div className="bop-section-head" style={{ marginTop: 28 }}>
                 <h3 className="bop-section-title">Working Hours</h3>
@@ -931,15 +1047,19 @@ export default function BarberOwnProfile() {
                     <i className="fas fa-pen"></i> Edit
                   </button>
                 </div>
-                {profile.locations.map(loc => (
-                  <div key={loc.id} className="bop-location-block">
-                    <div className="bop-location-icon"><i className="fas fa-map-marker-alt"></i></div>
-                    <div>
-                      <p className="bop-location-name">{loc.salonName}</p>
-                      <p className="bop-location-addr">{loc.address}, {loc.district} {loc.postalCode}</p>
+                {profile.locations.length === 0 ? (
+                  <p className="bop-no-tags-hint">No locations added yet.</p>
+                ) : (
+                  profile.locations.map(loc => (
+                    <div key={loc.id} className="bop-location-block">
+                      <div className="bop-location-icon"><i className="fas fa-map-marker-alt"></i></div>
+                      <div>
+                        <p className="bop-location-name">{loc.salonName}</p>
+                        <p className="bop-location-addr">{loc.address}, {loc.district} {loc.postalCode}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
               {/* Certifications — now editable */}

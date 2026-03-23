@@ -379,8 +379,8 @@ def add_portfolio_item(barber_id, image_url: str, description: str | None):
                 "created_at": _now_utc(),
             },
         )
-        session.commit()
         row = result.mappings().first()
+        session.commit()
         return dict(row) if row else None, None, None
     finally:
         session.close()
@@ -455,8 +455,8 @@ def create_post(barber_id, content: str):
             """),
             {"barber_id": barber_id, "content": content, "created_at": _now_utc()},
         )
-        session.commit()
         row = result.mappings().first()
+        session.commit()
         return dict(row) if row else None, None, None
     finally:
         session.close()

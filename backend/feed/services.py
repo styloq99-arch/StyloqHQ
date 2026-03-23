@@ -4,10 +4,14 @@ from models.social import Post, Comment, PostLike, SavedPost
 from models.user import User
 
 
-def fetch_feed_posts_paginated(page=1, limit=5, current_user_id=None):
+def fetch_feed_posts_paginated(page=1, limit=5, current_user_id=None, barber_id=None):
     db = SessionLocal()
     try:
-        query = db.query(Post).order_by(Post.created_at.desc())
+        query = db.query(Post)
+        if barber_id:
+            query = query.filter(Post.barber_id == barber_id)
+        
+        query = query.order_by(Post.created_at.desc())
         posts = query.offset((page - 1) * limit).limit(limit).all()
 
         result = []

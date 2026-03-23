@@ -43,10 +43,11 @@ def get_feed():
     """GET /feed - Get posts for the main feed."""
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 5))
+    barber_id = request.args.get("barber_id", type=int)
     current_user = get_current_user_from_token()
     user_id = current_user.id if current_user else None
 
-    posts = fetch_feed_posts_paginated(page, limit, user_id)
+    posts = fetch_feed_posts_paginated(page, limit, user_id, barber_id=barber_id)
     return _ok(posts)
 
 
