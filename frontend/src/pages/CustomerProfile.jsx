@@ -62,6 +62,7 @@ export default function CustomerProfile() {
   const [editErrors, setEditErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [cancelModal, setCancelModal] = useState(null);
   const [detailModal, setDetailModal] = useState(null);
 
@@ -85,7 +86,9 @@ export default function CustomerProfile() {
           setEditData(merged);
           try { localStorage.setItem('styloq_profile', JSON.stringify(merged)); } catch (_) { }
         }
-      } catch (_) { /* use cached */ }
+      } catch (_) { /* use cached */ } finally {
+        setProfileLoading(false);
+      }
     };
     const fetchBookings = async () => {
       try {
@@ -203,6 +206,15 @@ export default function CustomerProfile() {
       {/* ── Main Content ── */}
       <div className="main-content cp-page">
 
+        {profileLoading ? (
+          <div className="page-loading-overlay">
+            <div className="page-loading-spinner">
+              <i className="fas fa-spinner fa-spin"></i>
+              <span>Loading profile…</span>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Hero */}
         <div className="cp-hero">
           <img
@@ -451,6 +463,8 @@ export default function CustomerProfile() {
         )}
 
         <div className="cp-page-spacer" />
+        </>
+        )}
       </div>
 
       {/* ── Bottom Nav ── */}

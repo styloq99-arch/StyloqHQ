@@ -172,6 +172,15 @@ const AppointmentsOverview = () => {
       {/* ── MAIN ────────────────────────────────────────────────── */}
       <div className="overview-main main-content">
 
+        {loading ? (
+          <div className="page-loading-overlay">
+            <div className="page-loading-spinner">
+              <i className="fas fa-spinner fa-spin"></i>
+              <span>Loading overview…</span>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Header */}
         <header className="overview-header">
           <img
@@ -336,6 +345,8 @@ const AppointmentsOverview = () => {
           </div>{/* end charts-row */}
 
         </div>{/* end overview-body */}
+        </>
+        )}
 
         {/* Mobile bottom nav */}
         <nav className="bottom-nav">
