@@ -1422,9 +1422,35 @@ body {
   opacity: 0.3;
 }
 
-/* ==================================================================================================
-   Barber Appointment Cards (Home Page)
-   ===================== */
+/* ── Page-level loading overlay (Profile, Overview, etc.) ── */
+.page-loading-overlay {
+  display: flex;
+  flex: 1;
+  min-height: 100vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+  animation: loadFadeIn 0.3s ease;
+}
+.page-loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: var(--color-accent);
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+}
+.page-loading-spinner i {
+  font-size: 32px;
+}
+@keyframes loadFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .appt-loading, .appt-empty {
   text-align: center;
   padding: 40px 20px;

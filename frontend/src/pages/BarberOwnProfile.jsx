@@ -737,6 +737,14 @@ export default function BarberOwnProfile() {
 
       {/* ── Main Content ── */}
       <div className="main-content">
+        {profileLoading ? (
+          <div className="page-loading-overlay">
+            <div className="page-loading-spinner">
+              <i className="fas fa-spinner fa-spin"></i>
+              <span>Loading profile…</span>
+            </div>
+          </div>
+        ) : (
         <div className="bop-page">
           {/* ─── COVER + AVATAR ─── */}
           <div className="bop-hero">
@@ -968,7 +976,7 @@ export default function BarberOwnProfile() {
 
 
         </div>
-
+        )}
 
       </div>
 
