@@ -8,7 +8,7 @@ import { supabase } from "../supabaseClient";
 
 // In development, use empty string so Vite proxy handles API routing (avoids CORS)
 // In production, set VITE_API_BASE_URL in .env to your backend URL
-const API_BASE_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://styloq-backend.onrender.com";
 console.log("API Base URL:", API_BASE_URL);
 
 
