@@ -35,6 +35,12 @@ def create_app():
     # Get allowed origins from environment variable, default to everything for development
     cors_origin = os.environ.get("CORS_ORIGIN", "https://styloq-hq.vercel.app")
     origins_list = [origin.strip() for origin in cors_origin.split(",")] if cors_origin != "*" else "*"
+    
+    # Always allow localhost for development
+    if isinstance(origins_list, list):
+        for dev_origin in ["http://localhost:5173", "http://127.0.0.1:5173"]:
+            if dev_origin not in origins_list:
+                origins_list.append(dev_origin)
 
     CORS(
         app,
