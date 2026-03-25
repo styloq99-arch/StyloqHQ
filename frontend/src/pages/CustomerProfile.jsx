@@ -35,10 +35,30 @@ const APPT_DETAIL_ROWS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const formatDate = (dateStr) =>
-  new Date(dateStr).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  });
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+/**
+ * Normalize backend booking status to frontend display status.
+ * Backend uses: Pending, Accepted, Completed, Cancelled, Rescheduled
+ * Frontend expects: upcoming, completed, cancelled
+ */
+const normalizeStatus = (backendStatus) => {
+  if (!backendStatus) return 'upcoming';
+  const s = backendStatus.toLowerCase();
+  if (s === 'completed') return 'completed';
+  if (s === 'cancelled') return 'cancelled';
+  // Pending, Accepted, Rescheduled → upcoming
+  return 'upcoming';
+};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -47,13 +67,7 @@ export default function CustomerProfile() {
   const { logout } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [profile, setProfile] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('styloq_profile') || 'null');
-      return saved || FALLBACK_PROFILE;
-    } catch { return FALLBACK_PROFILE; }
-  });
-
+  const [profile, setProfile] = useState(FALLBACK_PROFILE);
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [appointmentFilter, setAppointmentFilter] = useState('all');
@@ -62,62 +76,93 @@ export default function CustomerProfile() {
   const [editErrors, setEditErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(true);
   const [cancelModal, setCancelModal] = useState(null);
   const [detailModal, setDetailModal] = useState(null);
 
-  // Fetch profile + bookings from backend on mount
+  // Loading & error states
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState(null);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(true);
+  const [appointmentsError, setAppointmentsError] = useState(null);
+
+  // ── Fetch profile + bookings from backend on mount ──
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await apiGet('/customers/profile');
-        if (res.success && res.data) {
-          const d = res.data;
-          const merged = {
-            name: d.full_name || d.name || profile.name,
-            email: d.email || profile.email,
-            phone: d.phone_number || d.phone || profile.phone,
-            idNumber: d.id_number || profile.idNumber,
-            city: d.city || profile.city,
-            username: d.username || (d.email ? d.email.split('@')[0] : profile.username),
-            avatar: d.avatar || profile.avatar,
-          };
-          setProfile(merged);
-          setEditData(merged);
-          try { localStorage.setItem('styloq_profile', JSON.stringify(merged)); } catch (_) { }
-        }
-      } catch (_) { /* use cached */ } finally {
-        setProfileLoading(false);
-      }
-    };
-    const fetchBookings = async () => {
-      try {
-        const res = await apiGet('/customers/bookings');
-        if (res.success && Array.isArray(res.data)) {
-          setAppointments(res.data.map(b => ({
-            id: b.id || b.booking_id,
-            barber: b.barber_name || 'Barber',
-            barberImg: b.barber_avatar || 'https://randomuser.me/api/portraits/men/32.jpg',
-            service: b.service_name || b.service || 'Service',
-            serviceType: b.service_type || 'Hair Services',
-            date: b.appointment_datetime ? b.appointment_datetime.split('T')[0] : '',
-            time: b.appointment_datetime ? new Date(b.appointment_datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
-            location: b.location || 'N/A',
-            price: b.price ? `Rs.${b.price}` : 'N/A',
-            payment: b.payment_method || 'Pay On Visit',
-            status: (b.status || 'pending').toLowerCase(),
-          })));
-        }
-      } catch (_) { /* keep empty */ }
-    };
     fetchProfile();
     fetchBookings();
   }, []);
 
-  // Sync to localStorage whenever profile changes
-  useEffect(() => {
-    try { localStorage.setItem('styloq_profile', JSON.stringify(profile)); } catch (_) { }
-  }, [profile]);
+  const fetchProfile = async () => {
+    setProfileLoading(true);
+    setProfileError(null);
+    try {
+      const res = await apiGet('/customers/profile');
+
+      // Handle 401 — redirect to sign in
+      if (res.status === 401 || res.reason === 'unauthorized') {
+        logout();
+        navigate('/signin');
+        return;
+      }
+
+      if (res.success && res.data) {
+        const d = res.data;
+        const merged = {
+          name: d.full_name || '',
+          email: d.email || '',
+          phone: d.phone_number || '',
+          idNumber: d.id_number || '',
+          city: d.city || '',
+          username: d.username || (d.email ? d.email.split('@')[0] : ''),
+          avatar: d.avatar_url || FALLBACK_PROFILE.avatar,
+        };
+        setProfile(merged);
+        setEditData(merged);
+      } else {
+        setProfileError(res.message || 'Failed to load profile');
+      }
+    } catch (err) {
+      setProfileError('Unable to connect to server. Please try again.');
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    setAppointmentsLoading(true);
+    setAppointmentsError(null);
+    try {
+      const res = await apiGet('/customers/bookings');
+
+      if (res.status === 401 || res.reason === 'unauthorized') {
+        // Profile fetch will handle the redirect
+        return;
+      }
+
+      if (res.success && Array.isArray(res.data)) {
+        setAppointments(res.data.map(b => ({
+          id: b.id || b.booking_id,
+          barber: b.barber_name || 'Barber',
+          barberImg: b.barber_avatar || 'https://randomuser.me/api/portraits/men/32.jpg',
+          service: b.service_name || b.service || 'Service',
+          serviceType: b.service_type || 'Hair Services',
+          date: b.appointment_datetime ? b.appointment_datetime.split('T')[0] : '',
+          time: b.appointment_datetime
+            ? new Date(b.appointment_datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            : '',
+          location: b.location || 'N/A',
+          price: b.price ? `Rs.${b.price}` : 'N/A',
+          payment: b.payment_method || 'Pay On Visit',
+          status: normalizeStatus(b.status),
+        })));
+      } else {
+        setAppointmentsError(res.message || 'Failed to load appointments');
+      }
+    } catch (err) {
+      setAppointmentsError('Unable to load appointments. Please try again.');
+    } finally {
+      setAppointmentsLoading(false);
+    }
+  };
 
   // ── Edit handlers ──
   const handleEditStart = () => {
@@ -156,7 +201,6 @@ export default function CustomerProfile() {
     if (!editData.email.trim()) errors.email = 'Email is required';
     else if (!emailRegex.test(editData.email)) errors.email = 'Invalid email format';
     if (!editData.phone.trim()) errors.phone = 'Phone is required';
-    if (!editData.city.trim()) errors.city = 'City is required';
     setEditErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -165,15 +209,36 @@ export default function CustomerProfile() {
     if (!validateEdit()) return;
     const updatedProfile = { ...editData, avatar: avatarPreview || editData.avatar };
     try {
-      await apiPatch('/customers/profile', {
+      const res = await apiPatch('/customers/profile', {
         full_name: updatedProfile.name,
         phone_number: updatedProfile.phone,
         city: updatedProfile.city,
         username: updatedProfile.username,
+        id_number: updatedProfile.idNumber,
+        avatar_url: updatedProfile.avatar,
       });
-    } catch (_) { /* save locally anyway */ }
-    try { localStorage.setItem('styloq_profile', JSON.stringify(updatedProfile)); } catch (_) { }
-    setProfile(updatedProfile);
+
+      if (res.success && res.data) {
+        // Use server response as source of truth
+        const d = res.data;
+        const serverProfile = {
+          name: d.full_name || updatedProfile.name,
+          email: d.email || updatedProfile.email,
+          phone: d.phone_number || updatedProfile.phone,
+          idNumber: d.id_number || updatedProfile.idNumber,
+          city: d.city || updatedProfile.city,
+          username: d.username || updatedProfile.username,
+          avatar: d.avatar_url || updatedProfile.avatar,
+        };
+        setProfile(serverProfile);
+      } else {
+        // Fallback: save locally anyway
+        setProfile(updatedProfile);
+      }
+    } catch (_) {
+      // Save locally even if API fails
+      setProfile(updatedProfile);
+    }
     setIsEditing(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -213,6 +278,17 @@ export default function CustomerProfile() {
               <span>Loading profile…</span>
             </div>
           </div>
+        ) : profileError ? (
+          <div className="cp-error-container">
+            <div className="cp-error-card">
+              <i className="fas fa-exclamation-circle"></i>
+              <h3>Something went wrong</h3>
+              <p>{profileError}</p>
+              <button className="cp-retry-btn" onClick={fetchProfile}>
+                <i className="fas fa-redo"></i> Try Again
+              </button>
+            </div>
+          </div>
         ) : (
           <>
         {/* Hero */}
@@ -235,12 +311,14 @@ export default function CustomerProfile() {
               </div>
             )}
           </div>
-          <h2 className="cp-identity-name">{profile.name}</h2>
-          <p className="cp-identity-username">@{profile.username}</p>
-          <div className="cp-identity-city-badge">
-            <i className="fas fa-map-marker-alt"></i>
-            {profile.city}
-          </div>
+          <h2 className="cp-identity-name">{profile.name || 'Customer'}</h2>
+          <p className="cp-identity-username">@{profile.username || 'user'}</p>
+          {profile.city && (
+            <div className="cp-identity-city-badge">
+              <i className="fas fa-map-marker-alt"></i>
+              {profile.city}
+            </div>
+          )}
         </div>
 
         {/* Tab Bar */}
@@ -285,7 +363,7 @@ export default function CustomerProfile() {
                     </div>
                     <div className="cp-info-content">
                       <div className="cp-info-label">{label}</div>
-                      <div className="cp-info-value">{prefix}{profile[key]}</div>
+                      <div className="cp-info-value">{prefix}{profile[key] || '—'}</div>
                     </div>
                   </div>
                 ))}
@@ -322,7 +400,7 @@ export default function CustomerProfile() {
 
                 <div className="cp-form-group">
                   <label className="cp-form-label">Email Address</label>
-                  <input className={`cp-form-input ${editErrors.email ? 'error' : ''}`} type="email" name="email" value={editData.email} onChange={handleEditChange} placeholder="Enter your email" />
+                  <input className={`cp-form-input ${editErrors.email ? 'error' : ''}`} type="email" name="email" value={editData.email} onChange={handleEditChange} placeholder="Enter your email" disabled />
                   {editErrors.email && <div className="cp-form-error">{editErrors.email}</div>}
                 </div>
 
@@ -339,9 +417,15 @@ export default function CustomerProfile() {
                   </div>
                 </div>
 
-                <div className="cp-form-group">
-                  <label className="cp-form-label">Username</label>
-                  <input className="cp-form-input" type="text" name="username" value={editData.username} onChange={handleEditChange} placeholder="Username" />
+                <div className="cp-form-row">
+                  <div className="cp-form-group">
+                    <label className="cp-form-label">Username</label>
+                    <input className="cp-form-input" type="text" name="username" value={editData.username} onChange={handleEditChange} placeholder="Username" />
+                  </div>
+                  <div className="cp-form-group">
+                    <label className="cp-form-label">ID Number</label>
+                    <input className="cp-form-input" type="text" name="idNumber" value={editData.idNumber} onChange={handleEditChange} placeholder="ID Number" />
+                  </div>
                 </div>
 
                 <div className="cp-edit-actions">
@@ -387,7 +471,23 @@ export default function CustomerProfile() {
               ))}
             </div>
 
-            {filteredAppointments.length === 0 ? (
+            {appointmentsLoading ? (
+              <div className="cp-appt-loading">
+                <i className="fas fa-spinner fa-spin"></i>
+                <span>Loading appointments…</span>
+              </div>
+            ) : appointmentsError ? (
+              <div className="cp-error-container">
+                <div className="cp-error-card">
+                  <i className="fas fa-exclamation-circle"></i>
+                  <h3>Could not load appointments</h3>
+                  <p>{appointmentsError}</p>
+                  <button className="cp-retry-btn" onClick={fetchBookings}>
+                    <i className="fas fa-redo"></i> Try Again
+                  </button>
+                </div>
+              </div>
+            ) : filteredAppointments.length === 0 ? (
               <div className="cp-empty">
                 <i className="fas fa-calendar-times"></i>
                 <h3>No appointments found</h3>

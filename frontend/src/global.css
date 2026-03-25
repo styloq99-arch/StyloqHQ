@@ -4424,6 +4424,77 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
+/* ── Error / Loading states for Customer Profile ── */
+
+.cp-error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.cp-error-card {
+  text-align: center;
+  max-width: 360px;
+}
+
+.cp-error-card i {
+  font-size: 48px;
+  color: var(--color-accent);
+  margin-bottom: 16px;
+}
+
+.cp-error-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  margin-bottom: 8px;
+  font-family: "Poppins", sans-serif;
+}
+
+.cp-error-card p {
+  font-size: 14px;
+  color: var(--text-faint);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.cp-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-accent);
+  border: none;
+  color: var(--text-on-accent);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0 4px 16px var(--color-accent-glow-mid);
+  transition: opacity 0.2s;
+}
+
+.cp-retry-btn:hover {
+  opacity: 0.9;
+}
+
+.cp-appt-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--text-faint);
+  font-size: 14px;
+}
+
+.cp-appt-loading i {
+  font-size: 28px;
+  color: var(--color-accent);
+}
+
 /* ============================================================
    Customer Favourites page css
    ============================================================ */
