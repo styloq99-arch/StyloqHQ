@@ -1,5 +1,5 @@
 import "./global.css";
-
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FavouritesProvider } from "./pages/FavouritesContext.jsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
