@@ -11,6 +11,9 @@ from salon.routes import salon_bp
 
 from flask_cors import CORS
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Import Messaging routes
 from message.routes import message_bp
 
@@ -41,10 +44,8 @@ def create_app():
         allow_headers=["Content-Type", "Authorization"]
     )
 
-    app.config["SECRET_KEY"] = "dev"
-
-    app.config["SECRET_KEY"] = "dev"
-    app.config["JWT_SECRET_KEY"] = "jwt-secret-key-change-in-production"
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback-secret")
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "fallback-jwt-secret")
 
     # Create all tables after models are loaded
     Base.metadata.create_all(bind=engine)

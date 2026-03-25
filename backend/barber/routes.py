@@ -159,10 +159,15 @@ def get_portfolio(barber_id):
 @barber_bp.get("/<barber_id>/posts")
 def get_posts(barber_id):
     """GET /barber/{barber_id}/posts - Get barber posts (public)."""
-    data, reason, error = services.get_my_posts(barber_id)
-    if error:
-        return _err(reason, error)
-    return _ok(data)
+    from feed.services import fetch_feed_posts_paginated
+    try:
+        current_user = get_current_user_from_token()
+        user_id = current_user.id if current_user else None
+        
+        data = fetch_feed_posts_paginated(page=1, limit=50, current_user_id=user_id, barber_id=barber_id)
+        return _ok(data)
+    except Exception as e:
+        return _err("db_error", f"Error fetching posts: {str(e)}")
 
 
 @barber_bp.get("/<barber_id>/reviews")
@@ -250,7 +255,7 @@ def add_portfolio_item(barber_id):
     data, reason, error = services.add_portfolio_item(barber_id, image_url, description)
     if error:
         return _err(reason, error)
-    return _ok(data, "Portfolio item added."), 201
+    return _ok(data, "Portfolio item added.", status=201)
 
 
 @barber_bp.delete("/<barber_id>/portfolio/<int:portfolio_id>")
@@ -278,15 +283,18 @@ def create_post(barber_id):
         return _err("forbidden", "You can only create posts for your own profile", 403)
 
     body    = request.get_json(silent=True) or {}
-    content = body.get("content")
+    caption = body.get("caption") or body.get("content")
+    image_url = body.get("image_url")
 
-    if not content:
-        return _err("bad_request", "content is required.")
+    if not image_url:
+        return _err("bad_request", "image_url is required for feed posts.")
 
-    data, reason, error = services.create_post(barber_id, content)
-    if error:
-        return _err(reason, error)
-    return _ok(data, "Post created."), 201
+    from feed.services import create_post as feed_create_post
+    try:
+        data = feed_create_post(barber_id, caption, image_url)
+        return _ok(data, "Post created.", status=201)
+    except Exception as e:
+        return _err("db_error", f"Error creating post: {str(e)}")
 
 
 @barber_bp.get("/<barber_id>/appointments")
@@ -365,4 +373,4 @@ def book_appointment(barber_id):
     )
     if error:
         return _err(reason, error)
-    return _ok(data, "Appointment request submitted."), 201
+    return _ok(data, "Appointment request submitted.", status=201)

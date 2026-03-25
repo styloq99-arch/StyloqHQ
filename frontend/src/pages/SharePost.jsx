@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BarberSidebar from '../Components/BarberSidebar';
 import { createPost } from '../api/feedApi';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
 
 
 export default function SharePost() {
@@ -24,7 +25,30 @@ export default function SharePost() {
     setError('');
 
     try {
-      const res = await createPost(caption, imageSrc);
+      let finalUrl = imageSrc;
+      
+      // If image is a local blob, upload to Supabase Storage first
+      if (imageSrc.startsWith('blob:')) {
+        const fileRes = await fetch(imageSrc);
+        const blob = await fileRes.blob();
+        
+        const fileExt = blob.type.split('/')[1] || 'jpg';
+        const fileName = `posts/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('profile-images')
+          .upload(fileName, blob);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data } = supabase.storage
+          .from('profile-images')
+          .getPublicUrl(fileName);
+        
+        finalUrl = data.publicUrl;
+      }
+
+      const res = await createPost(caption, finalUrl);
       if (res.success) {
         navigate('/barber-OwnProfile');
       } else {
@@ -32,7 +56,8 @@ export default function SharePost() {
         setSharing(false);
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error(err);
+      setError('Network error or upload failed. Please try again.');
       setSharing(false);
     }
   };
