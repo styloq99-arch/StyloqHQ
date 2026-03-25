@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import os
 
 # Load all models first
@@ -43,6 +43,11 @@ def create_app():
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"]
     )
+
+    @app.before_request
+    def handle_options():
+        if request.method == "OPTIONS":
+            return {}, 200
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback-secret")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "fallback-jwt-secret")
