@@ -30,7 +30,7 @@ def create_app():
     app = Flask(__name__)
     
     # Get allowed origins from environment variable, default to everything for development
-    cors_origin = os.environ.get("CORS_ORIGIN", "*")
+    cors_origin = os.environ.get("CORS_ORIGIN", "https://styloq-hq.vercel.app")
     origins_list = [origin.strip() for origin in cors_origin.split(",")] if cors_origin != "*" else "*"
 
     CORS(
