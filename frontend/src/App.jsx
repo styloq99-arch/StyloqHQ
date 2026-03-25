@@ -63,6 +63,19 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log("Tab switched back → refreshing app");
+      window.location.reload(); // 🔥 simplest fix
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
