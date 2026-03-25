@@ -6,23 +6,13 @@ import { apiGet, apiPatch } from '../utils/api';
 
 // ─── Static Data ─────────────────────────────────────────────────────────────
 
-const FALLBACK_PROFILE = {
-  name: '',
-  email: '',
-  phone: '',
-  idNumber: '',
-  city: '',
-  username: '',
-  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-};
+const FALLBACK_AVATAR = 'https://randomuser.me/api/portraits/men/1.jpg';
 
 const PROFILE_FIELDS = [
   { icon: 'fa-user', label: 'Full Name', key: 'name' },
   { icon: 'fa-envelope', label: 'Email Address', key: 'email' },
   { icon: 'fa-phone', label: 'Phone Number', key: 'phone' },
-  { icon: 'fa-id-card', label: 'ID Number', key: 'idNumber' },
   { icon: 'fa-at', label: 'Username', key: 'username', prefix: '@' },
-  { icon: 'fa-map-marker-alt', label: 'City', key: 'city' },
 ];
 
 const APPT_DETAIL_ROWS = [
@@ -56,7 +46,6 @@ const normalizeStatus = (backendStatus) => {
   const s = backendStatus.toLowerCase();
   if (s === 'completed') return 'completed';
   if (s === 'cancelled') return 'cancelled';
-  // Pending, Accepted, Rescheduled → upcoming
   return 'upcoming';
 };
 
@@ -67,12 +56,15 @@ export default function CustomerProfile() {
   const { logout } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [profile, setProfile] = useState(FALLBACK_PROFILE);
+  const [profile, setProfile] = useState({
+    name: '', email: '', phone: '', username: '',
+    avatar: FALLBACK_AVATAR,
+  });
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [appointmentFilter, setAppointmentFilter] = useState('all');
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ ...FALLBACK_PROFILE });
+  const [editData, setEditData] = useState({});
   const [editErrors, setEditErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -85,7 +77,16 @@ export default function CustomerProfile() {
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
   const [appointmentsError, setAppointmentsError] = useState(null);
 
-  // ── Fetch profile + bookings from backend on mount ──
+  // ── Map backend profile response → local state ──
+  const mapProfileData = (d) => ({
+    name: d.full_name || '',
+    email: d.email || '',
+    phone: d.phone_number || '',
+    username: d.email ? d.email.split('@')[0] : '',
+    avatar: FALLBACK_AVATAR,
+  });
+
+  // ── Fetch profile + bookings on mount ──
   useEffect(() => {
     fetchProfile();
     fetchBookings();
@@ -97,7 +98,6 @@ export default function CustomerProfile() {
     try {
       const res = await apiGet('/customers/profile');
 
-      // Handle 401 — redirect to sign in
       if (res.status === 401 || res.reason === 'unauthorized') {
         logout();
         navigate('/signin');
@@ -105,22 +105,14 @@ export default function CustomerProfile() {
       }
 
       if (res.success && res.data) {
-        const d = res.data;
-        const merged = {
-          name: d.full_name || '',
-          email: d.email || '',
-          phone: d.phone_number || '',
-          idNumber: d.id_number || '',
-          city: d.city || '',
-          username: d.username || (d.email ? d.email.split('@')[0] : ''),
-          avatar: d.avatar_url || FALLBACK_PROFILE.avatar,
-        };
-        setProfile(merged);
-        setEditData(merged);
+        const mapped = mapProfileData(res.data);
+        setProfile(mapped);
+        setEditData(mapped);
       } else {
         setProfileError(res.message || 'Failed to load profile');
       }
     } catch (err) {
+      console.error('Profile fetch error:', err);
       setProfileError('Unable to connect to server. Please try again.');
     } finally {
       setProfileLoading(false);
@@ -134,7 +126,6 @@ export default function CustomerProfile() {
       const res = await apiGet('/customers/bookings');
 
       if (res.status === 401 || res.reason === 'unauthorized') {
-        // Profile fetch will handle the redirect
         return;
       }
 
@@ -158,6 +149,7 @@ export default function CustomerProfile() {
         setAppointmentsError(res.message || 'Failed to load appointments');
       }
     } catch (err) {
+      console.error('Bookings fetch error:', err);
       setAppointmentsError('Unable to load appointments. Please try again.');
     } finally {
       setAppointmentsLoading(false);
@@ -212,31 +204,16 @@ export default function CustomerProfile() {
       const res = await apiPatch('/customers/profile', {
         full_name: updatedProfile.name,
         phone_number: updatedProfile.phone,
-        city: updatedProfile.city,
-        username: updatedProfile.username,
-        id_number: updatedProfile.idNumber,
-        avatar_url: updatedProfile.avatar,
       });
 
       if (res.success && res.data) {
-        // Use server response as source of truth
-        const d = res.data;
-        const serverProfile = {
-          name: d.full_name || updatedProfile.name,
-          email: d.email || updatedProfile.email,
-          phone: d.phone_number || updatedProfile.phone,
-          idNumber: d.id_number || updatedProfile.idNumber,
-          city: d.city || updatedProfile.city,
-          username: d.username || updatedProfile.username,
-          avatar: d.avatar_url || updatedProfile.avatar,
-        };
+        const serverProfile = mapProfileData(res.data);
+        serverProfile.avatar = updatedProfile.avatar;
         setProfile(serverProfile);
       } else {
-        // Fallback: save locally anyway
         setProfile(updatedProfile);
       }
     } catch (_) {
-      // Save locally even if API fails
       setProfile(updatedProfile);
     }
     setIsEditing(false);
@@ -313,12 +290,6 @@ export default function CustomerProfile() {
           </div>
           <h2 className="cp-identity-name">{profile.name || 'Customer'}</h2>
           <p className="cp-identity-username">@{profile.username || 'user'}</p>
-          {profile.city && (
-            <div className="cp-identity-city-badge">
-              <i className="fas fa-map-marker-alt"></i>
-              {profile.city}
-            </div>
-          )}
         </div>
 
         {/* Tab Bar */}
@@ -400,32 +371,13 @@ export default function CustomerProfile() {
 
                 <div className="cp-form-group">
                   <label className="cp-form-label">Email Address</label>
-                  <input className={`cp-form-input ${editErrors.email ? 'error' : ''}`} type="email" name="email" value={editData.email} onChange={handleEditChange} placeholder="Enter your email" disabled />
-                  {editErrors.email && <div className="cp-form-error">{editErrors.email}</div>}
+                  <input className="cp-form-input" type="email" name="email" value={editData.email} disabled placeholder="Email (managed by auth)" />
                 </div>
 
-                <div className="cp-form-row">
-                  <div className="cp-form-group">
-                    <label className="cp-form-label">Phone</label>
-                    <input className={`cp-form-input ${editErrors.phone ? 'error' : ''}`} type="tel" name="phone" value={editData.phone} onChange={handleEditChange} placeholder="Phone number" />
-                    {editErrors.phone && <div className="cp-form-error">{editErrors.phone}</div>}
-                  </div>
-                  <div className="cp-form-group">
-                    <label className="cp-form-label">City</label>
-                    <input className={`cp-form-input ${editErrors.city ? 'error' : ''}`} type="text" name="city" value={editData.city} onChange={handleEditChange} placeholder="Your city" />
-                    {editErrors.city && <div className="cp-form-error">{editErrors.city}</div>}
-                  </div>
-                </div>
-
-                <div className="cp-form-row">
-                  <div className="cp-form-group">
-                    <label className="cp-form-label">Username</label>
-                    <input className="cp-form-input" type="text" name="username" value={editData.username} onChange={handleEditChange} placeholder="Username" />
-                  </div>
-                  <div className="cp-form-group">
-                    <label className="cp-form-label">ID Number</label>
-                    <input className="cp-form-input" type="text" name="idNumber" value={editData.idNumber} onChange={handleEditChange} placeholder="ID Number" />
-                  </div>
+                <div className="cp-form-group">
+                  <label className="cp-form-label">Phone Number</label>
+                  <input className={`cp-form-input ${editErrors.phone ? 'error' : ''}`} type="tel" name="phone" value={editData.phone} onChange={handleEditChange} placeholder="Phone number" />
+                  {editErrors.phone && <div className="cp-form-error">{editErrors.phone}</div>}
                 </div>
 
                 <div className="cp-edit-actions">
