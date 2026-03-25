@@ -15,6 +15,10 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     phone_number = Column(String(20))
     role = Column(String(20), nullable=False)
+    city = Column(String(100))
+    username = Column(String(50))
+    id_number = Column(String(50))
+    avatar_url = Column(String(500))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     client_profile = relationship("Client", back_populates="user", uselist=False)

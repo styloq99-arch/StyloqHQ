@@ -809,6 +809,10 @@ def get_client_profile(user_id):
             "email": user.email,
             "full_name": user.full_name,
             "phone_number": user.phone_number,
+            "city": user.city,
+            "username": user.username,
+            "id_number": user.id_number,
+            "avatar_url": user.avatar_url,
             "hair_type": client.hair_type if client else None,
             "face_shape": client.face_shape if client else None
         }, None, None
@@ -829,6 +833,14 @@ def update_client_profile(user_id, data):
             user.full_name = data["full_name"]
         if "phone_number" in data:
             user.phone_number = data["phone_number"]
+        if "city" in data:
+            user.city = data["city"]
+        if "username" in data:
+            user.username = data["username"]
+        if "id_number" in data:
+            user.id_number = data["id_number"]
+        if "avatar_url" in data:
+            user.avatar_url = data["avatar_url"]
         
         # Update or create client profile
         client = db.query(Client).filter(Client.user_id == user_id).first()
@@ -849,6 +861,10 @@ def update_client_profile(user_id, data):
             "email": user.email,
             "full_name": user.full_name,
             "phone_number": user.phone_number,
+            "city": user.city,
+            "username": user.username,
+            "id_number": user.id_number,
+            "avatar_url": user.avatar_url,
             "hair_type": client.hair_type,
             "face_shape": client.face_shape
         }, None, None
