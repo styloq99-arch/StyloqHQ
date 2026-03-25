@@ -6,14 +6,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/feed': 'http://127.0.0.1:5000',
-      '/auth': 'http://127.0.0.1:5000',
-      '/health': 'http://127.0.0.1:5000',
-      '/customers': 'http://127.0.0.1:5000',
-      '/messages': 'http://127.0.0.1:5000',
-      '/ai': 'http://127.0.0.1:5000',
-      '/barber/': 'http://127.0.0.1:5000',
-      '/salon/': 'http://127.0.0.1:5000',
+      '/feed': 'https://styloq-backend.onrender.com',
+      '/auth': 'https://styloq-backend.onrender.com',
+      '/health': 'https://styloq-backend.onrender.com',
+      '/customers': 'https://styloq-backend.onrender.com',
+      '/messages': 'https://styloq-backend.onrender.com',
+      '/ai': 'https://styloq-backend.onrender.com',
+      '/barber/': 'https://styloq-backend.onrender.com',
+      '/salon/': 'https://styloq-backend.onrender.com',
     },
   },
 })
