@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [needsRoleSelection, setNeedsRoleSelection] = useState(false);
+  const userRef = useRef(null);
 
   // Prevent onAuthStateChange from double-resolving during login/register
   const handlingAuthRef = useRef(false);
@@ -41,12 +42,14 @@ export function AuthProvider({ children }) {
     const { user: dbUser } = await getUserByUid(uid);
 
     if (dbUser && dbUser.role) {
-      setUser({
+      const resolvedUser = {
         id: dbUser.id,
         email: dbUser.email,
         full_name: dbUser.full_name,
         role: dbUser.role,
-      });
+      };
+      setUser(resolvedUser);
+      userRef.current = resolvedUser;
       setNeedsRoleSelection(false);
       return;
     }
@@ -63,12 +66,14 @@ export function AuthProvider({ children }) {
       });
 
       if (newUser) {
-        setUser({
+        const resolvedUser = {
           id: newUser.id,
           email: newUser.email,
           full_name: newUser.full_name,
           role: newUser.role,
-        });
+        };
+        setUser(resolvedUser);
+        userRef.current = resolvedUser;
         setNeedsRoleSelection(false);
         return;
       }
@@ -112,6 +117,13 @@ export function AuthProvider({ children }) {
 
         if (event === "SIGNED_IN" && authSession) {
           setSession(authSession);
+          
+          // Prevent showing loading screen if we already resolved this user
+          // (Supabase sometimes fires SIGNED_IN on tab focus)
+          if (userRef.current && userRef.current.id === authSession.user.id) {
+             return;
+          }
+          
           setLoading(true);
           try {
             await resolveUser(authSession);
@@ -125,6 +137,7 @@ export function AuthProvider({ children }) {
         } else if (event === "SIGNED_OUT") {
           setSession(null);
           setUser(null);
+          userRef.current = null;
           setNeedsRoleSelection(false);
         }
       },
@@ -302,18 +315,21 @@ export function AuthProvider({ children }) {
 
   // ─── Complete OAuth onboarding (called from SelectRole page) ──────────────
   function completeOAuthOnboarding(dbUser) {
-    setUser({
+    const resolvedUser = {
       id: dbUser.id,
       email: dbUser.email,
       full_name: dbUser.full_name,
       role: dbUser.role,
-    });
+    };
+    setUser(resolvedUser);
+    userRef.current = resolvedUser;
     setNeedsRoleSelection(false);
   }
 
   // ─── Logout ───────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     setUser(null);
+    userRef.current = null;
     setSession(null);
     setNeedsRoleSelection(false);
     try {
