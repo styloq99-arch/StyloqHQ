@@ -3,7 +3,10 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.env
+.env
+.env.*
+backend/.env
+backend/.env.*
 # Database
 *.db
 *.sqlite3
