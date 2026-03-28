@@ -77,6 +77,15 @@ export default function Chatbot() {
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
+  const messagesEndRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping]);
+
   useEffect(() => {
     const handleResize = () => {
       setPosition(prev => ({
@@ -95,21 +104,19 @@ export default function Chatbot() {
   };
 
   const handlePointerMove = (e) => {
-    // Buttons === 1 means left click is held
     if (e.buttons !== 1) return;
 
     const dx = Math.abs(e.clientX - dragStart.current.x);
     const dy = Math.abs(e.clientY - dragStart.current.y);
     
-    // Distinguish between a click and a drag
     if (dx > 3 || dy > 3) {
       isDragging.current = true;
     }
 
     if (isDragging.current) {
       setPosition({
-        x: Math.min(Math.max(0, e.clientX - 25), window.innerWidth - 55),
-        y: Math.min(Math.max(0, e.clientY - 25), window.innerHeight - 55),
+        x: Math.min(Math.max(0, e.clientX - 25), window.innerWidth - 65),
+        y: Math.min(Math.max(0, e.clientY - 25), window.innerHeight - 65),
       });
     }
   };
@@ -118,15 +125,32 @@ export default function Chatbot() {
     e.target.releasePointerCapture(e.pointerId);
     if (!isDragging.current) {
       setOpen(true);
+      // Auto open with a gentle greeting if empty
+      if (messages.length === 0) {
+        setIsTyping(true);
+        setTimeout(() => {
+          setMessages([{ type: "bot", text: "👋 Hi! I'm the StyloQ Assistant. Pick a topic below to get started!" }]);
+          setIsTyping(false);
+        }, 600);
+      }
     }
   };
 
+  const clearChat = () => {
+    setMessages([{ type: "bot", text: "Chat restarted. How else can I help?" }]);
+    setSelectedCategory(null);
+  };
+
   const handleQuestionClick = (q) => {
-    setMessages((prev) => [
-      ...prev,
-      { type: "user", text: q.q },
-      { type: "bot", text: q.a },
-    ]);
+    // Add user question immediately
+    setMessages((prev) => [...prev, { type: "user", text: q.q }]);
+    
+    // Simulate thinking delay
+    setIsTyping(true);
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { type: "bot", text: q.a }]);
+      setIsTyping(false);
+    }, 800 + Math.random() * 400); // random delay between 800 - 1200ms
   };
 
   return (
@@ -140,7 +164,7 @@ export default function Chatbot() {
             left: position.x,
             bottom: "auto",
             right: "auto",
-            touchAction: "none" // Prevents scrolling on mobile during drag
+            touchAction: "none"
           }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -153,30 +177,40 @@ export default function Chatbot() {
 
       {/* Chat Window */}
       {open && (
-        <div className="chatbot-container">
-          <div className="chatbot-header">
+        <div className="chatbot-container glass-panel">
+          <div className="chatbot-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span><i className="fas fa-robot" style={{ marginRight: '8px' }}></i> StyloQ Assistant</span>
-            <button
-              className="chatbot-close-btn"
-              onClick={() => setOpen(false)}
-            >
-              <i className="fas fa-times"></i>
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {messages.length > 1 && (
+                 <button className="chatbot-clear-btn" onClick={clearChat} title="Clear Chat">
+                   <i className="fas fa-trash-alt"></i>
+                 </button>
+              )}
+              <button
+                className="chatbot-close-btn"
+                onClick={() => setOpen(false)}
+                title="Close"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
           </div>
 
           <div className="chatbot-messages">
-            {messages.length === 0 && (
-              <div className="bot-msg">👋 Hi! I'm here to help. Pick a topic below!</div>
-            )}
-
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={msg.type === "user" ? "user-msg" : "bot-msg"}
+                className={msg.type === "user" ? "user-msg scale-in" : "bot-msg scale-in"}
               >
                 {msg.text}
               </div>
             ))}
+            {isTyping && (
+              <div className="bot-msg scale-in typing-indicator">
+                <span></span><span></span><span></span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="chatbot-options">
@@ -197,6 +231,8 @@ export default function Chatbot() {
                   key={i}
                   className="chatbot-btn"
                   onClick={() => handleQuestionClick(q)}
+                  disabled={isTyping}
+                  style={{ opacity: isTyping ? 0.6 : 1 }}
                 >
                   {q.q}
                 </button>
