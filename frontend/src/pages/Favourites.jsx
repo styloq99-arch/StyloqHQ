@@ -63,7 +63,7 @@ export default function Favourites() {
             </div>
             <h3>Remove from Favourites?</h3>
             <p>
-              <strong className="cp-modal-name">{removeConfirm.name}</strong>'s post will be removed from your saved collection.
+              <strong className="cp-modal-name">{removeConfirm.barberName}</strong>'s post will be removed from your saved collection.
             </p>
             <div className="cp-modal-actions">
               <button className="cp-modal-keep" onClick={() => setRemoveConfirm(null)}>Keep It</button>
@@ -141,15 +141,29 @@ export default function Favourites() {
               <div key={post.id} className="feed-card fav-card">
 
                 <div className="image-container">
-                  <img src={post.image} alt="Post" className="feed-image fav-card__image" />
+                  <img 
+                    src={post.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E"} 
+                    alt="Post" 
+                    className="feed-image fav-card__image" 
+                    onError={(e) => {
+                      if (!e.target.dataset.fallback) {
+                        e.target.dataset.fallback = '1';
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+                      }
+                    }}
+                  />
                 </div>
 
                 <div className="card-header fav-card__header">
                   <div className="header-left">
-                    <img src={post.avatar} alt="Avatar" className="profile-avatar" />
+                    <img 
+                      src={post.avatar || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23333'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20'%3E%3F%3C/text%3E%3C/svg%3E"} 
+                      alt="Avatar" 
+                      className="profile-avatar" 
+                    />
                     <div className="header-text">
-                      <h4 className="barber-name fav-card__name">{post.name}</h4>
-                      <div className="stars-container">{renderStars(post.rating)}</div>
+                      <h4 className="barber-name fav-card__name">{post.barberName}</h4>
+                      <div className="stars-container">{renderStars(post.rating || 5)}</div>
                     </div>
                   </div>
                 </div>
