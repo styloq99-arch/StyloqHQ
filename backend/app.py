@@ -50,11 +50,6 @@ def create_app():
         allow_headers=["Content-Type", "Authorization"]
     )
 
-    @app.before_request
-    def handle_options():
-        if request.method == "OPTIONS":
-            return {}, 200
-
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback-secret")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "fallback-jwt-secret")
 
@@ -78,6 +73,12 @@ def create_app():
     @app.route("/health")
     def health():
         return {"status": "ok"}
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "message": "Internal Server Error", "error": str(e)}, 500
 
     return app
 
