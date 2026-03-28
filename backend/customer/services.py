@@ -81,21 +81,40 @@ def get_barber_with_details(barber_id):
 # =============================================================================
 
 def get_all_barbers():
-    """Return all barbers available in the system"""
+    """Return all barbers available in the system with ratings, prices, skills"""
     db = SessionLocal()
     try:
         barbers = db.query(Barber).all()
         result = []
         for barber in barbers:
             user = db.query(User).filter(User.id == barber.user_id).first()
+
+            # Average rating from reviews
+            reviews = db.query(Review).filter(Review.barber_id == barber.id).all()
+            total_reviews = len(reviews)
+            average_rating = round(sum(r.rating for r in reviews) / total_reviews, 1) if total_reviews > 0 else 0
+
+            # Starting price (cheapest service)
+            services = db.query(Service).filter(Service.barber_id == barber.id).all()
+            starting_price = min((s.price for s in services), default=None)
+
+            # Skills
+            skill_names = [s.name for s in barber.skills] if barber.skills else []
+
             result.append({
                 "id": barber.id,
                 "user_id": barber.user_id,
                 "name": user.full_name if user else "Unknown",
                 "bio": barber.bio,
+                "years_experience": barber.years_experience,
                 "is_verified": barber.is_verified,
                 "current_location_name": barber.current_location_name,
-                "instagram_handle": barber.instagram_handle
+                "instagram_handle": barber.instagram_handle,
+                "profile_image": barber.profile_image,
+                "average_rating": average_rating,
+                "total_reviews": total_reviews,
+                "starting_price": starting_price,
+                "skills": skill_names,
             })
         return result
     finally:
