@@ -1,5 +1,4 @@
 import "./global.css";
-import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FavouritesProvider } from "./pages/FavouritesContext.jsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
@@ -63,18 +62,6 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
-  useEffect(() => {
-    const handleFocus = () => {
-      console.log("Tab switched back → refreshing app");
-      window.location.reload(); // 🔥 simplest fix
-    };
-
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, []);
 
   return (
     <BrowserRouter>

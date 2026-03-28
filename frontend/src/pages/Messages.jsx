@@ -36,12 +36,15 @@ export default function Messages() {
   }, [location.state]);
 
   // Fetch contacts
+  const initialLoadDone = useRef(false);
+
   const fetchContacts = async () => {
-    setLoadingContacts(true);
+    if (!initialLoadDone.current) setLoadingContacts(true);
     const res = await getConversations();
     if (res.success) {
       setContacts(res.data || []);
-      if ((res.data || []).length > 0 && !selectedContact && !location.state) {
+      // Only auto-select first contact on initial load
+      if (!initialLoadDone.current && (res.data || []).length > 0 && !selectedContact && !location.state) {
         setSelectedContact({
           id: res.data[0].id,
           name: res.data[0].name,
@@ -49,7 +52,10 @@ export default function Messages() {
         });
       }
     }
-    setLoadingContacts(false);
+    if (!initialLoadDone.current) {
+      setLoadingContacts(false);
+      initialLoadDone.current = true;
+    }
   };
 
   useEffect(() => {
@@ -59,11 +65,15 @@ export default function Messages() {
   }, []);
 
   // Fetch chat history
+  const selectedContactRef = useRef(selectedContact);
+  selectedContactRef.current = selectedContact;
+
   const fetchMessages = async (forceLoad = false) => {
-    if (!selectedContact) return;
+    const contact = selectedContactRef.current;
+    if (!contact) return;
     if (forceLoad) setLoadingMessages(true);
 
-    const res = await getChatHistory(selectedContact.id);
+    const res = await getChatHistory(contact.id);
     if (res.success) {
       setMessages(res.data || []);
     }
@@ -78,11 +88,20 @@ export default function Messages() {
     }
   }, [selectedContact]);
 
+  const prevMsgLength = useRef(0);
+  const prevContactId = useRef(null);
+
   useEffect(() => {
-    if (messagesEndRef.current) {
+    const isNewContact = prevContactId.current !== selectedContact?.id;
+    const hasNewMessages = messages.length > prevMsgLength.current;
+
+    if (messagesEndRef.current && (isNewContact || hasNewMessages)) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+
+    prevMsgLength.current = messages.length;
+    prevContactId.current = selectedContact?.id;
+  }, [messages, selectedContact]);
 
   const handleSend = async (e) => {
     e.preventDefault();
