@@ -169,13 +169,13 @@ export default function BarberProfile() {
               <div className="bp-header">
 
                 {/* Cover Image */}
-                <div className="bp-cover-wrap">
+                <div className="bp-cover-wrap" style={{ position: "relative", width: "100%", height: "250px", overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
                   {barber.coverImage ? (
-                    <img src={barber.coverImage} alt="Cover" className="bp-cover-img" />
+                    <img src={barber.coverImage} alt="Cover" className="bp-cover-img" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   ) : (
-                    <div className="bp-cover-img" style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', minHeight: 200 }} />
+                    <div className="bp-cover-img" style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', width: "100%", height: "100%" }} />
                   )}
-                  <div className="bp-cover-gradient"></div>
+                  <div className="bp-cover-gradient" style={{ position: "absolute", bottom: 0, width: "100%", height: "60px", background: "linear-gradient(to top, var(--bg-card), transparent)" }}></div>
 
                   {/* Back button */}
                   <button className="bp-back-btn" onClick={() => window.history.back()}>

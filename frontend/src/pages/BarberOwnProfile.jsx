@@ -862,9 +862,13 @@ export default function BarberOwnProfile() {
           <div className="bop-hero">
 
             {/* Cover — camera button removed, avatar camera handles both */}
-            <div className="bop-cover-wrap">
-              <img src={profile.coverImage} alt="Cover" className="bop-cover-img" />
-              <div className="bop-cover-gradient"></div>
+            <div className="bop-cover-wrap" style={{ position: "relative", width: "100%", height: "250px", overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
+              {profile.coverImage ? (
+                <img src={profile.coverImage} alt="Cover" className="bop-cover-img" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              ) : (
+                <div className="bop-cover-img" style={{ width: "100%", height: "100%", background: 'linear-gradient(135deg, #1a1a2e, #16213e)' }} />
+              )}
+              <div className="bop-cover-gradient" style={{ position: "absolute", bottom: 0, width: "100%", height: "60px", background: "linear-gradient(to top, var(--bg-card), transparent)" }}></div>
             </div>
 
             {/* Avatar row */}
@@ -881,6 +885,41 @@ export default function BarberOwnProfile() {
                 <button className="bop-btn-outline" onClick={() => setEditSection('personal')}>
                   <i className="fas fa-pen"></i> Edit Profile
                 </button>
+                <button 
+                  className="mobile-logout-btn"
+                  onClick={() => {
+                    localStorage.removeItem('token');
+                    window.location.href = '/signin';
+                  }}
+                  style={{
+                    background: "var(--color-accent)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    display: "none", // Shown via media query
+                    marginLeft: "10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <i className="fas fa-sign-out-alt"></i> Logout
+                </button>
+                <style>
+                  {`
+                    @media (max-width: 768px) {
+                      .bop-action-row-desktop {
+                         display: flex !important;
+                      }
+                      .mobile-logout-btn {
+                        display: flex !important;
+                        align-items: center;
+                        gap: 6px;
+                      }
+                    }
+                  `}
+                </style>
               </div>
             </div>
 
