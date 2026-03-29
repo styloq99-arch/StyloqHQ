@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import CustomerSidebar from "../Components/CustomerSidebar";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 export default function AiRecommendation() {
   const { token, user } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
@@ -36,7 +38,7 @@ export default function AiRecommendation() {
     formData.append("image", selectedFile);
 
     try {
-      const response = await fetch("/ai/hairstyle", {
+      const response = await fetch(`${API_BASE_URL}/ai/hairstyle`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -94,6 +96,14 @@ export default function AiRecommendation() {
               border: "1px solid var(--border-faint)"
             }}>
 
+              <input
+                type="file"
+                id="file-upload"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+
               {!selectedFile ? (
                 <div
                   style={{
@@ -102,20 +112,12 @@ export default function AiRecommendation() {
                     padding: "3rem 2rem",
                     textAlign: "center",
                     cursor: "pointer",
-                    position: "relative"
                   }}
                   onClick={() => document.getElementById("file-upload").click()}
                 >
                   <i className="fas fa-cloud-upload-alt" style={{ fontSize: "3rem", color: "var(--color-accent)", marginBottom: "1rem" }}></i>
                   <h3 style={{ margin: "0 0 0.5rem 0", color: "var(--text-primary)" }}>Upload your photo</h3>
                   <p style={{ color: "var(--text-dim)", margin: 0 }}>JPG, PNG. Max 5MB</p>
-                  <input
-                    type="file"
-                    id="file-upload"
-                    accept="image/*"
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }}
-                    onChange={handleFileChange}
-                  />
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
@@ -182,20 +184,7 @@ export default function AiRecommendation() {
                       boxShadow: "var(--shadow-card, 0 4px 6px rgba(0,0,0,0.05))",
                       border: "1px solid var(--border-faint)"
                     }}>
-                      <div style={{ width: "100%", height: "250px", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {style.previewImage ? (
-                          <img
-                            src={`data:image/jpeg;base64,${style.previewImage}`}
-                            alt={style.name}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        ) : (
-                          <div style={{ textAlign: "center", color: "var(--text-dim)" }}>
-                            <i className="fas fa-image" style={{ fontSize: "3rem", opacity: 0.5, marginBottom: "0.5rem" }}></i>
-                            <p>No preview generated</p>
-                          </div>
-                        )}
-                      </div>
+
                       <div style={{ padding: "1.5rem" }}>
                         <h4 style={{ margin: "0 0 0.5rem 0", color: "var(--text-primary)", fontSize: "1.2rem" }}>{style.name}</h4>
                         <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.95rem", lineHeight: 1.5 }}>
