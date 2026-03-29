@@ -201,7 +201,47 @@ const AppointmentsOverview = () => {
               alt="Barber"
               className="overview-avatar"
             />
+            {/* Mobile Logout */ }
+            <button 
+              onClick={() => {
+                // We need to import useAuth and useNavigate at top for this to work, or just use window.location.href
+                localStorage.removeItem('token');
+                window.location.href = '/signin';
+              }} 
+              className="mobile-logout-btn" 
+              style={{
+                background: "var(--color-accent)",
+                color: "var(--text-on-btn)",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                fontSize: "14px",
+                fontWeight: "600",
+                display: "none",
+                marginLeft: "10px",
+                cursor: "pointer"
+              }}
+            >
+              <i className="fas fa-sign-out-alt"></i>
+            </button>
           </div>
+          <style>
+            {`
+              @media (max-width: 768px) {
+                .mobile-logout-btn {
+                  display: flex !important;
+                  align-items: center;
+                  gap: 6px;
+                }
+                .charts-row {
+                  flex-direction: column !important;
+                }
+                .chart-section {
+                  width: 100% !important;
+                }
+              }
+            `}
+          </style>
         </header>
 
         {/* Body */}

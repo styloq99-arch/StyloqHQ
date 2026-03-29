@@ -122,6 +122,36 @@ export default function BarberHomePage() {
               <i className="far fa-bell"></i>
               <span className="badge">3</span>
             </div>
+            {/* Mobile Logout Button */}
+            <button 
+              onClick={handleLogout} 
+              className="mobile-logout-btn" 
+              style={{
+                background: "var(--color-accent)",
+                color: "var(--text-on-btn)",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                fontSize: "14px",
+                fontWeight: "600",
+                display: "none", // Will be shown via CSS media query
+                marginLeft: "10px",
+                cursor: "pointer"
+              }}
+            >
+              <i className="fas fa-sign-out-alt"></i>
+            </button>
+            <style>
+              {`
+                @media (max-width: 768px) {
+                  .mobile-logout-btn {
+                    display: flex !important;
+                    align-items: center;
+                    gap: 6px;
+                  }
+                }
+              `}
+            </style>
           </div>
         </header>
 
