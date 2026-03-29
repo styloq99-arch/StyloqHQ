@@ -11,6 +11,13 @@ export default function Messages() {
   const location = useLocation();
   const messagesEndRef = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -166,7 +173,7 @@ export default function Messages() {
           <Link to="/barber-home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
           <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
           <Link to="/message" className="nav-item active"><i className="fas fa-comments"></i><span>Message</span></Link>
-          <Link to="/barber-own-profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+          <Link to="/barber-OwnProfile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
         </nav>
       );
     }
@@ -219,14 +226,23 @@ export default function Messages() {
           </button>
         </header>
 
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <div style={{ 
+          display: "flex", 
+          flex: 1, 
+          overflow: "hidden",
+          margin: isMobile ? "0" : "1.5rem",
+          border: isMobile ? "none" : "1px solid var(--border-default)",
+          borderRadius: isMobile ? "0" : "20px",
+          boxShadow: isMobile ? "none" : "var(--shadow-card)",
+          backgroundColor: "var(--bg-card)"
+        }}>
           {/* ─── Contacts Sidebar ─── */}
           <div style={{
-            width: "350px",
-            minWidth: "280px",
+            width: isMobile ? "100%" : "350px",
+            minWidth: isMobile ? "100%" : "280px",
             borderRight: "1px solid var(--border-deep)",
             backgroundColor: "var(--bg-card)",
-            display: "flex",
+            display: isMobile && selectedContact ? "none" : "flex",
             flexDirection: "column",
             overflowY: "auto"
           }}>
@@ -340,7 +356,7 @@ export default function Messages() {
           </div>
 
           {/* ─── Chat Area ─── */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "var(--bg-base)" }}>
+          <div style={{ flex: 1, display: isMobile && !selectedContact ? "none" : "flex", flexDirection: "column", backgroundColor: "var(--bg-base)" }}>
             {selectedContact ? (
               <>
                 {/* Chat Header */}
@@ -352,6 +368,16 @@ export default function Messages() {
                   alignItems: "center",
                   gap: "1rem"
                 }}>
+                  {isMobile && (
+                    <button 
+                      onClick={() => setSelectedContact(null)}
+                      style={{
+                        background: "none", border: "none", color: "var(--text-on-accent)",
+                        fontSize: "18px", cursor: "pointer", marginRight: "8px"
+                      }}>
+                      <i className="fas fa-arrow-left"></i>
+                    </button>
+                  )}
                   <div style={{
                     width: "42px",
                     height: "42px",
