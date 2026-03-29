@@ -13,7 +13,15 @@ export function FavouritesProvider({ children }) {
         const res = await apiGet('/customers/saved-posts');
         if (res.success && Array.isArray(res.data)) {
           const map = {};
-          res.data.forEach(post => { map[post.id] = post; });
+          res.data.forEach(post => { 
+            // Normalize so it matches CustomerHome feed format
+            map[post.id] = {
+              ...post,
+              barberName: post.barber_name || post.barberName || "Unknown",
+              imageUrl: post.image_url || post.imageUrl || "",
+              commentsCount: post.comments_count || post.commentsCount || 0,
+            }; 
+          });
           setFavourites(map);
         }
       } catch (_) { /* use local state */ }

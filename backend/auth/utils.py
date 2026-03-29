@@ -132,11 +132,6 @@ def get_current_user_from_token():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-
-        # ✅ allow CORS preflight
-        if request.method == "OPTIONS":
-            return {}, 200
-
         user = get_current_user_from_token()
 
         if not user:
@@ -160,11 +155,6 @@ def role_required(allowed_roles: list):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-
-            # ✅ allow CORS preflight
-            if request.method == "OPTIONS":
-                return {}, 200
-
             user = get_current_user_from_token()
 
             if not user:

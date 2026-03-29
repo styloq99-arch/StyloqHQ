@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getConversations, getChatHistory, sendMessage } from "../api/messageApi";
+import { getConversations, getChatHistory, sendMessage, getAvailableContacts } from "../api/messageApi";
 import CustomerSidebar from "../Components/CustomerSidebar";
 import BarberSidebar from "../Components/BarberSidebar";
 import SalonSidebar from "../Components/SalonSidebar";
@@ -18,6 +18,12 @@ export default function Messages() {
   const [loadingContacts, setLoadingContacts] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
+  // New Chat modal
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [availableContacts, setAvailableContacts] = useState([]);
+  const [loadingAvailable, setLoadingAvailable] = useState(false);
+  const [newChatSearch, setNewChatSearch] = useState("");
+
   // Check if a user was passed via state (e.g. from "Message" button on Barber Profile)
   useEffect(() => {
     if (location.state && location.state.userId) {
@@ -30,13 +36,15 @@ export default function Messages() {
   }, [location.state]);
 
   // Fetch contacts
+  const initialLoadDone = useRef(false);
+
   const fetchContacts = async () => {
-    setLoadingContacts(true);
+    if (!initialLoadDone.current) setLoadingContacts(true);
     const res = await getConversations();
     if (res.success) {
-      setContacts(res.data);
-      // Auto-select first contact if none selected and we didn't navigate with state
-      if (res.data.length > 0 && !selectedContact && !location.state) {
+      setContacts(res.data || []);
+      // Only auto-select first contact on initial load
+      if (!initialLoadDone.current && (res.data || []).length > 0 && !selectedContact && !location.state) {
         setSelectedContact({
           id: res.data[0].id,
           name: res.data[0].name,
@@ -44,24 +52,30 @@ export default function Messages() {
         });
       }
     }
-    setLoadingContacts(false);
+    if (!initialLoadDone.current) {
+      setLoadingContacts(false);
+      initialLoadDone.current = true;
+    }
   };
 
   useEffect(() => {
     fetchContacts();
-    // Poll contacts every 10s to see if there are new messages pushing people to top
     const interval = setInterval(fetchContacts, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch chat history for selected user
+  // Fetch chat history
+  const selectedContactRef = useRef(selectedContact);
+  selectedContactRef.current = selectedContact;
+
   const fetchMessages = async (forceLoad = false) => {
-    if (!selectedContact) return;
+    const contact = selectedContactRef.current;
+    if (!contact) return;
     if (forceLoad) setLoadingMessages(true);
 
-    const res = await getChatHistory(selectedContact.id);
+    const res = await getChatHistory(contact.id);
     if (res.success) {
-      setMessages(res.data);
+      setMessages(res.data || []);
     }
     if (forceLoad) setLoadingMessages(false);
   };
@@ -69,18 +83,25 @@ export default function Messages() {
   useEffect(() => {
     if (selectedContact) {
       fetchMessages(true);
-      // Poll current chat every 3 seconds for fast reply visibility
       const interval = setInterval(() => fetchMessages(false), 3000);
       return () => clearInterval(interval);
     }
   }, [selectedContact]);
 
-  // Auto-scroll to bottom of messages
+  const prevMsgLength = useRef(0);
+  const prevContactId = useRef(null);
+
   useEffect(() => {
-    if (messagesEndRef.current) {
+    const isNewContact = prevContactId.current !== selectedContact?.id;
+    const hasNewMessages = messages.length > prevMsgLength.current;
+
+    if (messagesEndRef.current && (isNewContact || hasNewMessages)) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+
+    prevMsgLength.current = messages.length;
+    prevContactId.current = selectedContact?.id;
+  }, [messages, selectedContact]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -97,38 +118,114 @@ export default function Messages() {
 
     const res = await sendMessage(selectedContact.id, tempMsg.content);
     if (res.success) {
-      // Re-fetch strictly to get accurate DB ID
       fetchMessages(false);
       fetchContacts();
     } else {
-      // Revert if failed (simple visual cleanup by re-fetching)
       fetchMessages(false);
     }
   };
 
+  // New Chat handlers
+  const openNewChat = async () => {
+    setShowNewChat(true);
+    setLoadingAvailable(true);
+    setNewChatSearch("");
+    const res = await getAvailableContacts();
+    if (res.success) {
+      setAvailableContacts(res.data || []);
+    }
+    setLoadingAvailable(false);
+  };
+
+  const startChatWith = (contact) => {
+    setSelectedContact({
+      id: contact.id,
+      name: contact.name,
+      role: contact.role
+    });
+    setShowNewChat(false);
+    setMessages([]);
+  };
+
+  const filteredAvailable = availableContacts.filter(c =>
+    c.name.toLowerCase().includes(newChatSearch.toLowerCase())
+  );
+
+  // Sidebar
+  const getSidebar = () => {
+    if (user?.role === "barber") return <BarberSidebar activePage="Message" />;
+    if (user?.role === "salon") return <SalonSidebar activePage="Message" />;
+    return <CustomerSidebar activePage="Message" />;
+  };
+
+  // Bottom nav
+  const getBottomNav = () => {
+    if (user?.role === "barber") {
+      return (
+        <nav className="bottom-nav">
+          <Link to="/barber-home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+          <Link to="/barber-dashboard" className="nav-item"><i className="fas fa-chart-bar"></i><span>Dashboard</span></Link>
+          <Link to="/message" className="nav-item active"><i className="fas fa-comments"></i><span>Message</span></Link>
+          <Link to="/barber-own-profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+        </nav>
+      );
+    }
+    return (
+      <nav className="bottom-nav">
+        <Link to="/home" className="nav-item"><i className="fas fa-home"></i><span>Home</span></Link>
+        <Link to="/customer-search" className="nav-item"><i className="fas fa-search"></i><span>Search</span></Link>
+        <Link to="/favourites" className="nav-item"><i className="fas fa-heart"></i><span>Favourites</span></Link>
+        <Link to="/message" className="nav-item active"><i className="fas fa-comments"></i><span>Message</span></Link>
+        <Link to="/customer-profile" className="nav-item"><i className="fas fa-user"></i><span>Profile</span></Link>
+      </nav>
+    );
+  };
+
   return (
     <div className="app-layout" style={{ height: "100vh", overflow: "hidden" }}>
-      {/* Role-aware Sidebar */}
-      {user?.role === "barber" ? (
-        <BarberSidebar activePage="Message" />
-      ) : user?.role === "salon" ? (
-        <SalonSidebar activePage="Message" />
-      ) : (
-        <CustomerSidebar activePage="Message" />
-      )}
+      {getSidebar()}
 
       <div className="main-content" style={{ display: "flex", flexDirection: "column", height: "100vh", padding: 0 }}>
         {/* Header */}
-        <header className="customer-barber-header" style={{ padding: "1rem 2rem", borderBottom: "1px solid var(--border-faint)", zIndex: 10 }}>
-          <h1 style={{ margin: 0, fontSize: "1.5rem", color: "var(--text-primary)" }}>Messages</h1>
+        <header style={{
+          padding: "1rem 2rem",
+          borderBottom: "1px solid var(--border-deep)",
+          backgroundColor: "var(--bg-elevated)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 10
+        }}>
+          <h1 style={{ margin: 0, fontSize: "1.5rem", color: "var(--text-on-accent)", fontFamily: "Poppins, sans-serif" }}>Messages</h1>
+          <button
+            onClick={openNewChat}
+            style={{
+              padding: "10px 20px",
+              borderRadius: "12px",
+              backgroundColor: "var(--color-accent)",
+              color: "var(--text-on-btn)",
+              border: "none",
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: 600,
+              fontSize: "13px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "opacity 0.2s"
+            }}
+          >
+            <i className="fas fa-plus"></i> New Chat
+          </button>
         </header>
 
         <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          {/* Contacts List */}
+          {/* ─── Contacts Sidebar ─── */}
           <div style={{
             width: "350px",
-            borderRight: "1px solid var(--border-faint)",
-            backgroundColor: "var(--bg-elevated)",
+            minWidth: "280px",
+            borderRight: "1px solid var(--border-deep)",
+            backgroundColor: "var(--bg-card)",
             display: "flex",
             flexDirection: "column",
             overflowY: "auto"
@@ -138,8 +235,24 @@ export default function Messages() {
                 <i className="fas fa-spinner fa-spin"></i> Loading...
               </div>
             ) : contacts.length === 0 ? (
-              <div style={{ padding: "2rem", textAlign: "center", color: "var(--text-dim)" }}>
-                No active conversations. Open a barber's profile to send them a message!
+              <div style={{ padding: "2rem", textAlign: "center", color: "var(--text-dim)", fontFamily: "Poppins, sans-serif" }}>
+                <i className="fas fa-comments" style={{ fontSize: "2.5rem", marginBottom: "1rem", display: "block", opacity: 0.3 }}></i>
+                <p style={{ marginBottom: "1rem" }}>No conversations yet.</p>
+                <button
+                  onClick={openNewChat}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "10px",
+                    backgroundColor: "var(--color-accent)",
+                    color: "var(--text-on-btn)",
+                    border: "none",
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  Start a Chat
+                </button>
               </div>
             ) : (
               contacts.map((contact) => (
@@ -147,80 +260,130 @@ export default function Messages() {
                   key={contact.id}
                   onClick={() => setSelectedContact(contact)}
                   style={{
-                    padding: "1rem",
-                    borderBottom: "1px solid var(--border-faint)",
+                    padding: "1rem 1.2rem",
+                    borderBottom: "1px solid var(--border-deep)",
                     cursor: "pointer",
-                    backgroundColor: selectedContact?.id === contact.id ? "var(--bg-highlight, #f0f7ff)" : "transparent",
-                    transition: "background 0.2s"
+                    backgroundColor: selectedContact?.id === contact.id ? "rgba(255,87,34,0.08)" : "transparent",
+                    borderLeft: selectedContact?.id === contact.id ? "3px solid var(--color-accent)" : "3px solid transparent",
+                    transition: "all 0.2s"
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <h4 style={{ margin: "0 0 0.2rem 0", color: "var(--text-primary)" }}>{contact.name}</h4>
-                    {contact.last_message && (
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>
-                        {new Date(contact.last_message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    )}
-                  </div>
-                  {contact.last_message && (
-                    <p style={{
-                      margin: 0,
-                      fontSize: "0.9rem",
-                      color: contact.last_message.is_read || contact.last_message.is_mine ? "var(--text-secondary)" : "var(--text-primary)",
-                      fontWeight: contact.last_message.is_read || contact.last_message.is_mine ? "normal" : "bold",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis"
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    {/* Avatar */}
+                    <div style={{
+                      width: "45px",
+                      height: "45px",
+                      borderRadius: "50%",
+                      backgroundColor: "var(--color-accent)",
+                      color: "white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      flexShrink: 0,
+                      fontFamily: "Poppins, sans-serif"
                     }}>
-                      {contact.last_message.is_mine ? "You: " : ""}{contact.last_message.content}
-                    </p>
-                  )}
+                      {contact.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <h4 style={{ margin: 0, color: "var(--text-on-accent)", fontSize: "14px", fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
+                          {contact.name}
+                        </h4>
+                        {contact.last_message && (
+                          <span style={{ fontSize: "0.7rem", color: "var(--text-dim)", flexShrink: 0 }}>
+                            {new Date(contact.last_message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
+                        {contact.last_message && (
+                          <p style={{
+                            margin: 0,
+                            fontSize: "12px",
+                            color: contact.unread_count > 0 ? "var(--text-on-accent)" : "var(--text-dim)",
+                            fontWeight: contact.unread_count > 0 ? "bold" : "normal",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            flex: 1,
+                            fontFamily: "Poppins, sans-serif"
+                          }}>
+                            {contact.last_message.is_mine ? "You: " : ""}{contact.last_message.content}
+                          </p>
+                        )}
+                        {contact.unread_count > 0 && (
+                          <span style={{
+                            backgroundColor: "var(--color-accent)",
+                            color: "white",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "11px",
+                            fontWeight: "bold",
+                            flexShrink: 0,
+                            marginLeft: "8px"
+                          }}>
+                            {contact.unread_count}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))
             )}
           </div>
 
-          {/* Chat Interface */}
+          {/* ─── Chat Area ─── */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "var(--bg-base)" }}>
             {selectedContact ? (
               <>
                 {/* Chat Header */}
                 <div style={{
                   padding: "1rem 2rem",
-                  backgroundColor: "var(--bg-elevated)",
-                  borderBottom: "1px solid var(--border-faint)",
+                  backgroundColor: "var(--bg-card)",
+                  borderBottom: "1px solid var(--border-deep)",
                   display: "flex",
                   alignItems: "center",
                   gap: "1rem"
                 }}>
                   <div style={{
-                    width: "40px",
-                    height: "40px",
+                    width: "42px",
+                    height: "42px",
                     borderRadius: "50%",
                     backgroundColor: "var(--color-accent)",
                     color: "white",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontWeight: "bold"
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    fontFamily: "Poppins, sans-serif"
                   }}>
-                    {selectedContact.name.charAt(0)}
+                    {selectedContact.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: "var(--text-primary)" }}>{selectedContact.name}</h3>
-                    <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-dim)", textTransform: "capitalize" }}>{selectedContact.role}</p>
+                    <h3 style={{ margin: 0, color: "var(--text-on-accent)", fontFamily: "Poppins, sans-serif", fontSize: "15px" }}>{selectedContact.name}</h3>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-dim)", textTransform: "capitalize", fontFamily: "Poppins, sans-serif" }}>{selectedContact.role}</p>
                   </div>
                 </div>
 
-                {/* Messages Area */}
-                <div style={{ flex: 1, overflowY: "auto", padding: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {/* Messages */}
+                <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem 2rem", display: "flex", flexDirection: "column", gap: "0.8rem" }}>
                   {loadingMessages ? (
-                    <div style={{ textAlign: "center", color: "var(--text-dim)" }}>
-                      <i className="fas fa-spinner fa-spin"></i> Fetching history...
+                    <div style={{ textAlign: "center", color: "var(--text-dim)", margin: "auto" }}>
+                      <i className="fas fa-spinner fa-spin" style={{ fontSize: "1.5rem" }}></i>
+                      <p>Loading messages...</p>
                     </div>
                   ) : messages.length === 0 ? (
-                    <div style={{ textAlign: "center", color: "var(--text-dim)", marginTop: "auto", marginBottom: "auto" }}>
-                      Send a message to start the conversation!
+                    <div style={{ textAlign: "center", color: "var(--text-dim)", margin: "auto", fontFamily: "Poppins, sans-serif" }}>
+                      <i className="fas fa-paper-plane" style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3, display: "block" }}></i>
+                      <p>Send a message to start the conversation!</p>
                     </div>
                   ) : (
                     messages.map((msg) => (
@@ -235,17 +398,20 @@ export default function Messages() {
                         }}
                       >
                         <div style={{
-                          backgroundColor: msg.is_mine ? "var(--color-accent)" : "var(--bg-elevated)",
-                          color: msg.is_mine ? "white" : "var(--text-primary)",
-                          padding: "0.8rem 1.2rem",
+                          backgroundColor: msg.is_mine ? "var(--color-accent)" : "var(--bg-card)",
+                          color: msg.is_mine ? "white" : "var(--text-on-accent)",
+                          padding: "0.7rem 1.1rem",
                           borderRadius: "18px",
                           borderBottomRightRadius: msg.is_mine ? "4px" : "18px",
                           borderBottomLeftRadius: !msg.is_mine ? "4px" : "18px",
-                          boxShadow: "0 2px 5px rgba(0,0,0,0.05)"
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                          fontSize: "14px",
+                          lineHeight: "1.4",
+                          fontFamily: "Poppins, sans-serif"
                         }}>
                           {msg.content}
                         </div>
-                        <span style={{ fontSize: "0.7rem", color: "var(--text-dim)", marginTop: "0.3rem" }}>
+                        <span style={{ fontSize: "0.65rem", color: "var(--text-dim)", marginTop: "0.25rem", fontFamily: "Poppins, sans-serif" }}>
                           {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -254,9 +420,9 @@ export default function Messages() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input Area */}
-                <div style={{ padding: "1.5rem 2rem", backgroundColor: "var(--bg-elevated)", borderTop: "1px solid var(--border-faint)" }}>
-                  <form onSubmit={handleSend} style={{ display: "flex", gap: "1rem" }}>
+                {/* Input */}
+                <div style={{ padding: "1rem 2rem", backgroundColor: "var(--bg-card)", borderTop: "1px solid var(--border-deep)" }}>
+                  <form onSubmit={handleSend} style={{ display: "flex", gap: "0.8rem", alignItems: "center" }}>
                     <input
                       type="text"
                       value={inputText}
@@ -264,20 +430,22 @@ export default function Messages() {
                       placeholder="Type your message..."
                       style={{
                         flex: 1,
-                        padding: "1rem",
+                        padding: "0.9rem 1.2rem",
                         borderRadius: "30px",
                         border: "1px solid var(--border-deep)",
                         backgroundColor: "var(--bg-base)",
-                        color: "var(--text-primary)",
-                        outline: "none"
+                        color: "var(--text-on-accent)",
+                        outline: "none",
+                        fontFamily: "Poppins, sans-serif",
+                        fontSize: "14px"
                       }}
                     />
                     <button
                       type="submit"
                       disabled={!inputText.trim()}
                       style={{
-                        width: "50px",
-                        height: "50px",
+                        width: "46px",
+                        height: "46px",
                         borderRadius: "50%",
                         backgroundColor: inputText.trim() ? "var(--color-accent)" : "var(--border-deep)",
                         color: "white",
@@ -286,7 +454,8 @@ export default function Messages() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        transition: "background 0.2s"
+                        transition: "background 0.2s",
+                        fontSize: "16px"
                       }}
                     >
                       <i className="fas fa-paper-plane"></i>
@@ -295,15 +464,182 @@ export default function Messages() {
                 </div>
               </>
             ) : (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-dim)" }}>
-                <i className="fas fa-comments" style={{ fontSize: "4rem", marginBottom: "1rem", opacity: 0.5 }}></i>
-                <h2>Your Messages</h2>
-                <p>Select a conversation or start a new one.</p>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-dim)", fontFamily: "Poppins, sans-serif" }}>
+                <i className="fas fa-comments" style={{ fontSize: "4rem", marginBottom: "1rem", opacity: 0.3 }}></i>
+                <h2 style={{ color: "var(--text-on-accent)", marginBottom: "0.5rem" }}>Your Messages</h2>
+                <p style={{ marginBottom: "1.5rem" }}>Select a conversation or start a new one.</p>
+                <button
+                  onClick={openNewChat}
+                  style={{
+                    padding: "12px 28px",
+                    borderRadius: "12px",
+                    backgroundColor: "var(--color-accent)",
+                    color: "var(--text-on-btn)",
+                    border: "none",
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  <i className="fas fa-plus"></i> Start New Chat
+                </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Bottom Nav for Mobile */}
+      {getBottomNav()}
+
+      {/* ─── New Chat Modal ─── */}
+      {showNewChat && (
+        <div
+          onClick={() => setShowNewChat(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            backdropFilter: "blur(4px)"
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: "var(--bg-card)",
+              borderRadius: "20px",
+              width: "100%",
+              maxWidth: "480px",
+              maxHeight: "70vh",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.3)",
+              overflow: "hidden"
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              padding: "1.2rem 1.5rem",
+              borderBottom: "1px solid var(--border-deep)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}>
+              <h3 style={{ margin: 0, color: "var(--text-on-accent)", fontFamily: "Poppins, sans-serif", fontSize: "18px" }}>
+                Start New Chat
+              </h3>
+              <button
+                onClick={() => setShowNewChat(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-dim)",
+                  fontSize: "18px",
+                  cursor: "pointer",
+                  padding: "4px"
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            {/* Search */}
+            <div style={{ padding: "1rem 1.5rem 0" }}>
+              <div style={{ position: "relative" }}>
+                <i className="fas fa-search" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-dim)", fontSize: "13px" }}></i>
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={newChatSearch}
+                  onChange={(e) => setNewChatSearch(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    borderRadius: "12px",
+                    border: "1px solid var(--border-deep)",
+                    backgroundColor: "var(--bg-base)",
+                    color: "var(--text-on-accent)",
+                    outline: "none",
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "14px"
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Contact List */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.5rem" }}>
+              {loadingAvailable ? (
+                <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-dim)" }}>
+                  <i className="fas fa-spinner fa-spin"></i> Loading...
+                </div>
+              ) : filteredAvailable.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-dim)", fontFamily: "Poppins, sans-serif" }}>
+                  <p>No contacts found.</p>
+                </div>
+              ) : (
+                filteredAvailable.map((contact) => (
+                  <div
+                    key={contact.id}
+                    onClick={() => startChatWith(contact)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                      marginBottom: "4px"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,87,34,0.08)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                  >
+                    {/* Avatar */}
+                    <div style={{
+                      width: "45px",
+                      height: "45px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      flexShrink: 0,
+                      backgroundColor: "var(--color-accent)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}>
+                      {contact.profile_image ? (
+                        <img src={contact.profile_image} alt={contact.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span style={{ color: "white", fontWeight: "bold", fontSize: "16px", fontFamily: "Poppins, sans-serif" }}>
+                          {contact.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, color: "var(--text-on-accent)", fontSize: "14px", fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
+                        {contact.name}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-dim)", textTransform: "capitalize", fontFamily: "Poppins, sans-serif" }}>
+                        {contact.role}
+                        {contact.location && ` · ${contact.location}`}
+                      </p>
+                    </div>
+                    <i className="fas fa-comment-dots" style={{ color: "var(--color-accent)", fontSize: "16px" }}></i>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,10 +4,14 @@ export async function getConversations() {
   return apiGet("/messages");
 }
 
-export async function getChatHistory(token, userId) {
+export async function getChatHistory(userId) {
   return apiGet(`/messages/${userId}`);
 }
 
-export async function sendMessage(token, userId, content) {
+export async function sendMessage(userId, content) {
   return apiPost(`/messages/${userId}`, { content });
+}
+
+export async function getAvailableContacts() {
+  return apiGet("/messages/contacts");
 }

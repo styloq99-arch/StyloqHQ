@@ -35,6 +35,12 @@ def create_app():
     # Get allowed origins from environment variable, default to everything for development
     cors_origin = os.environ.get("CORS_ORIGIN", "https://styloq-hq.vercel.app")
     origins_list = [origin.strip() for origin in cors_origin.split(",")] if cors_origin != "*" else "*"
+    
+    # Always allow localhost for development
+    if isinstance(origins_list, list):
+        for dev_origin in ["http://localhost:5173", "http://127.0.0.1:5173"]:
+            if dev_origin not in origins_list:
+                origins_list.append(dev_origin)
 
     CORS(
         app,
@@ -43,11 +49,6 @@ def create_app():
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"]
     )
-
-    @app.before_request
-    def handle_options():
-        if request.method == "OPTIONS":
-            return {}, 200
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback-secret")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "fallback-jwt-secret")
@@ -72,6 +73,12 @@ def create_app():
     @app.route("/health")
     def health():
         return {"status": "ok"}
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "message": "Internal Server Error", "error": str(e)}, 500
 
     return app
 
